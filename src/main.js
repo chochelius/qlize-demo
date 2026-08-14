@@ -10,38 +10,89 @@ const engine = new Engine(canvas, ctx);
 // Controles
 const input = {
   left: false,
-  right: false
+  right: false,
+  axis: 0 // -1 (izquierda total) a 1 (derecha total)
 };
 
 // --- Teclado ---
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.left = true;
-  if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = true;
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+    input.left = true;
+    input.axis = -1;
+  }
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+    input.right = true;
+    input.axis = 1;
+  }
 });
 window.addEventListener('keyup', (e) => {
-  if (e.code === 'ArrowLeft' || e.code === 'KeyA') input.left = false;
-  if (e.code === 'ArrowRight' || e.code === 'KeyD') input.right = false;
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+    input.left = false;
+    input.axis = input.right ? 1 : 0;
+  }
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+    input.right = false;
+    input.axis = input.left ? -1 : 0;
+  }
 });
 
-// --- Táctil ---
+// --- Táctil (Deslizar / Drag continuo tipo Swipe con sensibilidad suave) ---
+let lastTouchX = 0;
+let isTouching = false;
+let touchTimeout = null;
+
 canvas.addEventListener('touchstart', (e) => {
   e.preventDefault(); 
-  for (let i = 0; i < e.changedTouches.length; i++) {
-    const touch = e.changedTouches[i];
-    const rect = canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    if (x < rect.width / 2) input.left = true;
-    else input.right = true;
+  if (e.touches.length > 0) {
+    lastTouchX = e.touches[0].clientX;
+    isTouching = true;
+    input.left = false;
+    input.right = false;
+    input.axis = 0;
   }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (!isTouching || e.touches.length === 0) return;
+  
+  const currentTouchX = e.touches[0].clientX;
+  const deltaX = currentTouchX - lastTouchX;
+  
+  // Umbral mínimo de movimiento para filtrar temblores
+  if (Math.abs(deltaX) > 1.5) {
+    // Escala la intensidad de forma progresiva según la distancia/velocidad del arrastre
+    const intensity = Math.min(1, Math.max(0.25, Math.abs(deltaX) / 14));
+    input.axis = Math.sign(deltaX) * intensity;
+    
+    if (deltaX > 0) {
+      input.right = true;
+      input.left = false;
+    } else {
+      input.left = true;
+      input.right = false;
+    }
+  }
+  
+  lastTouchX = currentTouchX;
+  
+  // Desacelerar suavemente cuando el dedo deja de deslizarse
+  clearTimeout(touchTimeout);
+  touchTimeout = setTimeout(() => {
+    input.left = false;
+    input.right = false;
+    input.axis = 0;
+  }, 60);
 }, { passive: false });
 
 canvas.addEventListener('touchend', (e) => {
   e.preventDefault();
-  // Al soltar un dedo, detenemos el movimiento. 
-  // Para multitouch complejo se trackearía el ID, pero esto es funcional y directo.
   if (e.touches.length === 0) {
+    isTouching = false;
     input.left = false;
     input.right = false;
+    input.axis = 0;
+    clearTimeout(touchTimeout);
   }
 }, { passive: false });
 
@@ -49,15 +100,23 @@ canvas.addEventListener('touchend', (e) => {
 window.addEventListener('deviceorientation', (e) => {
   const tilt = e.gamma; // inclinación izq/der en grados (-90 a 90)
   if (tilt === null) return;
-  // Zona muerta de 5 grados
-  if (tilt > 5) {
-    input.right = true; input.left = false;
-  } else if (tilt < -5) {
-    input.left = true; input.right = false;
-  } else {
-    // Si no se presiona la pantalla, detener
-    if(e.touches && e.touches.length === 0) {
-      input.left = false; input.right = false;
+  
+  // Si no se está usando la pantalla táctil activamente
+  if (!isTouching) {
+    if (Math.abs(tilt) > 4) {
+      const intensity = Math.min(1, (Math.abs(tilt) - 4) / 20);
+      input.axis = Math.sign(tilt) * intensity;
+      if (tilt > 0) {
+        input.right = true;
+        input.left = false;
+      } else {
+        input.left = true;
+        input.right = false;
+      }
+    } else {
+      input.left = false;
+      input.right = false;
+      input.axis = 0;
     }
   }
 });
