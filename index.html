@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Qlize-Jump</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0f172a; /* Slate 900 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      touch-action: none; /* Prevent scroll on touch */
+    }
+    #game-container {
+      position: relative;
+      background-color: #000;
+      aspect-ratio: 45 / 80;
+      width: 100%;
+      max-width: 450px;
+      max-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #ui-layer {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+    }
+    .screen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.85);
+      pointer-events: auto;
+      color: white;
+      text-align: center;
+    }
+    .hidden { display: none !important; }
+    
+    h1 { margin-bottom: 20px; font-size: 2.8rem; text-shadow: 0 4px 6px rgba(0,0,0,0.8); letter-spacing: 2px; }
+    h2 { font-size: 2.2rem; margin-bottom: 10px; }
+    p { font-size: 1.2rem; margin-bottom: 20px; }
+    
+    button {
+      padding: 16px 32px;
+      margin: 12px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+      width: 80%;
+      max-width: 300px;
+    }
+    button:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
+    button:active { transform: translateY(2px); }
+    
+    #btn-sephiroth {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+    }
+    #btn-qliphoth {
+      background: linear-gradient(135deg, #e11d48, #9f1239);
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      box-shadow: 0 0 15px rgba(225, 29, 72, 0.4);
+    }
+    #btn-restart {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      margin-top: 10px;
+    }
+    #btn-menu {
+      background: linear-gradient(135deg, #4b5563, #374151);
+      color: white;
+      margin-top: 5px;
+      font-size: 1rem;
+      padding: 12px 24px;
+    }
+    
+    #hud {
+      position: absolute;
+      top: 15px; left: 15px;
+      color: white;
+      font-size: 1.6rem;
+      font-weight: 800;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      z-index: 10;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas" width="450" height="800"></canvas>
+    
+    <div id="hud" class="hidden">H: <span id="score">0</span></div>
+
+    <div id="ui-layer">
+      <!-- Main Menu -->
+      <div id="screen-menu" class="screen">
+        <h1>QLIZE-JUMP</h1>
+        <button id="btn-sephiroth">Modo Sephiroth<br><small style="font-size:0.85rem; font-weight:normal; opacity:0.9">Ascenso Estructurado</small></button>
+        <button id="btn-qliphoth">Modo Qliphoth<br><small style="font-size:0.85rem; font-weight:normal; opacity:0.9">Caos y Velocidad</small></button>
+      </div>
+
+      <!-- Game Over Screen -->
+      <div id="screen-gameover" class="screen hidden">
+        <h2>GAME OVER</h2>
+        <p>Altura final: <strong id="final-score">0</strong></p>
+        <button id="btn-restart">Reintentar</button>
+        <button id="btn-menu">Volver al Menú</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
