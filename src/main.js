@@ -97,6 +97,10 @@ class SoundFX {
 
 const sfx = new SoundFX();
 
+// Detección de dispositivo
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const hasGyroscope = 'DeviceOrientationEvent' in window;
+
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -242,6 +246,9 @@ canvas.addEventListener('touchend', (e) => {
 window.addEventListener('deviceorientation', (e) => {
   const tilt = e.gamma;
   if (tilt === null) return;
+  
+  // Solo responder si el modo giroscopio está activo
+  if (gameSettings.controlMode !== 'gyro') return;
 
   if (!isTouching) {
     if (Math.abs(tilt) > 4) {
@@ -344,6 +351,14 @@ function updateSettingsUI() {
   // Update control mode buttons
   controlSwipe.classList.toggle('active', gameSettings.controlMode === 'swipe');
   controlGyro.classList.toggle('active', gameSettings.controlMode === 'gyro');
+
+  // Deshabilitar giroscopio si no está disponible
+  if (!hasGyroscope) {
+    controlGyro.disabled = true;
+    controlGyro.style.opacity = '0.4';
+    controlGyro.style.cursor = 'not-allowed';
+    controlGyro.textContent = '📱 Giroscopio (No disponible)';
+  }
 
   updatePresetButtonsState();
 }
