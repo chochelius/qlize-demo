@@ -541,10 +541,10 @@ function renderOverworld() {
   // 1. Contador de progreso
   const completedCount = overworld.getCompletedCount();
   if (overworldProgressCounter) {
-    overworldProgressCounter.innerText = `${completedCount} / 10 SEFIROT PURIFICADAS`;
+    overworldProgressCounter.innerText = `${completedCount} / 10 REINOS ARMONIZADOS`;
   }
 
-  // 2. Renderizar líneas SVG del Árbol de la Vida
+  // 2. Renderizar líneas SVG del Árbol de la Estructura (Tiāndào)
   let svgHtml = '';
   Object.keys(OVERWORLD_GRAPH).forEach(srcKey => {
     const srcNode = OVERWORLD_GRAPH[srcKey];
@@ -642,10 +642,10 @@ function selectOverworldNode(stageKey, playSound = true) {
     }
   });
 
-  // Poblar tarjeta flotante de la Sefirá
+  // Poblar tarjeta flotante del Reino
   if (overworldStageCard) {
     overworldStageCard.classList.remove('hidden');
-    if (cardSefiraNum) cardSefiraNum.innerText = `SEFIRÁ ${node.id < 10 ? '0' + node.id : node.id}`;
+    if (cardSefiraNum) cardSefiraNum.innerText = `REINO ${node.id < 10 ? '0' + node.id : node.id}`;
     if (cardSefiraPhonetic) cardSefiraPhonetic.innerText = node.phonetic;
     if (cardStageTitle) cardStageTitle.innerText = `${node.id}. ${node.name} • ${node.title}`;
     if (cardStageDesc) cardStageDesc.innerText = node.desc;

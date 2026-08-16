@@ -218,7 +218,7 @@ test('StageMode: genera 3 tramos secuenciales (GDD §2.2)', () => {
   assert.ok(tramo3.length > 30, `tramo 3 debe tener plataformas (hay ${tramo3.length})`);
 });
 
-test('SEPHIROTH_NODES: alturas ascendentes hacia Kether', () => {
+test('REALM_NODES: alturas ascendentes hacia Wángguān', () => {
   for (let i = 1; i < SEPHIROTH_NODES.length; i++) {
     assert.ok(SEPHIROTH_NODES[i].height > SEPHIROTH_NODES[i - 1].height,
       `${SEPHIROTH_NODES[i].name} debe estar por encima de ${SEPHIROTH_NODES[i - 1].name}`);
@@ -380,32 +380,32 @@ test('TutorialMode: genera mapa espaciado, adapta textos al dispositivo y avanza
 });
 
 // =========================================================
-// Overworld: El Árbol de la Vida (Grafo, Nomenclatura Fonética y Progreso)
+// Overworld: Tiāndào • Árbol de la Estructura (Grafo, Pinyin y Progreso)
 // =========================================================
-test('Overworld: grafo contiene 10 Sefirot con nombres fonéticos occidentales y conexiones válidas', () => {
+test('Overworld: grafo contiene 10 Reinos con nomenclatura Pinyin y conexiones válidas', () => {
   const keys = Object.keys(OVERWORLD_GRAPH);
-  assert.equal(keys.length, 10, 'debe contener exactamente 10 etapas (Sefirot)');
+  assert.equal(keys.length, 10, 'debe contener exactamente 10 etapas (Reinos)');
   
-  // Validar Malkuth (inicio)
-  const malkuth = OVERWORLD_GRAPH.stage_1;
-  assert.equal(malkuth.name, 'Malkuth');
-  assert.equal(malkuth.code, 'MALKUTH');
-  assert.equal(malkuth.phonetic, 'MAL-KOOTH');
-  assert.equal(malkuth.shortName, 'MAL');
-  assert.deepEqual(malkuth.connections, ['stage_2']);
+  // Validar Wángguó (inicio)
+  const wangguo = OVERWORLD_GRAPH.stage_1;
+  assert.equal(wangguo.name, 'Wángguó');
+  assert.equal(wangguo.code, 'WANGGUO');
+  assert.equal(wangguo.phonetic, 'WÁNG-GUÓ');
+  assert.equal(wangguo.shortName, 'WAN');
+  assert.deepEqual(wangguo.connections, ['stage_2']);
 
-  // Validar Kether (cima final)
-  const kether = OVERWORLD_GRAPH.stage_10;
-  assert.equal(kether.name, 'Kether');
-  assert.equal(kether.code, 'KETHER');
-  assert.equal(kether.phonetic, 'KEH-THER');
-  assert.equal(kether.shortName, 'KET');
-  assert.deepEqual(kether.connections, []);
+  // Validar Wángguān (cima final)
+  const wangguan = OVERWORLD_GRAPH.stage_10;
+  assert.equal(wangguan.name, 'Wángguān');
+  assert.equal(wangguan.code, 'WANGGUAN');
+  assert.equal(wangguan.phonetic, 'WÁNG-GUĀN');
+  assert.equal(wangguan.shortName, 'WAG');
+  assert.deepEqual(wangguan.connections, []);
 
   // Validar que todas las conexiones apuntan a etapas existentes
   keys.forEach(k => {
     const node = OVERWORLD_GRAPH[k];
-    assert.ok(node.name, `la etapa ${k} debe tener nombre`);
+    assert.ok(node.name, `la etapa ${k} debe tener nombre Pinyin`);
     assert.ok(node.phonetic, `la etapa ${k} debe tener pronunciación fonética`);
     assert.ok(node.shortName, `la etapa ${k} debe tener nombre corto`);
     node.connections.forEach(targetKey => {
@@ -425,37 +425,37 @@ test('OverworldManager: desbloqueo progresivo y registro de medallas', () => {
   };
 
   const mgr = new OverworldManager();
-  assert.ok(mgr.isUnlocked('stage_1'), 'Malkuth debe estar desbloqueado por defecto');
-  assert.ok(!mgr.isUnlocked('stage_2'), 'Yesod debe estar bloqueado inicialmente');
+  assert.ok(mgr.isUnlocked('stage_1'), 'Wángguó debe estar desbloqueado por defecto');
+  assert.ok(!mgr.isUnlocked('stage_2'), 'Jīchǔ debe estar bloqueado inicialmente');
   assert.equal(mgr.getCompletedCount(), 0);
 
-  // Completar etapa 1 (Malkuth)
+  // Completar etapa 1 (Wángguó)
   const newlyUnlocked = mgr.completeStage('stage_1', 18000, { name: 'Bronce', icon: '🥉' });
-  assert.deepEqual(newlyUnlocked, ['stage_2'], 'debe desbloquear Yesod al superar Malkuth');
-  assert.ok(mgr.isCompleted('stage_1'), 'Malkuth debe figurar como completada');
-  assert.ok(mgr.isUnlocked('stage_2'), 'Yesod debe estar ahora desbloqueado');
+  assert.deepEqual(newlyUnlocked, ['stage_2'], 'debe desbloquear Jīchǔ al superar Wángguó');
+  assert.ok(mgr.isCompleted('stage_1'), 'Wángguó debe figurar como completada');
+  assert.ok(mgr.isUnlocked('stage_2'), 'Jīchǔ debe estar ahora desbloqueado');
   assert.equal(mgr.getCompletedCount(), 1);
   assert.equal(mgr.getMedal('stage_1').name, 'Bronce');
 
-  // Completar etapa 2 (Yesod) -> bifurcación hacia Hod y Netzach
+  // Completar etapa 2 (Jīchǔ) -> bifurcación hacia Guānghuī y Shènglì
   const unlock2 = mgr.completeStage('stage_2', 15000, { name: 'Oro', icon: '🥇' });
-  assert.deepEqual(unlock2, ['stage_3', 'stage_4'], 'debe desbloquear Hod (3) y Netzach (4)');
+  assert.deepEqual(unlock2, ['stage_3', 'stage_4'], 'debe desbloquear Guānghuī (3) y Shènglì (4)');
   assert.ok(mgr.isUnlocked('stage_3'));
   assert.ok(mgr.isUnlocked('stage_4'));
 
   // Test de persistencia
   const mgr2 = new OverworldManager();
-  assert.ok(mgr2.isCompleted('stage_1'), 'debe persistir Malkuth completada');
-  assert.ok(mgr2.isUnlocked('stage_3'), 'debe persistir Hod desbloqueada');
+  assert.ok(mgr2.isCompleted('stage_1'), 'debe persistir Wángguó completada');
+  assert.ok(mgr2.isUnlocked('stage_3'), 'debe persistir Guānghuī desbloqueada');
 });
 
 test('StageMode: acepta stageConfig personalizada y renderiza marca de agua fonética', () => {
-  const customConfig = OVERWORLD_GRAPH.stage_5; // Tiphereth
+  const customConfig = OVERWORLD_GRAPH.stage_5; // Měilì
   const stage = new StageMode(450, 800, customConfig);
   assert.equal(stage.stageKey, 'stage_5');
-  assert.equal(stage.stageName, 'Tiphereth');
-  assert.equal(stage.code, 'TIPHERETH');
-  assert.equal(stage.phonetic, 'TI-FEH-RET');
+  assert.equal(stage.stageName, 'Měilì');
+  assert.equal(stage.code, 'MEILI');
+  assert.equal(stage.phonetic, 'MĚI-LÌ');
   assert.equal(stage.gravityMultiplier, 1.08);
 
   // Verificar llamada segura a drawBackground sin fallos

@@ -1,25 +1,25 @@
 # 🏆 Modo Etapas (`StageMode`) — Documentación de Diseño e Implementación
 
-El **Modo Etapas** es una modalidad de juego estructurada y ascendente dentro de **QLIZE**, inspirada en la ascensión mística a través del **Árbol de la Vida** (*Sephiroth*), desde la base (*Malkuth*) hasta la cúspide sagrada (*Kether*).
+El **Modo Etapas** es una modalidad de juego estructurada y ascendente dentro de **QLIZE**, inspirada en la ascensión espiritual del **Tiāndào • Árbol de la Estructura**, recorriendo los **10 Reinos Celestiales** desde la base (*Wángguó*) hasta la cúspide sagrada (*Wángguān*).
 
 ---
 
-## 1. 🎯 Grafo de Progresión y Nomenclatura Fonética
+## 1. 🎯 Grafo de Progresión y Nomenclatura Fonética en Pinyin (Opción A)
 
-El Árbol de la Vida se estructura como un grafo celestial de **10 Sefirot** con nombres y pronunciaciones fonéticas en tipografía occidental Cyber-Zen:
+El Árbol de la Estructura cuenta con **10 Reinos** nombrados íntegramente en el **alfabeto fonético chino (Pinyin)**, libres de referencias cabalísticas / abrahámicas:
 
-| # | Sefirá (Nivel) | Código | Fonética | Etiqueta de Nodo | Título Oficial |
+| # | Reino Celestial (Nivel) | Código | Fonética Pinyin | Etiqueta de Nodo | Título y Significado en Español |
 | :-: | :--- | :--- | :--- | :---: | :--- |
-| **1** | **Malkuth** | `MALKUTH` | `MAL-KOOTH` | **MAL** | *El Reino (La Iniciación)* |
-| **2** | **Yesod** | `YESOD` | `YEH-SOD` | **YES** | *La Fundación (El Equilibrio)* |
-| **3** | **Hod** | `HOD` | `HOHD` | **HOD** | *El Esplendor (La Precisión)* |
-| **4** | **Netzach** | `NETZACH` | `NET-SAKH` | **NET** | *La Victoria (La Resistencia)* |
-| **5** | **Tiphereth** | `TIPHERETH` | `TI-FEH-RET` | **TIP** | *La Belleza (El Eje Central)* |
-| **6** | **Gevurah** | `GEVURAH` | `GEH-VOO-RAH` | **GEV** | *La Fuerza (El Rigor)* |
-| **7** | **Chesed** | `CHESED` | `KHEH-SED` | **CHE** | *La Misericordia (La Gracia)* |
-| **8** | **Binah** | `BINAH` | `BEE-NAH` | **BIN** | *El Entendimiento (La Estructura)* |
-| **9** | **Chokhmah** | `CHOKHMAH` | `KHOHKH-MAH` | **CHO** | *La Sabiduría (El Destello)* |
-| **10**| **Kether** | `KETHER` | `KEH-THER` | **KET** | *La Corona (El Vuelo Sagrado)* |
+| **1** | **Wángguó** | `WANGGUO` | `WÁNG-GUÓ` | **WAN** | *El Reino (La Iniciación)* |
+| **2** | **Jīchǔ** | `JICHU` | `JĪ-CHǓ` | **JIC** | *El Fundamento (El Equilibrio)* |
+| **3** | **Guānghuī** | `GUANGHUI` | `GUĀNG-HUĪ` | **GUA** | *El Esplendor (La Precisión)* |
+| **4** | **Shènglì** | `SHENGLI` | `SHÈNG-LÌ` | **SHE** | *La Victoria (La Perseverancia)* |
+| **5** | **Měilì** | `MEILI` | `MĚI-LÌ` | **MEI** | *La Armonía (El Eje Central)* |
+| **6** | **Lìliàng** | `LILIANG` | `LÌ-LIÀNG` | **LIL** | *La Fuerza (El Rigor)* |
+| **7** | **Réncí** | `RENCI` | `RÉN-CÍ` | **REN** | *La Benevolencia (La Gracia)* |
+| **8** | **Lǐjiě** | `LIJIE` | `LǏ-JIĚ` | **LIJ** | *El Entendimiento (La Estructura)* |
+| **9** | **Zhìhuì** | `ZHIHUI` | `ZHÌ-HUÌ` | **ZHI** | *La Sabiduría (El Destello)* |
+| **10**| **Wángguān** | `WANGGUAN` | `WÁNG-GUĀN` | **WAG** | *La Corona Suprema (El Vuelo Sagrado)* |
 
 ---
 

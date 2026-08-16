@@ -1,17 +1,17 @@
-// Metadatos del Árbol de la Luz y Árbol de la Sombra
-export const SEPHIROTH_NODES = [
-  { num: 10, name: 'Malkuth', title: 'Reino', color: '#ca8a04', glow: 'rgba(202, 138, 4, 0.5)', height: 0 },
-  { num: 9,  name: 'Yesod',   title: 'Fundación', color: '#9333ea', glow: 'rgba(147, 51, 234, 0.5)', height: 1600 },
-  { num: 8,  name: 'Hod',     title: 'Esplendor', color: '#ea580c', glow: 'rgba(234, 88, 12, 0.5)', height: 3200 },
-  { num: 7,  name: 'Netzach', title: 'Victoria', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)', height: 4800 },
-  { num: 6,  name: 'Tiphereth', title: 'Belleza', color: '#fbbf24', glow: 'rgba(251, 191, 36, 0.6)', height: 6600 },
-  { num: 5,  name: 'Geburah', title: 'Severidad', color: '#e11d48', glow: 'rgba(225, 29, 72, 0.5)', height: 8400 },
-  { num: 4,  name: 'Chesed',  title: 'Misericordia', color: '#2563eb', glow: 'rgba(37, 99, 235, 0.5)', height: 10200 },
-  { num: '•', name: 'Daath',   title: 'Conocimiento', color: '#a5f3fc', glow: 'rgba(165, 243, 252, 0.5)', height: 12000 },
-  { num: 3,  name: 'Binah',   title: 'Entendimiento', color: '#6366f1', glow: 'rgba(99, 102, 241, 0.5)', height: 13800 },
-  { num: 2,  name: 'Chokmah', title: 'Sabiduría', color: '#e2e8f0', glow: 'rgba(226, 232, 240, 0.5)', height: 15600 },
-  { num: 1,  name: 'Kether',  title: 'Corona', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)', height: 17600 }
+// Metadatos de los 10 Reinos Celestiales (Árbol de la Estructura / Tiāndào)
+export const REALM_NODES = [
+  { num: 1,  name: 'Wángguó',  title: 'El Reino', color: '#ca8a04', glow: 'rgba(202, 138, 4, 0.5)', height: 0 },
+  { num: 2,  name: 'Jīchǔ',    title: 'Fundamento', color: '#9333ea', glow: 'rgba(147, 51, 234, 0.5)', height: 1600 },
+  { num: 3,  name: 'Guānghuī', title: 'Esplendor', color: '#ea580c', glow: 'rgba(234, 88, 12, 0.5)', height: 3200 },
+  { num: 4,  name: 'Shènglì',  title: 'Victoria', color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)', height: 4800 },
+  { num: 5,  name: 'Měilì',    title: 'Armonía', color: '#fbbf24', glow: 'rgba(251, 191, 36, 0.6)', height: 6600 },
+  { num: 6,  name: 'Lìliàng',  title: 'Fuerza', color: '#e11d48', glow: 'rgba(225, 29, 72, 0.5)', height: 8400 },
+  { num: 7,  name: 'Réncí',    title: 'Benevolencia', color: '#2563eb', glow: 'rgba(37, 99, 235, 0.5)', height: 10200 },
+  { num: 8,  name: 'Lǐjiě',    title: 'Entendimiento', color: '#6366f1', glow: 'rgba(99, 102, 241, 0.5)', height: 13800 },
+  { num: 9,  name: 'Zhìhuì',   title: 'Sabiduría', color: '#e2e8f0', glow: 'rgba(226, 232, 240, 0.5)', height: 15600 },
+  { num: 10, name: 'Wángguān', title: 'Corona Suprema', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)', height: 17600 }
 ];
+export const SEPHIROTH_NODES = REALM_NODES;
 
 // Longitud total (en metros/píxeles) de la fase Entropía del Modo Arcade
 export const ENTROPY_LENGTH = 5000;
@@ -539,16 +539,16 @@ export class StageMode extends BaseMode {
       this.repeatCount = legacyRepeatCount;
       this.stageLength = segmentLength * this.repeatCount;
       this.stageKey = 'stage_1';
-      this.stageName = 'Malkuth';
-      this.code = 'MALKUTH';
-      this.phonetic = 'MAL-KOOTH';
-      this.stageTitle = 'El Reino';
+      this.stageName = 'Wángguó';
+      this.code = 'WANGGUO';
+      this.phonetic = 'WÁNG-GUÓ';
+      this.stageTitle = 'El Reino (La Iniciación)';
       this.gravityMultiplier = 1.0;
     } else {
       this.stageKey = stageConfig.key || 'stage_1';
-      this.stageName = stageConfig.name || 'Malkuth';
-      this.code = stageConfig.code || 'MALKUTH';
-      this.phonetic = stageConfig.phonetic || 'MAL-KOOTH';
+      this.stageName = stageConfig.name || 'Wángguó';
+      this.code = stageConfig.code || 'WANGGUO';
+      this.phonetic = stageConfig.phonetic || 'WÁNG-GUÓ';
       this.stageTitle = stageConfig.title || 'El Reino (La Iniciación)';
       this.stageLength = stageConfig.stageLength || 18000;
       this.gravityMultiplier = stageConfig.gravityMultiplier || 1.0;
