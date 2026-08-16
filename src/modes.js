@@ -205,6 +205,22 @@ export class ArcadeMode extends BaseMode {
     return this.phase === 'entropy' ? '#e11d48' : this.getCurrentRealm().color;
   }
 
+  onAllLivesLost(engine) {
+    // Transición a Entropía al perder todas las vidas
+    if (this.phase === 'structure') {
+      this.phase = 'entropy';
+      engine.player.gravityDirection = -1;
+      engine.lives = 3; // Restaurar vidas para la fase Entropía
+      engine.degradationLevel = 0;
+      engine.onLivesUpdate(engine.lives);
+      engine.respawnAtSafePlatform();
+    } else {
+      // Si ya estamos en Entropía, game over
+      engine.stop();
+      engine.onGameOver(engine.score, this.getCurrentRealm(), null);
+    }
+  }
+
   drawBackground(ctx, cameraY) {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);

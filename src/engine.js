@@ -261,8 +261,14 @@ export class Engine {
 
       this.triggerDegradation();
       if (this.lives <= 0) {
-        this.stop();
-        this.onGameOver(this.score, this.mode.getCurrentRealm(), this.mode.calculateMedal ? this.mode.calculateMedal(this.score) : null);
+        // Delegar al modo la decisión de qué hacer al perder todas las vidas
+        if (this.mode.onAllLivesLost) {
+          this.mode.onAllLivesLost(this);
+        } else {
+          // Comportamiento por defecto: game over
+          this.stop();
+          this.onGameOver(this.score, this.mode.getCurrentRealm(), this.mode.calculateMedal ? this.mode.calculateMedal(this.score) : null);
+        }
       }
     }
   }

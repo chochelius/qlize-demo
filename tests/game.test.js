@@ -189,19 +189,43 @@ function makeEngine() {
   return { e, player, mode };
 }
 
-test('Engine: caer fuera de pantalla sin vidas dispara onGameOver', () => {
+test('Engine: ArcadeMode transiciona a Entropía al perder todas las vidas', () => {
   const { e, player, mode } = makeEngine();
   let over = null;
   e.onGameOver = (score) => { over = score; };
 
-  // onGameOver se dispara desde update(), no desde triggerDegradation().
+  // Configurar estado inicial
+  e.lives = 1;                  // una sola vida restante
+  mode.lastSafePlatform = { x: 100, y: 300, width: 60, height: 16 };
+  player.y = 100000;            // fuera de pantalla (caída al abismo)
+  assert.equal(mode.phase, 'structure', 'debe empezar en fase structure');
+
+  e.update(0.016);
+  
+  // Verificar transición a Entropía
+  assert.equal(mode.phase, 'entropy', 'debe transicionar a entropy');
+  assert.equal(e.lives, 3, 'vidas deben restaurarse a 3');
+  assert.equal(player.gravityDirection, -1, 'gravedad debe invertirse');
+  assert.equal(e.degradationLevel, 0, 'degradación debe resetearse');
+  assert.equal(over, null, 'NO debe disparar onGameOver en transición');
+});
+
+test('Engine: ArcadeMode dispara onGameOver en Entropía al perder todas las vidas', () => {
+  const { e, player, mode } = makeEngine();
+  let over = null;
+  e.onGameOver = (score) => { over = score; };
+
+  // Configurar estado en fase Entropía
+  mode.phase = 'entropy';
   e.lives = 1;                  // una sola vida restante
   mode.lastSafePlatform = null; // sin respawn disponible
   player.y = 100000;            // fuera de pantalla (caída al abismo)
 
   e.update(0.016);
-  assert.equal(e.lives, 0);
-  assert.notEqual(over, null, 'onGameOver debe dispararse al agotar vidas');
+  
+  // Verificar game over
+  assert.equal(e.lives, 0, 'vidas deben llegar a 0');
+  assert.notEqual(over, null, 'onGameOver debe dispararse en Entropía');
 });
 
 test('Engine: triggerDegradation resta una vida y llama callbacks', () => {
