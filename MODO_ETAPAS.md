@@ -43,7 +43,7 @@ Cada uno de los 10 Reinos cuenta con **identidad cromática exclusiva**, **rasgo
 * Insignia del Reino con fonética Pinyin (`[REINO 01] WÁNG-GUÓ`).
 * **Insignia del Rasgo Mecánico Especial** coloreada según el tema del Reino.
 * **Indicador de Dificultad** con estrellas (`★☆☆☆☆` a `★★★★★★`).
-* Metadatos de **Distancia (18.000m)**, **Gravedad** y **Mejor Medalla** guardada en `localStorage`.
+* Metadatos de **Distancia (6.000m)**, **Gravedad** y **Mejor Medalla** guardada en `localStorage`.
 
 ---
 
@@ -51,7 +51,7 @@ Cada uno de los 10 Reinos cuenta con **identidad cromática exclusiva**, **rasgo
 
 | Altura Alcanzada | Porcentaje | Medalla | Título Oficial | Significado |
 | :--- | :---: | :---: | :--- | :--- |
-| **18.000 m (Cima)** | **100%** | 🥉 | **Medalla de Bronce** | *Cima Sagrada Conquistada* |
-| **$\ge$ 13.500 m** | **$\ge$ 75%** | 🥇 | **Medalla de Oro** | *Gran Resistencia (75%+)* |
-| **$\ge$ 9.000 m** | **$\ge$ 50%** | 🥈 | **Medalla de Plata** | *Resistencia Media (50%+)* |
-| **< 9.000 m** | **< 50%** | 🛡️ | **Sin Medalla** | *Sigue Intentándolo* |
+| **6.000 m (Cima)** | **100%** | 🥉 | **Medalla de Bronce** | *Cima Sagrada Conquistada* |
+| **$\ge$ 4.500 m** | **$\ge$ 75%** | 🥇 | **Medalla de Oro** | *Gran Resistencia (75%+)* |
+| **$\ge$ 3.000 m** | **$\ge$ 50%** | 🥈 | **Medalla de Plata** | *Resistencia Media (50%+)* |
+| **< 3.000 m** | **< 50%** | 🛡️ | **Sin Medalla** | *Sigue Intentándolo* |

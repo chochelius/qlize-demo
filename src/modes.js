@@ -567,7 +567,7 @@ export class StageMode extends BaseMode {
       this.code = stageConfig.code || 'WANGGUO';
       this.phonetic = stageConfig.phonetic || 'WÁNG-GUÓ';
       this.stageTitle = stageConfig.title || 'El Reino (La Iniciación)';
-      this.stageLength = stageConfig.stageLength || 18000;
+      this.stageLength = stageConfig.stageLength || 6000;
       this.gravityMultiplier = stageConfig.gravityMultiplier || 1.0;
       this.segmentLength = Math.floor(this.stageLength / 3);
       this.repeatCount = 3;
@@ -602,7 +602,7 @@ export class StageMode extends BaseMode {
     this.isSweepingCamera = true;
     this.sweepState = 'UP'; // 'UP' -> 'PAUSE' -> 'DOWN' -> fin de cinemática
     this.sweepY = 0;
-    this.sweepSpeed = 9000; // Rápido: ~2s para 18000px
+    this.sweepSpeed = 9000; // Rápido: ~0.7s para 6000px
     this.sweepTimer = 0;
     this.sweepComplete = false;
     this.stageComplete = false; // Detecta cuando el jugador llega a la cima

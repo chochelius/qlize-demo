@@ -19,7 +19,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★☆☆☆☆',
     x: 0.50,
     y: 0.88,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.00,
     connections: ['stage_2'],
     theme: {
@@ -54,7 +54,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★☆☆☆',
     x: 0.50,
     y: 0.76,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.03,
     connections: ['stage_3', 'stage_4'],
     theme: {
@@ -89,7 +89,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★☆☆☆',
     x: 0.28,
     y: 0.64,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.06,
     connections: ['stage_5'],
     theme: {
@@ -124,7 +124,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★★☆☆',
     x: 0.72,
     y: 0.64,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.08,
     connections: ['stage_5'],
     theme: {
@@ -159,7 +159,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★★☆☆',
     x: 0.50,
     y: 0.52,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.10,
     connections: ['stage_6', 'stage_7'],
     theme: {
@@ -194,7 +194,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★★★☆',
     x: 0.28,
     y: 0.40,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.14,
     connections: ['stage_8', 'stage_9'],
     theme: {
@@ -229,7 +229,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★★★☆',
     x: 0.72,
     y: 0.40,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.14,
     connections: ['stage_8', 'stage_9'],
     theme: {
@@ -264,7 +264,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★★★★',
     x: 0.28,
     y: 0.28,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.16,
     connections: ['stage_10'],
     theme: {
@@ -299,7 +299,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★★★★',
     x: 0.72,
     y: 0.28,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.18,
     connections: ['stage_10'],
     theme: {
@@ -334,7 +334,7 @@ export const OVERWORLD_GRAPH = {
     difficultyStars: '★★★★★★',
     x: 0.50,
     y: 0.14,
-    stageLength: 18000,
+    stageLength: 6000,
     gravityMultiplier: 1.20,
     connections: [],
     theme: {

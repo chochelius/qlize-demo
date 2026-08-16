@@ -408,6 +408,7 @@ test('Overworld: grafo contiene 10 Reinos con nomenclatura Pinyin y conexiones v
     assert.ok(node.name, `la etapa ${k} debe tener nombre Pinyin`);
     assert.ok(node.phonetic, `la etapa ${k} debe tener pronunciación fonética`);
     assert.ok(node.shortName, `la etapa ${k} debe tener nombre corto`);
+    assert.equal(node.stageLength, 6000, `la etapa ${k} debe medir 6000m`);
     node.connections.forEach(targetKey => {
       assert.ok(OVERWORLD_GRAPH[targetKey], `la conexión ${targetKey} desde ${k} debe existir en el grafo`);
     });
