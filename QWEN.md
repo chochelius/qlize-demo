@@ -20,7 +20,7 @@ Sin frameworks ni dependencias de runtime.
     la base del Árbol Invertido y luego **desciende** 5000m rebotando en la cara
     inferior de plataformas carmesí. Completar el descenso (o perder las vidas en
     Entropía) reinicia el ciclo en Estructura.
-  - **Etapas** (`StageMode`): 10 etapas de 18000m sobre el grafo del Árbol de la Vida
+  - **Etapas** (`StageMode`): 10 etapas de 6000m sobre el grafo del Árbol de la Vida
     (`OVERWORLD_GRAPH` en `src/overworld.js`, desbloqueo progresivo persistido en
     localStorage). Barrido de cámara inicial (UP → PAUSE → DOWN) que revela la Ruta
     de Constelación, 3 vidas y medallas: Bronce (cima 100%), Oro (≥75% en derrota),
@@ -38,7 +38,9 @@ Sin frameworks ni dependencias de runtime.
                       local/sistema (sin CDN): Cinzel/Trajan/Georgia y
                       Plus Jakarta Sans/system-ui.
     └── src/main.js → entrada: cableado UI ↔ motor, input (teclado/táctil/giroscopio
-        │             con permiso iOS), ajustes, navegación universal por teclado
+        │             con permiso iOS), ajustes, navegación universal por teclado y
+        │             botón atrás capturado vía History API (navigateBack: en partida
+        │             abre pausa; en menús sube un nivel; nunca abandona la página)
         ├── src/engine.js → Engine: game loop rAF, cámara, colisión bidireccional,
         │                   3 vidas + degradación visual (screen shake, destello
         │                   rojo, viñeta de niebla), partículas
@@ -95,7 +97,7 @@ funcional es manual en el navegador (checklist al final de este archivo).
 - Escudo: salva una caída, se consume y reduce la Sincronía a 70.
 - Arcade: transición a Entropía en `cameraY >= 5000`; descenso de 5000m para cerrar
   el ciclo.
-- Etapas: `stageLength = 18000` por etapa; `gravityMultiplier` 1.0 → 1.18 según
+- Etapas: `stageLength = 6000` por etapa; `gravityMultiplier` 1.0 → 1.20 según
   Sefirá; barrido a 9000 px/s; 3 vidas; cada error sube `degradationLevel`
   (niebla acumulativa, shake y destello).
 
@@ -127,3 +129,6 @@ funcional es manual en el navegador (checklist al final de este archivo).
    barra lateral de distancia avanza.
 8. Audio: los SFX respetan el volumen master y el mute; blip al saltar, sonido de
    daño al perder vida, arpegio en victoria (Bronce); cuenco tibetano al elegir etapa.
+9. Móvil (Android): el botón atrás nunca abandona la página — en partida abre el
+   menú de pausa; con pausa abierta reanuda; en Ajustes cierra; en Overworld vuelve
+   al menú principal; en Game Over sale al menú que corresponda. Escape hace lo mismo.

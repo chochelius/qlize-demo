@@ -3,6 +3,7 @@ import { Player } from './player.js';
 import { ArcadeMode, StageMode, TutorialMode, getTutorialStepData } from './modes.js';
 import { QlizeAudioManager } from './audio.js';
 import { OverworldManager, OVERWORLD_GRAPH } from './overworld.js';
+import { qa } from './qa.js';
 
 const audio = new QlizeAudioManager();
 const overworld = new OverworldManager();
@@ -24,11 +25,37 @@ const hasTouchscreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 const hasGyroscope = 'DeviceOrientationEvent' in window && isMobile;
 const isDesktop = !isMobile;
 
-console.log('🎮 Detección de dispositivo:');
+console.log('[QLIZE] Detección de dispositivo:');
 console.log('  - isMobile:', isMobile);
 console.log('  - hasTouchscreen:', hasTouchscreen);
 console.log('  - hasGyroscope:', hasGyroscope);
 console.log('  - isDesktop:', isDesktop);
+
+// Frases Místicas Aleatorias para la Pantalla de Inicio
+let cachedMysticPhrases = null;
+
+export async function updateMysticSubtitle() {
+  const subtitleEl = document.getElementById('game-subtitle');
+  if (!subtitleEl) return;
+
+  try {
+    if (!cachedMysticPhrases) {
+      const res = await fetch('/qlize-frases-misticas.json');
+      if (res.ok) {
+        cachedMysticPhrases = await res.json();
+      }
+    }
+    if (Array.isArray(cachedMysticPhrases) && cachedMysticPhrases.length > 0) {
+      const item = cachedMysticPhrases[Math.floor(Math.random() * cachedMysticPhrases.length)];
+      const rawPhrase = item.frase || item;
+      subtitleEl.innerText = rawPhrase.replace(/\.$/, '').toUpperCase();
+    }
+  } catch {
+    // Fallback silencioso
+  }
+}
+
+updateMysticSubtitle();
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -347,36 +374,36 @@ function updateSettingsUI() {
     controlKeyboard.disabled = false;
     controlKeyboard.style.opacity = '1';
     controlKeyboard.style.cursor = 'pointer';
-    controlKeyboard.textContent = '⌨️ Teclado';
+    controlKeyboard.innerHTML = '<span class="ming-icon">K</span> Teclado';
   } else {
     controlKeyboard.disabled = true;
     controlKeyboard.style.opacity = '0.4';
     controlKeyboard.style.cursor = 'not-allowed';
-    controlKeyboard.textContent = '⌨️ Teclado (No disponible)';
+    controlKeyboard.innerHTML = '<span class="ming-icon">K</span> Teclado (No disponible)';
   }
 
   if (isMobile || hasTouchscreen) {
     controlSwipe.disabled = false;
     controlSwipe.style.opacity = '1';
     controlSwipe.style.cursor = 'pointer';
-    controlSwipe.textContent = '👆 Swipe';
+    controlSwipe.innerHTML = '<span class="ming-icon">S</span> Swipe';
   } else {
     controlSwipe.disabled = true;
     controlSwipe.style.opacity = '0.4';
     controlSwipe.style.cursor = 'not-allowed';
-    controlSwipe.textContent = '👆 Swipe (No disponible)';
+    controlSwipe.innerHTML = '<span class="ming-icon">S</span> Swipe (No disponible)';
   }
 
   if (hasGyroscope) {
     controlGyro.disabled = false;
     controlGyro.style.opacity = '1';
     controlGyro.style.cursor = 'pointer';
-    controlGyro.textContent = '📱 Giroscopio';
+    controlGyro.innerHTML = '<span class="ming-icon">G</span> Giroscopio';
   } else {
     controlGyro.disabled = true;
     controlGyro.style.opacity = '0.4';
     controlGyro.style.cursor = 'not-allowed';
-    controlGyro.textContent = '📱 Giroscopio (No disponible)';
+    controlGyro.innerHTML = '<span class="ming-icon">G</span> Giroscopio (No disponible)';
   }
 
   updatePresetButtonsState();
@@ -534,6 +561,7 @@ function openOverworld() {
 function closeOverworld() {
   screenOverworld.classList.add('hidden');
   screenMenu.classList.remove('hidden');
+  updateMysticSubtitle();
   updateMenuSelection();
 }
 
@@ -598,7 +626,7 @@ function renderOverworld() {
       nodeBtn.innerHTML = `
         <span class="node-num">${node.id}</span>
         <span class="node-concept-label">${node.shortName}</span>
-        ${medal ? `<span class="node-medal-badge">${medal.icon || '🎖️'}</span>` : ''}
+        ${medal ? `<span class="node-medal-badge">${medal.icon || 'M'}</span>` : ''}
       `;
     } else if (isUnlocked) {
       nodeBtn.classList.add('node-active');
@@ -608,7 +636,7 @@ function renderOverworld() {
       `;
     } else {
       nodeBtn.classList.add('node-locked');
-      nodeBtn.innerHTML = `<span class="node-icon">🔒</span>`;
+      nodeBtn.innerHTML = `<span class="node-icon">C</span>`;
     }
 
     if (selectedStageKey === stageKey) {
@@ -752,6 +780,11 @@ function startGame(modeClass, customConfig = null) {
     }
   };
 
+  const modeName = modeClass === TutorialMode ? 'Iniciación' : (modeClass === StageMode ? 'Modo Historia' : 'Modo Arcade');
+  const stageName = modeClass === StageMode ? (customConfig || currentStageConfig)?.name || 'Wángguó' : 'N/A';
+
+  qa.logEvent('game_start', { mode: modeName, stage: stageName });
+
   engine.onGameOver = (score, realm, medal) => {
     if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
     if (medal && VICTORY_MEDALS.has(medal.name)) {
@@ -759,6 +792,16 @@ function startGame(modeClass, customConfig = null) {
     } else {
       audio.playLifeLost();
     }
+
+    const syncRatio = engine.mode?.getSynchronyRatio ? engine.mode.getSynchronyRatio() : 1.0;
+    qa.logEvent('game_over', {
+      mode: modeName,
+      stage: stageName,
+      score,
+      syncRatio,
+      lives: engine.lives,
+      medal: medal?.name || 'Sin Medalla'
+    });
 
     if (modeClass === StageMode && medal && STAGE_MEDALS.has(medal.name)) {
       overworld.completeStage(currentStageKey, score, medal);
@@ -804,6 +847,15 @@ function startGame(modeClass, customConfig = null) {
     if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
     audio.playVictory();
     
+    const syncRatio = engine.mode?.getSynchronyRatio ? engine.mode.getSynchronyRatio() : 1.0;
+    qa.logEvent('stage_complete', {
+      mode: 'Modo Historia',
+      stage: currentStageConfig?.name || 'Wángguó',
+      score,
+      syncRatio,
+      medal: medal?.name || 'Bronce'
+    });
+
     if (modeClass === StageMode) {
       overworld.completeStage(currentStageKey, score, medal);
     }
@@ -831,17 +883,36 @@ btnRestart.addEventListener('click', () => {
     startGame(currentModeClass);
   }
 });
+
 btnMenu.addEventListener('click', () => {
   audio.stopMusic();
   if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
   screenGameover.classList.add('hidden');
-  
-  if (currentModeClass === StageMode) {
-    openOverworld();
+
+  const executeExit = () => {
+    if (currentModeClass === StageMode) {
+      openOverworld();
+    } else {
+      screenMenu.classList.remove('hidden');
+      updateMysticSubtitle();
+    }
+    hud.classList.add('hidden');
+  };
+
+  if (qa.isEnabled() && (currentModeClass === StageMode || currentModeClass === ArcadeMode)) {
+    const curStage = currentModeClass === StageMode ? (currentStageConfig?.name || 'Wángguó') : 'Infinito';
+    const curMode = currentModeClass === StageMode ? 'Modo Historia' : 'Modo Arcade';
+    const syncRatio = engine.mode?.getSynchronyRatio ? engine.mode.getSynchronyRatio() : 1.0;
+    qa.showFeedbackPrompt({
+      mode: curMode,
+      stage: curStage,
+      score: engine.score || 0,
+      syncRatio,
+      onComplete: executeExit
+    });
   } else {
-    screenMenu.classList.remove('hidden');
+    executeExit();
   }
-  hud.classList.add('hidden');
 });
 
 if (btnOverworldBack) {
@@ -880,10 +951,29 @@ function exitToMenu() {
   input.left = false;
   input.right = false;
   input.axis = 0;
-  if (currentModeClass === StageMode) {
-    openOverworld();
+
+  const executeExit = () => {
+    if (currentModeClass === StageMode) {
+      openOverworld();
+    } else {
+      screenMenu.classList.remove('hidden');
+      updateMysticSubtitle();
+    }
+  };
+
+  if (qa.isEnabled() && (currentModeClass === StageMode || currentModeClass === ArcadeMode) && engine.score > 100) {
+    const curStage = currentModeClass === StageMode ? (currentStageConfig?.name || 'Wángguó') : 'Infinito';
+    const curMode = currentModeClass === StageMode ? 'Modo Historia' : 'Modo Arcade';
+    const syncRatio = engine.mode?.getSynchronyRatio ? engine.mode.getSynchronyRatio() : 1.0;
+    qa.showFeedbackPrompt({
+      mode: curMode,
+      stage: curStage,
+      score: engine.score || 0,
+      syncRatio,
+      onComplete: executeExit
+    });
   } else {
-    screenMenu.classList.remove('hidden');
+    executeExit();
   }
 }
 
@@ -902,10 +992,6 @@ btnPauseSettings.addEventListener('click', () => {
 });
 btnPauseMenu.addEventListener('click', exitToMenu);
 
-// (Los listeners de btnSettingsToggle y btnSettingsX ya están registrados
-// junto al resto del cableado de ajustes más arriba; duplicarlos hacía que
-// cada click disparase la acción dos veces)
-
 if (btnExitGame) {
   btnExitGame.addEventListener('click', () => {
     saveSettings();
@@ -913,6 +999,78 @@ if (btnExitGame) {
     exitToMenu();
   });
 }
+
+// Cableado de Botones de Modal QA Feedback
+document.querySelectorAll('.qa-star-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const val = parseInt(btn.getAttribute('data-val') || '5', 10);
+    qa.updateRatingUI(val);
+  });
+});
+
+const btnQaSubmit = document.getElementById('btn-qa-submit');
+const btnQaOmit = document.getElementById('btn-qa-omit');
+const btnQaSuppress = document.getElementById('btn-qa-suppress');
+const qaCommentInput = document.getElementById('qa-feedback-comment');
+
+if (btnQaSubmit) {
+  btnQaSubmit.addEventListener('click', () => {
+    qa.submitFeedback(qaCommentInput ? qaCommentInput.value : '');
+  });
+}
+if (btnQaOmit) {
+  btnQaOmit.addEventListener('click', () => {
+    qa.omitFeedback();
+  });
+}
+if (btnQaSuppress) {
+  btnQaSuppress.addEventListener('click', () => {
+    qa.suppressSessionFeedback();
+  });
+}
+
+// ---------------------------------------------------------
+// Botón "Atrás" del Sistema (Android / gestos de retroceso)
+// ---------------------------------------------------------
+// Se captura el botón atrás del navegador para que nunca abandone la
+// página: en partida abre el menú de pausa y en cada menú sube un nivel
+// (Ajustes → cerrar · Overworld → menú principal · Pausa → reanudar ·
+// Game Over → menú que corresponda). En el menú principal no hay nivel
+// superior, así que simplemente se retiene la navegación.
+// Mecanismo: una entrada de historial centinela que se repone en cada
+// popstate, de modo que toda pulsación de "atrás" queda interceptada.
+function navigateBack() {
+  if (!screenSettings.classList.contains('hidden')) {
+    saveSettings();
+    screenSettings.classList.add('hidden');
+    return;
+  }
+  if (!screenOverworld.classList.contains('hidden')) {
+    closeOverworld();
+    return;
+  }
+  if (!screenPause.classList.contains('hidden')) {
+    resumeGame();
+    return;
+  }
+  if (!screenGameover.classList.contains('hidden')) {
+    btnMenu.click();
+    return;
+  }
+  if (engine.isRunning) {
+    openPauseMenu();
+  }
+}
+
+function armBackGuard() {
+  history.pushState({ qlize: 'back-guard' }, '');
+}
+
+armBackGuard();
+window.addEventListener('popstate', () => {
+  navigateBack();
+  armBackGuard();
+});
 
 // ---------------------------------------------------------
 // Navegación Universal por Teclado (Cyber-Zen Octogonal)
@@ -949,24 +1107,11 @@ window.addEventListener('mousemove', () => {
 });
 
 window.addEventListener('keydown', (e) => {
-  // 1. Manejo de Escape
+  // 1. Manejo de Escape: comparte jerarquía con el botón atrás del sistema
+  //    (navigateBack decide el nivel superior según la pantalla activa)
   if (e.code === 'Escape') {
-    if (!screenSettings.classList.contains('hidden')) {
-      screenSettings.classList.add('hidden');
-      return;
-    }
-    if (!screenOverworld.classList.contains('hidden')) {
-      closeOverworld();
-      return;
-    }
-    if (!screenPause.classList.contains('hidden')) {
-      resumeGame();
-      return;
-    }
-    if (engine.isRunning) {
-      openPauseMenu();
-      return;
-    }
+    navigateBack();
+    return;
   }
 
   // 2. Navegación en Pantalla de Overworld (El Árbol de la Vida)

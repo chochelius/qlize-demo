@@ -408,6 +408,7 @@ test('Overworld: grafo contiene 10 Reinos con nomenclatura Pinyin y conexiones v
     assert.ok(node.name, `la etapa ${k} debe tener nombre Pinyin`);
     assert.ok(node.phonetic, `la etapa ${k} debe tener pronunciación fonética`);
     assert.ok(node.shortName, `la etapa ${k} debe tener nombre corto`);
+    assert.equal(node.stageLength, 6000, `la etapa ${k} debe medir 6000m`);
     node.connections.forEach(targetKey => {
       assert.ok(OVERWORLD_GRAPH[targetKey], `la conexión ${targetKey} desde ${k} debe existir en el grafo`);
     });
@@ -430,7 +431,7 @@ test('OverworldManager: desbloqueo progresivo y registro de medallas', () => {
   assert.equal(mgr.getCompletedCount(), 0);
 
   // Completar etapa 1 (Wángguó)
-  const newlyUnlocked = mgr.completeStage('stage_1', 18000, { name: 'Bronce', icon: '🥉' });
+  const newlyUnlocked = mgr.completeStage('stage_1', 18000, { name: 'Bronce', icon: '✠' });
   assert.deepEqual(newlyUnlocked, ['stage_2'], 'debe desbloquear Jīchǔ al superar Wángguó');
   assert.ok(mgr.isCompleted('stage_1'), 'Wángguó debe figurar como completada');
   assert.ok(mgr.isUnlocked('stage_2'), 'Jīchǔ debe estar ahora desbloqueado');
@@ -438,7 +439,7 @@ test('OverworldManager: desbloqueo progresivo y registro de medallas', () => {
   assert.equal(mgr.getMedal('stage_1').name, 'Bronce');
 
   // Completar etapa 2 (Jīchǔ) -> bifurcación hacia Guānghuī y Shènglì
-  const unlock2 = mgr.completeStage('stage_2', 15000, { name: 'Oro', icon: '🥇' });
+  const unlock2 = mgr.completeStage('stage_2', 15000, { name: 'Oro', icon: '✠' });
   assert.deepEqual(unlock2, ['stage_3', 'stage_4'], 'debe desbloquear Guānghuī (3) y Shènglì (4)');
   assert.ok(mgr.isUnlocked('stage_3'));
   assert.ok(mgr.isUnlocked('stage_4'));
@@ -456,7 +457,7 @@ test('StageMode: acepta stageConfig personalizada y renderiza marca de agua fon�
   assert.equal(stage.stageName, 'Měilì');
   assert.equal(stage.code, 'MEILI');
   assert.equal(stage.phonetic, 'MĚI-LÌ');
-  assert.equal(stage.gravityMultiplier, 1.10);
+  assert.equal(stage.gravityMultiplier, 1.07);
   assert.ok(stage.tuning.movingRatio > 0, 'debe tener plataformas móviles');
 
   // Verificar llamada segura a drawBackground sin fallos
@@ -622,7 +623,7 @@ test('OverworldManager: persiste el mejor puntaje por etapa', () => {
   };
 
   const mgr = new OverworldManager();
-  mgr.completeStage('stage_1', 12000, { name: 'Oro', icon: '🥇' });
+  mgr.completeStage('stage_1', 12000, { name: 'Oro', icon: '✠' });
   assert.equal(mgr.getBestScore('stage_1'), 12000);
 
   // Un puntaje menor no debe reemplazar al mejor
@@ -630,7 +631,7 @@ test('OverworldManager: persiste el mejor puntaje por etapa', () => {
   assert.equal(mgr.getBestScore('stage_1'), 12000);
 
   // Uno mayor sí lo reemplaza
-  mgr.completeStage('stage_1', 15500, { name: 'Bronce', icon: '🥉' });
+  mgr.completeStage('stage_1', 15500, { name: 'Bronce', icon: '✠' });
   assert.equal(mgr.getBestScore('stage_1'), 15500);
 
   // Persistencia entre instancias

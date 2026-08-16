@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>QLIZE | Cyber-Zen Vectorial</title>
   
   <!-- Favicons Autocontenidos (Sin Recursos Externos) -->
@@ -10,11 +10,30 @@
   <link rel="manifest" href="/site.webmanifest" />
   
   <style>
+    @font-face {
+      font-family: 'League Spartan';
+      src: url('/league-spartan-master/webfonts/leaguespartan-bold.woff2') format('woff2'),
+           url('/league-spartan-master/webfonts/leaguespartan-bold.woff') format('woff'),
+           url('/league-spartan-master/webfonts/leaguespartan-bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Ming Imperial';
+      src: url('/MingImperial-5308.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       /* Tipografía Autocontenida (Zero Redes / CDNs Externas) */
-      --font-serif: 'Cinzel', 'Trajan Pro', 'Georgia', 'Times New Roman', serif;
+      --font-serif: 'League Spartan', 'Plus Jakarta Sans', system-ui, sans-serif;
       --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+      --font-ming: 'Ming Imperial', var(--font-serif);
 
       /* Fondo Base Universal (Cyber-Zen OLED) */
       --bg-deep-space: #02040a;      /* Negro espacial ultra-profundo */
@@ -81,11 +100,95 @@
       overflow: hidden;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
+      body, html {
+        align-items: stretch;
+      }
       #game-container {
+        aspect-ratio: unset;
+        width: 100vw;
+        height: 100%;
+        height: 100dvh;
+        max-width: 100vw;
+        max-height: 100dvh;
+        border: none;
         border-radius: 0;
-        border-left: none;
-        border-right: none;
+        box-shadow: none;
+      }
+
+      .game-title {
+        font-size: 2.8rem;
+        letter-spacing: 7px;
+      }
+      .subtitle {
+        font-size: 0.8rem;
+        letter-spacing: 5px;
+        margin-bottom: 28px;
+      }
+      .btn-octagonal {
+        max-width: 100%;
+        width: 90vw;
+        padding: 16px 20px;
+        margin: 9px 0;
+      }
+      .btn-icon-oct {
+        width: 44px;
+        height: 44px;
+        font-size: 1.35rem;
+      }
+      .btn-content h3 {
+        font-size: 1.12rem;
+      }
+      .btn-content p {
+        font-size: 0.82rem;
+      }
+
+      #screen-settings {
+        padding: 24px 18px;
+      }
+      #screen-settings h2 {
+        font-size: 1.5rem;
+      }
+      .setting-header span {
+        font-size: 0.92rem;
+      }
+      .setting-val {
+        font-size: 0.92rem;
+      }
+      .preset-btn {
+        font-size: 0.85rem;
+        padding: 10px 0;
+      }
+      .control-mode-btn {
+        font-size: 0.88rem;
+        padding: 12px 6px;
+      }
+
+      .overworld-node {
+        width: 58px;
+        height: 58px;
+      }
+      .overworld-node .node-num {
+        font-size: 0.95rem;
+      }
+      .overworld-node .node-phonetic {
+        font-size: 0.62rem;
+      }
+      .overworld-stage-card {
+        width: 92vw;
+        max-width: 420px;
+        bottom: 16px;
+        padding: 16px 18px;
+      }
+      .card-stage-title {
+        font-size: 1.1rem;
+      }
+      .card-stage-desc {
+        font-size: 0.82rem;
+      }
+      .btn-start-stage {
+        padding: 13px;
+        font-size: 0.92rem;
       }
     }
 
@@ -196,14 +299,19 @@
     }
 
     .subtitle {
-      font-size: 0.72rem;
-      letter-spacing: 6px;
+      font-size: 0.70rem;
+      letter-spacing: 3.5px;
+      line-height: 1.4;
       color: var(--color-gold);
       text-transform: uppercase;
-      margin-top: 4px;
-      margin-bottom: 24px;
+      margin-top: 6px;
+      margin-bottom: 22px;
       font-weight: 300;
       opacity: 0.9;
+      max-width: 330px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     /* ---------------------------------------------------------
@@ -248,6 +356,11 @@
       transition: all 0.25s ease;
     }
 
+    .ming-icon {
+      font-family: var(--font-ming) !important;
+      font-style: normal;
+    }
+
     .btn-icon-oct {
       width: 38px;
       height: 38px;
@@ -260,7 +373,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
+      font-family: var(--font-ming);
+      font-size: 1.45rem;
       flex-shrink: 0;
       background: rgba(245, 245, 247, 0.08);
       color: var(--color-ivory);
@@ -910,8 +1024,9 @@
       color: #64748b;
     }
     .overworld-node.node-locked .node-icon {
-      font-size: 0.9rem;
-      opacity: 0.6;
+      font-family: var(--font-ming);
+      font-size: 1.1rem;
+      opacity: 0.7;
     }
 
     /* Estado 2: Activo / Desbloqueado (El Sendero) */
@@ -980,7 +1095,10 @@
       position: absolute;
       top: -6px;
       right: -6px;
-      font-size: 0.85rem;
+      font-family: var(--font-ming);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--color-gold);
       filter: drop-shadow(0 0 6px rgba(226, 177, 60, 0.8));
     }
 
@@ -1235,7 +1353,10 @@
       letter-spacing: 3px; font-family: var(--font-serif);
     }
     .medal-badge {
-      font-size: 2.8rem; margin: 8px 0 2px 0;
+      font-family: var(--font-ming);
+      font-size: 3.2rem;
+      margin: 8px 0 2px 0;
+      color: var(--color-gold);
       filter: drop-shadow(0 0 16px rgba(226, 177, 60, 0.5));
     }
     .medal-title { font-size: 0.9rem; color: var(--color-gold); font-weight: 600; margin-bottom: 12px; letter-spacing: 1px; }
@@ -1244,6 +1365,88 @@
     .gameover-score {
       font-size: 2.8rem; font-weight: 800; font-family: var(--font-mono);
       color: var(--color-sky); text-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
+    }
+
+    /* ---------------------------------------------------------
+       Modal QA Feedback
+       --------------------------------------------------------- */
+    .qa-badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 2px 8px;
+      display: inline-block;
+      letter-spacing: 1.5px;
+      clip-path: polygon(4px 0%, calc(100% - 4px) 0%, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0% calc(100% - 4px), 0% 4px);
+    }
+    .qa-stars-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    .qa-star-btn {
+      width: 44px;
+      height: 44px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(245, 245, 247, 0.2);
+      font-family: var(--font-ming);
+      font-size: 1.6rem;
+      color: var(--color-gold);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      filter: grayscale(1) opacity(0.35);
+    }
+    .qa-star-btn.active {
+      filter: grayscale(0) opacity(1);
+      border-color: var(--color-gold);
+      background: rgba(226, 177, 60, 0.15);
+      box-shadow: 0 0 12px rgba(226, 177, 60, 0.3);
+      transform: scale(1.06);
+    }
+    .qa-comment-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(245, 245, 247, 0.2);
+      color: var(--color-ivory);
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      padding: 10px 12px;
+      border-radius: 4px;
+      resize: none;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .qa-comment-input:focus {
+      border-color: var(--color-sky);
+      box-shadow: 0 0 10px rgba(100, 181, 246, 0.3);
+    }
+    .qa-suppress-link {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 12px;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: all 0.2s ease;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      display: inline-block;
+    }
+    .qa-suppress-link:hover {
+      color: var(--color-gold);
     }
   </style>
 </head>
@@ -1324,11 +1527,11 @@
           </div>
 
           <h1 class="game-title">QLIZE</h1>
-          <div class="subtitle">MISTICISMO VECTORIAL</div>
+          <div class="subtitle" id="game-subtitle">MISTICISMO VECTORIAL</div>
 
           <!-- Botonera Central Octogonal -->
           <button id="btn-arcade" class="btn-octagonal">
-            <div class="btn-icon-oct" aria-hidden="true">✨</div>
+            <div class="btn-icon-oct" aria-hidden="true">D</div>
             <div class="btn-content">
               <h3>MODO ARCADE</h3>
               <p>Ascenso Continuo • Estructura & Entropía</p>
@@ -1336,15 +1539,15 @@
           </button>
 
           <button id="btn-stage" class="btn-octagonal">
-            <div class="btn-icon-oct" aria-hidden="true">🏆</div>
+            <div class="btn-icon-oct" aria-hidden="true">T</div>
             <div class="btn-content">
-              <h3>MODO ETAPAS</h3>
-              <p>Ruta de Constelación • 3 Tramos & Medallas</p>
+              <h3>MODO HISTORIA</h3>
+              <p>Ruta de Constelación • 10 Reinos & Medallas</p>
             </div>
           </button>
 
           <button id="btn-tutorial" class="btn-octagonal">
-            <div class="btn-icon-oct" aria-hidden="true">⛩️</div>
+            <div class="btn-icon-oct" aria-hidden="true">I</div>
             <div class="btn-content">
               <h3>INICIACIÓN</h3>
               <p>Tutorial Guiado • Domina las Físicas</p>
@@ -1421,26 +1624,27 @@
           <div class="pause-actions">
             <button id="btn-pause-resume" class="btn-pause-opt btn-pause-resume">REANUDAR</button>
             <button id="btn-pause-restart" class="btn-pause-opt btn-pause-restart">REINICIAR</button>
-            <button id="btn-pause-settings" class="btn-pause-opt btn-pause-settings">AJUSTES DE FÍSICA</button>
+            <button id="btn-pause-settings" class="btn-pause-opt btn-pause-settings">OPCIONES</button>
             <button id="btn-pause-menu" class="btn-pause-menu-link">MENÚ PRINCIPAL</button>
           </div>
         </div>
       </div>
 
-      <!-- Pantalla de Calibración de Físicas -->
+      <!-- Pantalla de Opciones -->
       <div id="screen-settings" class="screen hidden">
         <button id="btn-settings-x" class="settings-close-x" title="Cerrar" aria-label="Cerrar configuración">✕</button>
-        <h2>CALIBRACIÓN DE FÍSICAS</h2>
-        
-        <div class="presets-container">
-          <div class="presets-label">Perfiles Octogonales</div>
-          <div class="presets-grid">
-            <button id="preset-soft" class="preset-btn">SUAVE</button>
-            <button id="preset-balanced" class="preset-btn active">EQUILIBRADO</button>
-            <button id="preset-fast" class="preset-btn">ÁGIL</button>
+        <h2>OPCIONES</h2>
+
+        <!-- 1. Sonido y Música -->
+        <div class="setting-group">
+          <div class="setting-header">
+            <span>Volumen de Música</span>
+            <span id="val-music-volume" class="setting-val">65%</span>
           </div>
+          <input type="range" id="slider-music-volume" class="setting-slider" min="0" max="100" step="5" value="65" />
         </div>
 
+        <!-- 2. Esquema de Control y Sensibilidades -->
         <div class="setting-group">
           <div class="setting-header">
             <span>Modo de Control</span>
@@ -1454,10 +1658,28 @@
 
         <div class="setting-group">
           <div class="setting-header">
-            <span>Volumen de Música</span>
-            <span id="val-music-volume" class="setting-val">65%</span>
+            <span>Sensibilidad de Deslizamiento</span>
+            <span id="val-swipe-sens" class="setting-val">1.0x</span>
           </div>
-          <input type="range" id="slider-music-volume" class="setting-slider" min="0" max="100" step="5" value="65" />
+          <input type="range" id="slider-swipe-sens" class="setting-slider" min="0.3" max="2.5" step="0.1" value="1.0" />
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-header">
+            <span>Sensibilidad Giroscopio</span>
+            <span id="val-gyro-sens" class="setting-val">20°</span>
+          </div>
+          <input type="range" id="slider-gyro-sens" class="setting-slider" min="8" max="35" step="1" value="20" />
+        </div>
+
+        <!-- 3. Físicas y Calibración del Salto -->
+        <div class="presets-container">
+          <div class="presets-label">Perfiles de Movimiento</div>
+          <div class="presets-grid">
+            <button id="preset-soft" class="preset-btn">SUAVE</button>
+            <button id="preset-balanced" class="preset-btn active">EQUILIBRADO</button>
+            <button id="preset-fast" class="preset-btn">ÁGIL</button>
+          </div>
         </div>
 
         <div class="setting-group">
@@ -1466,14 +1688,6 @@
             <span id="val-acceleration" class="setting-val">1400</span>
           </div>
           <input type="range" id="slider-acceleration" class="setting-slider" min="600" max="2600" step="50" value="1400" />
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-header">
-            <span>Sensibilidad de Deslizamiento</span>
-            <span id="val-swipe-sens" class="setting-val">1.0x</span>
-          </div>
-          <input type="range" id="slider-swipe-sens" class="setting-slider" min="0.3" max="2.5" step="0.1" value="1.0" />
         </div>
 
         <div class="setting-group">
@@ -1492,14 +1706,6 @@
           <input type="range" id="slider-max-speed" class="setting-slider" min="200" max="500" step="10" value="340" />
         </div>
 
-        <div class="setting-group">
-          <div class="setting-header">
-            <span>Sensibilidad Giroscopio</span>
-            <span id="val-gyro-sens" class="setting-val">20°</span>
-          </div>
-          <input type="range" id="slider-gyro-sens" class="setting-slider" min="8" max="35" step="1" value="20" />
-        </div>
-
         <div class="settings-actions">
           <button id="btn-settings-reset" class="btn-action-oct btn-action-sec">RESTABLECER</button>
           <button id="btn-settings-close" class="btn-action-oct btn-action-pri">VOLVER</button>
@@ -1510,7 +1716,7 @@
       <div id="screen-gameover" class="screen hidden">
         <div class="pause-oct-container" style="border-color: rgba(245, 245, 247, 0.4);">
           <h2 id="gameover-title" class="pause-title">RECORRIDO TERMINADO</h2>
-          <div id="medal-icon" class="medal-badge hidden" aria-hidden="true">🥉</div>
+          <div id="medal-icon" class="medal-badge hidden" aria-hidden="true">✠</div>
           <div id="medal-title" class="medal-title hidden">Medalla de Bronce</div>
           
           <div class="gameover-score-container">
@@ -1520,6 +1726,40 @@
 
           <button id="btn-restart" class="btn-pause-opt btn-pause-resume" style="margin-bottom: 8px;">REINTENTAR</button>
           <button id="btn-menu" class="btn-pause-menu-link">VOLVER AL MENÚ</button>
+        </div>
+      </div>
+
+      <!-- Modal QA Feedback de Jugabilidad (1 al 5 S + Opinión) -->
+      <div id="modal-qa-feedback" class="screen hidden" style="z-index: 50;">
+        <div class="pause-oct-container" style="max-width: 380px; width: 92%; padding: 24px 20px;">
+          <div class="qa-badge">MODO QA ACTIVO</div>
+          <h2 class="pause-title" style="font-size: 1.25rem; margin-top: 6px;">¿QUÉ TAL LA EXPERIENCIA?</h2>
+          <div id="qa-feedback-context" style="font-size: 0.72rem; color: #94a3b8; letter-spacing: 1px; margin-bottom: 16px;">
+            Modo Historia • Wángguó
+          </div>
+
+          <!-- Selector de Estrellas 1 a 5 -->
+          <div class="qa-stars-container">
+            <button class="qa-star-btn active" data-val="1" type="button" aria-label="1 estrella">S</button>
+            <button class="qa-star-btn active" data-val="2" type="button" aria-label="2 estrellas">S</button>
+            <button class="qa-star-btn active" data-val="3" type="button" aria-label="3 estrellas">S</button>
+            <button class="qa-star-btn active" data-val="4" type="button" aria-label="4 estrellas">S</button>
+            <button class="qa-star-btn active" data-val="5" type="button" aria-label="5 estrellas">S</button>
+          </div>
+          <div id="qa-rating-label" style="font-size: 0.78rem; color: var(--color-gold); font-weight: 600; margin: 8px 0 14px 0;">
+            5 / 5 — ¡Excelente!
+          </div>
+
+          <!-- Campo de Opinión / Comentarios -->
+          <textarea id="qa-feedback-comment" class="qa-comment-input" rows="3" placeholder="Deja tus sensaciones sobre la dificultad, física o música (opcional)..." maxlength="500"></textarea>
+
+          <div style="display: flex; gap: 8px; width: 100%; margin-top: 14px;">
+            <button id="btn-qa-omit" class="btn-action-oct btn-action-sec" style="flex: 1; padding: 10px 6px; font-size: 0.76rem;">OMITIR</button>
+            <button id="btn-qa-submit" class="btn-action-oct btn-action-pri" style="flex: 1.4; padding: 10px 8px; font-size: 0.78rem;">ENVIAR OPINIÓN</button>
+          </div>
+          <div>
+            <button id="btn-qa-suppress" class="qa-suppress-link" type="button">No volver a preguntar en esta sesión</button>
+          </div>
         </div>
       </div>
     </div>

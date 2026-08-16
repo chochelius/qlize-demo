@@ -166,7 +166,7 @@ export class BaseMode {
 }
 
 // ---------------------------------------------------------
-// 🌌 Modo Arcade (Juego Continuo con Transición a Entropía Invertida)
+// Modo Arcade (Juego Continuo con Transición a Entropía Invertida)
 // ---------------------------------------------------------
 export class ArcadeMode extends BaseMode {
   constructor(width, height) {
@@ -483,26 +483,35 @@ export class ArcadeMode extends BaseMode {
       ctx.restore();
 
       // Hilo Continuo y Vibrante de Luz Punteada Dorada y Blanca (Sendero de Adherencia)
-      // Recortado a la ventana visible: la lista viene ordenada de abajo hacia
-      // arriba, así que se puede cortar en cuanto se pasa el borde superior
+      // Normalizado con doble trazo de glow emulado (sin shadowBlur) y culling de viewport
       const hiloTop = -cameraY - 300;
       const hiloBottom = -cameraY + this.height + 300;
-      ctx.strokeStyle = 'rgba(226, 177, 60, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
       const optimalPlatforms = this.getOptimalPlatforms();
-      for (let i = 0; i < optimalPlatforms.length - 1; i++) {
-        const p1 = optimalPlatforms[i];
-        const p2 = optimalPlatforms[i + 1];
-        if (p1.y < hiloTop && p2.y < hiloTop) break;
-        if (p1.y > hiloBottom && p2.y > hiloBottom) continue;
-        if (Math.abs(p1.y - p2.y) < 220) {
-          ctx.moveTo(p1.x + p1.width / 2, p1.y);
-          ctx.lineTo(p2.x + p2.width / 2, p2.y);
+
+      const trazarHiloArcade = () => {
+        ctx.beginPath();
+        for (let i = 0; i < optimalPlatforms.length - 1; i++) {
+          const p1 = optimalPlatforms[i];
+          const p2 = optimalPlatforms[i + 1];
+          if (p1.y < hiloTop && p2.y < hiloTop) break;
+          if (p1.y > hiloBottom && p2.y > hiloBottom) continue;
+          if (Math.abs(p1.y - p2.y) < 220) {
+            ctx.moveTo(p1.x + p1.width / 2, p1.y);
+            ctx.lineTo(p2.x + p2.width / 2, p2.y);
+          }
         }
-      }
-      ctx.stroke();
+        ctx.stroke();
+      };
+
+      ctx.setLineDash([4, 4]);
+      // Pasada de glow: trazo ancho translúcido
+      ctx.strokeStyle = 'rgba(226, 177, 60, 0.2)';
+      ctx.lineWidth = 5;
+      trazarHiloArcade();
+      // Pasada de núcleo: trazo fino brillante
+      ctx.strokeStyle = 'rgba(226, 177, 60, 0.65)';
+      ctx.lineWidth = 2;
+      trazarHiloArcade();
       ctx.setLineDash([]);
     } else {
       // Árbol de la Sombra: Negro Espacial Ultra Profundo con Fuegos Góticos Carmesí y Púrpura
@@ -532,7 +541,7 @@ export class ArcadeMode extends BaseMode {
 }
 
 // ---------------------------------------------------------
-// 🏆 Modo Etapas (Por Niveles con Barrido Inicial y Medallas)
+// Modo Etapas (Por Niveles con Barrido Inicial y Medallas)
 // ---------------------------------------------------------
 export class StageMode extends BaseMode {
   constructor(width, height, stageConfig = {}, legacyRepeatCount = 3) {
@@ -567,7 +576,7 @@ export class StageMode extends BaseMode {
       this.code = stageConfig.code || 'WANGGUO';
       this.phonetic = stageConfig.phonetic || 'WÁNG-GUÓ';
       this.stageTitle = stageConfig.title || 'El Reino (La Iniciación)';
-      this.stageLength = stageConfig.stageLength || 18000;
+      this.stageLength = stageConfig.stageLength || 6000;
       this.gravityMultiplier = stageConfig.gravityMultiplier || 1.0;
       this.segmentLength = Math.floor(this.stageLength / 3);
       this.repeatCount = 3;
@@ -602,7 +611,7 @@ export class StageMode extends BaseMode {
     this.isSweepingCamera = true;
     this.sweepState = 'UP'; // 'UP' -> 'PAUSE' -> 'DOWN' -> fin de cinemática
     this.sweepY = 0;
-    this.sweepSpeed = 9000; // Rápido: ~2s para 18000px
+    this.sweepSpeed = 9000; // Rápido: ~0.7s para 6000px
     this.sweepTimer = 0;
     this.sweepComplete = false;
     this.stageComplete = false; // Detecta cuando el jugador llega a la cima
@@ -804,10 +813,10 @@ export class StageMode extends BaseMode {
 
   calculateMedal(reachedDistance) {
     const percent = (reachedDistance / this.stageLength) * 100;
-    if (percent >= 100) return { name: 'Bronce', icon: '🥉', title: 'Cima Alcanzada (Templanza)' };
-    if (percent >= 75) return { name: 'Oro', icon: '🥇', title: 'Gran Resistencia (75%+)' };
-    if (percent >= 50) return { name: 'Plata', icon: '🥈', title: 'Resistencia Media (50%+)' };
-    return { name: 'Sin Medalla', icon: '🛡️', title: 'Sigue Intentándolo' };
+    if (percent >= 100) return { name: 'Bronce', icon: '✠', title: 'Cima Alcanzada (Templanza)' };
+    if (percent >= 75) return { name: 'Oro', icon: '✠', title: 'Gran Resistencia (75%+)' };
+    if (percent >= 50) return { name: 'Plata', icon: '✠', title: 'Resistencia Media (50%+)' };
+    return { name: 'Sin Medalla', icon: 'E', title: 'Sigue Intentándolo' };
   }
 
   drawBackground(ctx, cameraY) {
@@ -1071,7 +1080,7 @@ export class TutorialMode extends BaseMode {
   }
 
   calculateMedal() {
-    return { name: 'Iniciación', icon: '⛩️', title: 'Iniciación Vectorial Completada' };
+    return { name: 'Iniciación', icon: '✠', title: 'Iniciación Vectorial Completada' };
   }
 
   drawBackground(ctx, cameraY) {
