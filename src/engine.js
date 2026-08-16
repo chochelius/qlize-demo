@@ -245,7 +245,7 @@ export class Engine {
       }
     }
 
-    // 6. Condición de Caída al Abismo (delegado al modo)
+    // 6. Condición de Caída al Abismo (Pérdida de Vida / Rescate por Escudo)
     const isOutOfScreen = this.player.gravityDirection === 1
       ? (this.player.y > this.height - this.cameraY + 120)
       : (this.player.y < -this.cameraY - 120);
@@ -259,9 +259,10 @@ export class Engine {
         return;
       }
 
-      // Delegar al modo la decisión de qué hacer al caer
-      if (this.mode.onPlayerFallen) {
-        this.mode.onPlayerFallen(this);
+      this.triggerDegradation();
+      if (this.lives <= 0) {
+        this.stop();
+        this.onGameOver(this.score, this.mode.getCurrentRealm(), this.mode.calculateMedal ? this.mode.calculateMedal(this.score) : null);
       }
     }
   }

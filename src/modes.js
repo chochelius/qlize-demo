@@ -205,11 +205,6 @@ export class ArcadeMode extends BaseMode {
     return this.phase === 'entropy' ? '#e11d48' : this.getCurrentRealm().color;
   }
 
-  onPlayerFallen(engine) {
-    // ArcadeMode: sin vidas, solo respawn
-    engine.respawnAtSafePlatform();
-  }
-
   drawBackground(ctx, cameraY) {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -416,23 +411,6 @@ export class StageMode extends BaseMode {
     if (percent >= 75) return { name: 'Oro', icon: '🥇', title: 'Gran Resistencia (75%+)' };
     if (percent >= 50) return { name: 'Plata', icon: '🥈', title: 'Resistencia Media (50%+)' };
     return { name: 'Sin Medalla', icon: '🛡️', title: 'Sigue Intentándolo' };
-  }
-
-  onPlayerFallen(engine) {
-    // StageMode usa sistema de vidas
-    engine.lives--;
-    engine.degradationLevel++;
-    engine.screenShakeTime = 0.35;
-    engine.staticFlashTime = 0.2;
-    engine.onLivesUpdate(engine.lives);
-    engine.onLifeLost(engine.lives);
-
-    if (engine.lives > 0) {
-      engine.respawnAtSafePlatform();
-    } else {
-      engine.stop();
-      engine.onGameOver(engine.score, this.getCurrentRealm(), this.calculateMedal(engine.score));
-    }
   }
 
   drawBackground(ctx, cameraY) {
