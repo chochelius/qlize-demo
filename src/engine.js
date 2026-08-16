@@ -143,6 +143,12 @@ export class Engine {
       return;
     }
 
+    // 2.5. Reposicionar al jugador si el modo lo requiere (después del barrido en StageMode)
+    if (this.mode.needsPlayerReposition) {
+      this.respawnAtSafePlatform();
+      this.mode.needsPlayerReposition = false;
+    }
+
     // 3. Actualizar Jugador
     this.player.update(dt, this.input, this.width);
 
