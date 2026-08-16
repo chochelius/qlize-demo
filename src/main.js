@@ -915,6 +915,49 @@ if (btnExitGame) {
 }
 
 // ---------------------------------------------------------
+// Botón "Atrás" del Sistema (Android / gestos de retroceso)
+// ---------------------------------------------------------
+// Se captura el botón atrás del navegador para que nunca abandone la
+// página: en partida abre el menú de pausa y en cada menú sube un nivel
+// (Ajustes → cerrar · Overworld → menú principal · Pausa → reanudar ·
+// Game Over → menú que corresponda). En el menú principal no hay nivel
+// superior, así que simplemente se retiene la navegación.
+// Mecanismo: una entrada de historial centinela que se repone en cada
+// popstate, de modo que toda pulsación de "atrás" queda interceptada.
+function navigateBack() {
+  if (!screenSettings.classList.contains('hidden')) {
+    saveSettings();
+    screenSettings.classList.add('hidden');
+    return;
+  }
+  if (!screenOverworld.classList.contains('hidden')) {
+    closeOverworld();
+    return;
+  }
+  if (!screenPause.classList.contains('hidden')) {
+    resumeGame();
+    return;
+  }
+  if (!screenGameover.classList.contains('hidden')) {
+    btnMenu.click();
+    return;
+  }
+  if (engine.isRunning) {
+    openPauseMenu();
+  }
+}
+
+function armBackGuard() {
+  history.pushState({ qlize: 'back-guard' }, '');
+}
+
+armBackGuard();
+window.addEventListener('popstate', () => {
+  navigateBack();
+  armBackGuard();
+});
+
+// ---------------------------------------------------------
 // Navegación Universal por Teclado (Cyber-Zen Octogonal)
 // ---------------------------------------------------------
 const menuButtons = [btnArcade, btnStage, btnTutorial].filter(Boolean);
@@ -949,24 +992,11 @@ window.addEventListener('mousemove', () => {
 });
 
 window.addEventListener('keydown', (e) => {
-  // 1. Manejo de Escape
+  // 1. Manejo de Escape: comparte jerarquía con el botón atrás del sistema
+  //    (navigateBack decide el nivel superior según la pantalla activa)
   if (e.code === 'Escape') {
-    if (!screenSettings.classList.contains('hidden')) {
-      screenSettings.classList.add('hidden');
-      return;
-    }
-    if (!screenOverworld.classList.contains('hidden')) {
-      closeOverworld();
-      return;
-    }
-    if (!screenPause.classList.contains('hidden')) {
-      resumeGame();
-      return;
-    }
-    if (engine.isRunning) {
-      openPauseMenu();
-      return;
-    }
+    navigateBack();
+    return;
   }
 
   // 2. Navegación en Pantalla de Overworld (El Árbol de la Vida)
