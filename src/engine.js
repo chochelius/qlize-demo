@@ -144,9 +144,12 @@ export class Engine {
     }
 
     // 2.5. Reposicionar al jugador si el modo lo requiere (después del barrido en StageMode)
+    // Esto debe ocurrir ANTES de player.update() para evitar que muera por "fuera de pantalla"
     if (this.mode.needsPlayerReposition) {
       this.respawnAtSafePlatform();
       this.mode.needsPlayerReposition = false;
+      // Asegurar que la cámara esté en la posición inicial
+      this.cameraY = 0;
     }
 
     // 3. Actualizar Jugador
