@@ -182,20 +182,20 @@ export class ArcadeMode extends BaseMode {
         });
       }
     } else if (this.phase === 'entropy') {
-      // Generación continua y dinámica de plataformas carmesí hacia abajo durante todo el descenso
+      // Generación continua y dinámica de plataformas carmesí hacia abajo durante todo el descenso (5000m)
       const targetY = -cameraY + this.height * 2.2;
       const startY = -this.entropyStartY + 60;
-      const maxDescentY = startY + 5400;
+      const maxDescentY = startY + 5200;
 
       while (this.lowestPlatformY < targetY && this.lowestPlatformY < maxDescentY) {
-        const isOptimal = Math.random() < 0.65;
-        const pWidth = isOptimal ? (65 + Math.random() * 20) : (50 + Math.random() * 30);
+        const isOptimal = Math.random() < 0.7;
+        const pWidth = isOptimal ? (80 + Math.random() * 20) : (65 + Math.random() * 20);
 
         let pX;
         if (isOptimal) {
           const lastOptimal = this.platforms.filter(p => p.isOptimal && p.isHusk).pop();
           const lastCenterX = lastOptimal ? (lastOptimal.x + lastOptimal.width / 2) : (this.width / 2);
-          const maxHorizontalReach = 260;
+          const maxHorizontalReach = 160;
           const minCenterX = Math.max(pWidth / 2, lastCenterX - maxHorizontalReach);
           const maxCenterX = Math.min(this.width - pWidth / 2, lastCenterX + maxHorizontalReach);
           const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
@@ -204,12 +204,23 @@ export class ArcadeMode extends BaseMode {
           pX = Math.random() * (this.width - pWidth);
         }
 
-        const pY = this.lowestPlatformY + this.platformGapY + (Math.random() * 20);
+        const pY = this.lowestPlatformY + 72 + (Math.random() * 16);
         this.addPlatform(pX, pY, pWidth, 16, {
           isOptimal,
           isSecondary: !isOptimal,
           isHusk: true
         });
+
+        // Añadir ocasionalmente una plataforma de apoyo secundaria paralela
+        if (isOptimal && Math.random() < 0.45) {
+          const secWidth = 60 + Math.random() * 20;
+          const secX = (pX > this.width / 2) ? (Math.random() * (this.width / 2 - secWidth)) : (this.width / 2 + Math.random() * (this.width / 2 - secWidth));
+          this.addPlatform(secX, pY + (Math.random() - 0.5) * 20, secWidth, 16, {
+            isOptimal: false,
+            isSecondary: true,
+            isHusk: true
+          });
+        }
       }
     }
   }
@@ -217,7 +228,7 @@ export class ArcadeMode extends BaseMode {
   initiateEntropyTransition(player, currentCameraY) {
     this.phase = 'entropy';
     this.entropySubPhase = 'transition';
-    this.entropyStartY = currentCameraY || 5000;
+    this.entropyStartY = 5000; // Entropía siempre cubre los 5000m completos desde la cima
     player.gravityDirection = -1; // Gravedad Invertida
     player.vy = -600; // Impulso continuo hacia arriba para llegar a la base superior
     player.noclip = true;
@@ -243,7 +254,7 @@ export class ArcadeMode extends BaseMode {
     this.lowestPlatformY = topBaseY + 20;
 
     // Primera plataforma óptima justo debajo de la base para iniciar el descenso cómodamente
-    const firstPlatformWidth = 80;
+    const firstPlatformWidth = 85;
     const firstPlatformY = this.lowestPlatformY + 75;
     const firstPlatformX = this.width / 2 - firstPlatformWidth / 2;
     this.addPlatform(firstPlatformX, firstPlatformY, firstPlatformWidth, 16, {
@@ -280,7 +291,7 @@ export class ArcadeMode extends BaseMode {
 
     // Transición de Estructura a Entropía al alcanzar 5000m
     if (this.phase === 'structure' && cameraY >= 5000) {
-      this.initiateEntropyTransition(player, cameraY);
+      this.initiateEntropyTransition(player, 5000);
       return;
     }
 
@@ -311,12 +322,13 @@ export class ArcadeMode extends BaseMode {
       return;
     }
 
-    // Fase de descenso en Entropía: verificar si completó el descenso
+    // Fase de descenso en Entropía: verificar si completó el descenso completo de 5000m
     if (this.phase === 'entropy' && this.entropySubPhase === 'descent') {
       const startY = -this.entropyStartY + 60;
       const distanceDescended = player.y - startY;
 
-      if (distanceDescended >= 5000 || cameraY <= 0) {
+      // Completar la distancia total de 5000m antes de volver a Estructura
+      if (distanceDescended >= 5000 && cameraY <= 100) {
         this.returnToStructure(player);
         return;
       }
@@ -368,9 +380,10 @@ export class ArcadeMode extends BaseMode {
   }
 
   onAllLivesLost(engine) {
-    // Transición a Entropía al perder todas las vidas en Estructura
+    // Transición a Entropía al perder todas las vidas en Estructura (iniciando siempre en la cima 5000m)
     if (this.phase === 'structure') {
-      this.initiateEntropyTransition(engine.player, engine.cameraY);
+      engine.cameraY = 5000;
+      this.initiateEntropyTransition(engine.player, 5000);
       engine.lives = 3; // Restaurar vidas para la fase Entropía
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
