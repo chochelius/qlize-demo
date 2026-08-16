@@ -107,9 +107,9 @@ export class BaseMode {
       const targetY = -player.y + this.height * 0.45;
       return targetY > cameraY ? targetY : cameraY;
     } else {
-      // Invertida: la cámara se queda fija en la posición de transición
-      // para que el jugador pueda alcanzar el "techo" del viewport
-      return cameraY;
+      // Invertida: la cámara sigue al jugador hacia abajo
+      const targetY = -player.y + this.height * 0.55;
+      return targetY > cameraY ? targetY : cameraY;
     }
   }
 
@@ -128,6 +128,7 @@ export class ArcadeMode extends BaseMode {
   constructor(width, height) {
     super(width, height);
     this.phase = 'structure'; // 'structure' (Luz) -> 'entropy' (Sombra Invertida)
+    this.entropySubPhase = null; // 'transition' (subiendo) -> 'descent' (bajando)
     this.currentNodeIndex = 0;
     this.platformGapY = 72;
     this.sacredTime = 0;
@@ -177,21 +178,49 @@ export class ArcadeMode extends BaseMode {
     super.update(dt, cameraY, player);
     this.sacredTime += dt;
 
-    // Transición de Fase al alcanzar 5000m
+    // Transición de Estructura a Entropía al alcanzar 5000m
     if (this.phase === 'structure' && cameraY > 5000) {
       this.phase = 'entropy';
+      this.entropySubPhase = 'transition'; // Sub-fase: subiendo con noclip
+      this.entropyStartY = cameraY; // Guardar posición de inicio de Entropía
       player.gravityDirection = -1; // Gravedad Invertida
-      // No posicionar al jugador en el suelo invertido directamente
-      // Dejarlo donde estaba para que "caiga" hacia arriba con noclip
       player.vy = 0;
       player.noclip = true; // Activar noclip para atravesar plataformas
-      // Notificar cambio de fase al engine
       if (this.onPhaseChange) {
         this.onPhaseChange('entropy');
       }
     }
 
-    // Actualizar Sefirá / Reino actual
+    // Sub-fase de transición: jugador sube con noclip hasta la base superior
+    if (this.phase === 'entropy' && this.entropySubPhase === 'transition') {
+      // Cuando el jugador llega a la parte superior del viewport (suelo invertido)
+      if (player.y <= -cameraY + 50) {
+        this.entropySubPhase = 'descent'; // Ahora comienza el descenso
+        player.noclip = false;
+        player.y = -cameraY + 10; // Posicionar justo debajo del techo
+        player.vy = 0;
+      }
+    }
+
+    // Fase de descenso en Entropía: verificar si llegó al final (bajar 5000m)
+    if (this.phase === 'entropy' && this.entropySubPhase === 'descent') {
+      // La cámara baja durante el descenso, calcular distancia recorrida
+      const descentDistance = this.entropyStartY - cameraY;
+      if (descentDistance >= 5000) {
+        // Llegó al final del descenso, volver a Estructura
+        this.phase = 'structure';
+        this.entropySubPhase = null;
+        player.gravityDirection = 1;
+        player.noclip = false;
+        // Marcar que el engine debe resetear la cámara y posición
+        this.needsResetToStructure = true;
+        if (this.onPhaseChange) {
+          this.onPhaseChange('structure');
+        }
+      }
+    }
+
+    // Actualizar Sefirá / Reino actual (solo en fase estructura)
     if (this.phase === 'structure') {
       for (let i = SEPHIROTH_NODES.length - 1; i >= 0; i--) {
         if (cameraY >= SEPHIROTH_NODES[i].height) {
@@ -200,13 +229,19 @@ export class ArcadeMode extends BaseMode {
         }
       }
     }
+  }
 
-    // Fase Entropía: verificar si el jugador llegó al suelo invertido
-    if (this.phase === 'entropy' && !player.noclip) {
-      // El jugador llegó al suelo invertido (parte superior del viewport)
-      // Marcar como completado para que el engine termine el juego
-      this.entropyComplete = true;
+  respawnAtInitialPosition(player) {
+    // Reposicionar al jugador en la plataforma inicial
+    if (this.lastSafePlatform) {
+      player.x = this.lastSafePlatform.x + this.lastSafePlatform.width / 2 - player.width / 2;
+      player.y = this.lastSafePlatform.y - player.height - 10;
+    } else {
+      player.x = this.width / 2 - player.width / 2;
+      player.y = this.height - 150;
     }
+    player.vx = 0;
+    player.vy = 0;
   }
 
   getCurrentRealm() {
@@ -221,19 +256,33 @@ export class ArcadeMode extends BaseMode {
   }
 
   onAllLivesLost(engine) {
-    // Transición a Entropía al perder todas las vidas
+    // Transición a Entropía al perder todas las vidas en Estructura
     if (this.phase === 'structure') {
       this.phase = 'entropy';
+      this.entropySubPhase = 'transition';
+      this.entropyStartY = engine.cameraY;
       engine.player.gravityDirection = -1;
       engine.lives = 3; // Restaurar vidas para la fase Entropía
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
-      // Posicionar al jugador donde estaba (para que "caiga" hacia arriba)
-      // No lo posicionamos en el suelo invertido directamente
       engine.player.vy = 0;
       engine.player.noclip = true; // Activar noclip para atravesar plataformas
+    } else if (this.phase === 'entropy' && this.entropySubPhase === 'descent') {
+      // Si perdió todas las vidas durante el descenso en Entropía, vuelve a Estructura
+      this.phase = 'structure';
+      this.entropySubPhase = null;
+      engine.player.gravityDirection = 1;
+      engine.lives = 3;
+      engine.degradationLevel = 0;
+      engine.onLivesUpdate(engine.lives);
+      // Resetear cámara y posición
+      engine.cameraY = 0;
+      this.respawnAtInitialPosition(engine.player);
+      if (this.onPhaseChange) {
+        this.onPhaseChange('structure');
+      }
     } else {
-      // Si ya estamos en Entropía, game over
+      // Game over
       engine.stop();
       engine.onGameOver(engine.score, this.getCurrentRealm(), null);
     }

@@ -152,6 +152,13 @@ export class Engine {
       this.cameraY = 0;
     }
 
+    // 2.6. Reset completo a Estructura (después del descenso en Entropía)
+    if (this.mode.needsResetToStructure) {
+      this.cameraY = 0;
+      this.mode.respawnAtInitialPosition(this.player);
+      this.mode.needsResetToStructure = false;
+    }
+
     // 3. Actualizar Jugador
     this.player.update(dt, this.input, this.width);
 
@@ -276,11 +283,12 @@ export class Engine {
     }
 
     // 6. Condición de Caída al Abismo (Pérdida de Vida / Rescate por Escudo)
+    // No detectar caída si el jugador está en noclip (transición a Entropía)
     const isOutOfScreen = this.player.gravityDirection === 1
       ? (this.player.y > this.height - this.cameraY + 120)
       : (this.player.y < -this.cameraY - 120);
 
-    if (isOutOfScreen) {
+    if (isOutOfScreen && !this.player.noclip) {
       // Escudo del Vacío (Sincronía Perfecta >= 90%)
       if (this.player.hasVoidShield) {
         this.player.hasVoidShield = false;
