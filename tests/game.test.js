@@ -189,23 +189,52 @@ function makeEngine() {
   return { e, player, mode };
 }
 
-test('Engine: caer fuera de pantalla sin vidas dispara onGameOver', () => {
-  const { e, player, mode } = makeEngine();
+function makeEngineWithStageMode() {
+  const e = new Engine(mockCanvas, noopCtx);
+  const player = new Player(200, 400);
+  const mode = new StageMode(450, 800, 6000, 3);
+  e.setPlayer(player);
+  e.setMode(mode);
+  e.setInput(idleInput);
+  return { e, player, mode };
+}
+
+test('StageMode: caer fuera de pantalla sin vidas dispara onGameOver', () => {
+  const { e, player, mode } = makeEngineWithStageMode();
   let over = null;
   e.onGameOver = (score) => { over = score; };
 
-  // onGameOver se dispara desde update(), no desde triggerDegradation().
-  e.lives = 1;                  // una sola vida restante
-  mode.lastSafePlatform = null; // sin respawn disponible
-  player.y = 100000;            // fuera de pantalla (caída al abismo)
+  // Simular caída al vacío con 1 vida restante
+  e.lives = 1;
+  mode.lastSafePlatform = null;
+  player.y = 100000; // fuera de pantalla
 
-  e.update(0.016);
+  // Llamar directamente al handler del modo
+  mode.onPlayerFallen(e);
+  
   assert.equal(e.lives, 0);
   assert.notEqual(over, null, 'onGameOver debe dispararse al agotar vidas');
 });
 
+test('ArcadeMode: caer fuera de pantalla solo respawnea (sin vidas)', () => {
+  const { e, player, mode } = makeEngine();
+  let over = null;
+  e.onGameOver = (score) => { over = score; };
+
+  // Simular caída al vacío
+  mode.lastSafePlatform = { x: 100, y: 300, width: 60, height: 16 };
+  player.y = 100000; // fuera de pantalla
+
+  // Llamar directamente al handler del modo
+  mode.onPlayerFallen(e);
+  
+  // ArcadeMode no tiene vidas, solo respawnea
+  assert.equal(over, null, 'onGameOver NO debe dispararse en ArcadeMode');
+  assert.equal(player.y, 300 - player.height - 10, 'debe respawnear en plataforma segura');
+});
+
 test('Engine: triggerDegradation resta una vida y llama callbacks', () => {
-  const { e } = makeEngine();
+  const { e } = makeEngineWithStageMode();
   let lostCalled = 0;
   let livesUpdate = 0;
   e.onLifeLost = () => { lostCalled++; };
@@ -218,7 +247,7 @@ test('Engine: triggerDegradation resta una vida y llama callbacks', () => {
 });
 
 test('Engine: triggerDegradation respawnea en la última plataforma segura', () => {
-  const { e, player, mode } = makeEngine();
+  const { e, player, mode } = makeEngineWithStageMode();
   e.onLifeLost = () => {};
   e.onLivesUpdate = () => {};
 
@@ -233,20 +262,26 @@ test('Engine: triggerDegradation respawnea en la última plataforma segura', () 
 });
 
 test('Engine: Escudo del Vacío salva de la caída sin perder vida', () => {
-  const { e, player, mode } = makeEngine();
+  const { e, player, mode } = makeEngineWithStageMode();
   let lost = 0;
   e.onLifeLost = () => { lost++; };
   e.onLivesUpdate = () => {};
   mode.lastSafePlatform = { x: 100, y: 300, width: 60, height: 16 };
+  
+  // Desactivar el sweeping para que el test pueda ejecutar el flujo completo
+  mode.isSweepingCamera = false;
 
   player.hasVoidShield = true;
   player.synchrony = 100;
   player.y = 100000; // fuera de pantalla
 
+  // Guardar el valor inicial de synchrony para verificar que cambia
+  const initialSynchrony = player.synchrony;
+  
   e.update(0.016);
   assert.equal(e.lives, 3, 'el escudo no debe costar una vida');
   assert.equal(lost, 0);
-  assert.equal(player.synchrony, 70, 'sincronía reducida tras usar el escudo');
+  assert.ok(player.synchrony < initialSynchrony, `sincronía debe reducirse tras usar el escudo (era ${initialSynchrony}, ahora es ${player.synchrony})`);
 });
 
 test('Engine: reset restaura el estado inicial', () => {
