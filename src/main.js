@@ -31,6 +31,32 @@ console.log('  - hasTouchscreen:', hasTouchscreen);
 console.log('  - hasGyroscope:', hasGyroscope);
 console.log('  - isDesktop:', isDesktop);
 
+// Frases Místicas Aleatorias para la Pantalla de Inicio
+let cachedMysticPhrases = null;
+
+export async function updateMysticSubtitle() {
+  const subtitleEl = document.getElementById('game-subtitle');
+  if (!subtitleEl) return;
+
+  try {
+    if (!cachedMysticPhrases) {
+      const res = await fetch('/qlize-frases-misticas.json');
+      if (res.ok) {
+        cachedMysticPhrases = await res.json();
+      }
+    }
+    if (Array.isArray(cachedMysticPhrases) && cachedMysticPhrases.length > 0) {
+      const item = cachedMysticPhrases[Math.floor(Math.random() * cachedMysticPhrases.length)];
+      const rawPhrase = item.frase || item;
+      subtitleEl.innerText = rawPhrase.replace(/\.$/, '').toUpperCase();
+    }
+  } catch {
+    // Fallback silencioso
+  }
+}
+
+updateMysticSubtitle();
+
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
@@ -535,6 +561,7 @@ function openOverworld() {
 function closeOverworld() {
   screenOverworld.classList.add('hidden');
   screenMenu.classList.remove('hidden');
+  updateMysticSubtitle();
   updateMenuSelection();
 }
 
@@ -867,6 +894,7 @@ btnMenu.addEventListener('click', () => {
       openOverworld();
     } else {
       screenMenu.classList.remove('hidden');
+      updateMysticSubtitle();
     }
     hud.classList.add('hidden');
   };
@@ -929,6 +957,7 @@ function exitToMenu() {
       openOverworld();
     } else {
       screenMenu.classList.remove('hidden');
+      updateMysticSubtitle();
     }
   };
 
