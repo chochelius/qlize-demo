@@ -103,6 +103,13 @@ const hasTouchscreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 const hasGyroscope = 'DeviceOrientationEvent' in window && hasTouchscreen;
 const isDesktop = !isMobile && !hasTouchscreen;
 
+console.log('🎮 Detección de dispositivo:');
+console.log('  - isMobile:', isMobile);
+console.log('  - hasTouchscreen:', hasTouchscreen, '(ontouchstart:', 'ontouchstart' in window, ', maxTouchPoints:', navigator.maxTouchPoints, ')');
+console.log('  - hasGyroscope:', hasGyroscope);
+console.log('  - isDesktop:', isDesktop);
+console.log('  - User Agent:', navigator.userAgent);
+
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
