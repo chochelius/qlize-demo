@@ -1015,8 +1015,14 @@
     .card-sefira-badge {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       margin-bottom: 4px;
+    }
+    .card-sefira-badge-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .card-sefira-num {
       font-family: var(--font-mono);
@@ -1037,6 +1043,19 @@
       font-weight: 600;
       text-transform: uppercase;
     }
+    .card-trait-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--color-jade);
+      background: rgba(43, 179, 130, 0.12);
+      border: 1px solid rgba(43, 179, 130, 0.3);
+      padding: 2px 8px;
+      border-radius: 2px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
 
     .card-stage-title {
       font-family: var(--font-serif);
@@ -1055,8 +1074,8 @@
 
     .card-meta {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
       margin-bottom: 12px;
       background: rgba(15, 23, 42, 0.6);
       padding: 6px 8px;
@@ -1069,10 +1088,11 @@
       text-align: center;
     }
     .meta-label {
+      font-family: var(--font-mono);
       font-size: 0.58rem;
-      color: #aab6c8;
+      color: #94a3b8;
       letter-spacing: 1px;
-      font-weight: 600;
+      margin-bottom: 2px;
     }
     .meta-val {
       font-size: 0.78rem;
@@ -1366,8 +1386,11 @@
         <!-- Tarjeta Flotante de Desafío del Reino -->
         <div id="overworld-stage-card" class="overworld-stage-card hidden">
           <div class="card-sefira-badge">
-            <span id="card-sefira-num" class="card-sefira-num">REINO 01</span>
-            <span id="card-sefira-phonetic" class="card-sefira-phonetic">WÁNG-GUÓ</span>
+            <div class="card-sefira-badge-left">
+              <span id="card-sefira-num" class="card-sefira-num">REINO 01</span>
+              <span id="card-sefira-phonetic" class="card-sefira-phonetic">WÁNG-GUÓ</span>
+            </div>
+            <div id="card-stage-trait" class="card-trait-badge">Iniciación • Cimientos Estables</div>
           </div>
           <h3 id="card-stage-title" class="card-stage-title">1. Wángguó • El Reino (La Iniciación)</h3>
           <p id="card-stage-desc" class="card-stage-desc">La base física de la creación. Donde comienza todo ascenso espiritual.</p>
@@ -1378,10 +1401,14 @@
             </div>
             <div class="card-meta-item">
               <span class="meta-label">GRAVEDAD</span>
-              <span id="card-stage-gravity" class="meta-val">1.0x</span>
+              <span id="card-stage-gravity" class="meta-val">1.00x</span>
             </div>
             <div class="card-meta-item">
-              <span class="meta-label">MEJOR MEDALLA</span>
+              <span class="meta-label">DIFICULTAD</span>
+              <span id="card-stage-diff" class="meta-val meta-val-diff">★☆☆☆☆</span>
+            </div>
+            <div class="card-meta-item">
+              <span class="meta-label">MEDALLA</span>
               <span id="card-stage-medal" class="meta-val">—</span>
             </div>
           </div>

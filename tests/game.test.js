@@ -456,13 +456,72 @@ test('StageMode: acepta stageConfig personalizada y renderiza marca de agua fon�
   assert.equal(stage.stageName, 'Měilì');
   assert.equal(stage.code, 'MEILI');
   assert.equal(stage.phonetic, 'MĚI-LÌ');
-  assert.equal(stage.gravityMultiplier, 1.08);
+  assert.equal(stage.gravityMultiplier, 1.10);
+  assert.ok(stage.tuning.movingRatio > 0, 'debe tener plataformas móviles');
 
   // Verificar llamada segura a drawBackground sin fallos
   const dummyCtx = new Proxy({}, { get: () => () => dummyCtx });
   assert.doesNotThrow(() => {
     stage.drawBackground(dummyCtx, 0);
   });
+});
+
+test('Overworld: cada una de las 10 etapas cuenta con tema cromático, trait y tuning progresivo', () => {
+  Object.keys(OVERWORLD_GRAPH).forEach(key => {
+    const node = OVERWORLD_GRAPH[key];
+    assert.ok(node.trait, `${key} debe tener rasgo mecánico (trait)`);
+    assert.ok(node.difficultyStars, `${key} debe tener estrellas de dificultad`);
+    assert.ok(node.theme?.primaryColor, `${key} debe tener color primario`);
+    assert.ok(Array.isArray(node.theme?.bgGrad), `${key} debe tener gradiente de fondo`);
+    assert.ok(node.tuning?.widthOpt > 0, `${key} debe tener widthOpt`);
+    assert.ok(node.tuning?.gapMin > 0, `${key} debe tener gapMin`);
+  });
+
+  // Progresión de dificultad entre etapa 1 (Wángguó) y etapa 10 (Wángguān)
+  const stage1 = OVERWORLD_GRAPH.stage_1;
+  const stage10 = OVERWORLD_GRAPH.stage_10;
+  assert.ok(stage1.tuning.widthOpt > stage10.tuning.widthOpt, 'etapa 1 debe tener plataformas más anchas que etapa 10');
+  assert.ok(stage1.tuning.gapMin < stage10.tuning.gapMin, 'etapa 1 debe tener gaps más pequeños que etapa 10');
+  assert.ok(stage1.gravityMultiplier < stage10.gravityMultiplier, 'gravedad debe ser mayor en etapa 10');
+  assert.ok(stage10.tuning.movingRatio > stage1.tuning.movingRatio, 'etapa 10 debe tener mayor ratio de móviles');
+});
+
+test('StageMode: plataformas móviles actualizan su posición X con el tiempo', () => {
+  const stage = new StageMode(450, 800, OVERWORLD_GRAPH.stage_2);
+  stage.isSweepingCamera = false; // Desactivar barrido para testear update regular
+  
+  const movingPlat = stage.platforms.find(p => p.isMoving);
+  assert.ok(movingPlat, 'debe generarse al menos una plataforma móvil en etapa 2');
+
+  const initialX = movingPlat.x;
+  const dummyPlayer = new Player(225, 400);
+  
+  // Ejecutar varios frames de actualización
+  for (let i = 0; i < 20; i++) {
+    stage.update(0.016, 0, dummyPlayer);
+  }
+
+  assert.notEqual(movingPlat.x, initialX, 'la plataforma móvil debe haber desplazado su posición X');
+});
+
+test('StageMode: plataformas efímeras (decaying) se colapsan y desactivan tras ser pisadas', () => {
+  const stage = new StageMode(450, 800, OVERWORLD_GRAPH.stage_8);
+  stage.isSweepingCamera = false;
+
+  const decayingPlat = stage.platforms.find(p => p.isDecaying);
+  assert.ok(decayingPlat, 'debe generarse al menos una plataforma efímera en etapa 8');
+  assert.equal(decayingPlat.decaying, false);
+  assert.equal(decayingPlat.active, true);
+
+  const player = new Player(decayingPlat.x, decayingPlat.y - 32);
+  stage.onPlatformStepped(decayingPlat, player);
+
+  assert.equal(decayingPlat.decaying, true, 'debe activarse el estado decaying al pisarla');
+
+  // Avanzar tiempo suficiente para que expire el decayTime (0.8s)
+  stage.update(1.0, 0, player);
+
+  assert.equal(decayingPlat.active, false, 'la plataforma efímera debe quedar inactiva tras colapsar');
 });
 
 // =========================================================

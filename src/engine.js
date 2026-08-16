@@ -374,6 +374,12 @@ export class Engine {
       this.ctx.save();
       this.ctx.translate(p.x, p.y);
 
+      // Efecto visual de desvanecimiento para plataformas quebradizas
+      if (p.decaying) {
+        const decayProgress = Math.max(0, Math.min(1, p.decayRemaining / (p.decayTime || 0.8)));
+        this.ctx.globalAlpha = 0.3 + 0.7 * decayProgress;
+      }
+
       if (p.isHusk) {
         this.ctx.fillStyle = this.getPlatformGradient('husk', p.height);
         this.ctx.fillRect(0, 0, p.width, p.height);
@@ -392,24 +398,54 @@ export class Engine {
         }
       } else if (p.isSecondary) {
         this.ctx.fillStyle = '#2d2d30';
-        this.ctx.strokeStyle = '#475569';
+        this.ctx.strokeStyle = p.isDecaying ? '#fb7185' : '#475569';
         this.ctx.lineWidth = 1;
         this.ctx.fillRect(0, 0, p.width, p.height);
+        
+        if (p.isDecaying) {
+          this.ctx.setLineDash([3, 3]);
+        }
         this.ctx.strokeRect(0, 0, p.width, p.height);
+        this.ctx.setLineDash([]);
       } else {
         this.ctx.fillStyle = this.getPlatformGradient('normal', p.height);
         this.ctx.fillRect(0, 0, p.width, p.height);
 
-        this.ctx.strokeStyle = '#e2b13c';
+        const borderStroke = p.isDecaying ? '#fb923c' : '#e2b13c';
+        this.ctx.strokeStyle = borderStroke;
         this.ctx.lineWidth = 1.8;
-        this.ctx.shadowColor = '#e2b13c';
+        this.ctx.shadowColor = borderStroke;
         this.ctx.shadowBlur = 10;
+        
+        if (p.isDecaying) {
+          this.ctx.setLineDash([4, 2]);
+        }
         this.ctx.strokeRect(0, 0, p.width, p.height);
+        this.ctx.setLineDash([]);
 
-        this.ctx.fillStyle = '#e2b13c';
+        this.ctx.fillStyle = borderStroke;
         this.ctx.beginPath();
         this.ctx.arc(p.width / 2, p.height / 2, 4, 0, Math.PI * 2);
         this.ctx.fill();
+      }
+
+      // Indicadores cinéticos para plataformas móviles
+      if (p.isMoving) {
+        this.ctx.fillStyle = '#38bdf8';
+        this.ctx.fillRect(2, p.height / 2 - 2, 4, 4);
+        this.ctx.fillRect(p.width - 6, p.height / 2 - 2, 4, 4);
+      }
+
+      // Indicadores de fisura para plataformas en colapso
+      if (p.decaying) {
+        this.ctx.strokeStyle = '#f43f5e';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(p.width * 0.3, 0);
+        this.ctx.lineTo(p.width * 0.45, p.height);
+        this.ctx.moveTo(p.width * 0.65, 0);
+        this.ctx.lineTo(p.width * 0.75, p.height);
+        this.ctx.stroke();
       }
 
       this.ctx.restore();

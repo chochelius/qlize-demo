@@ -544,6 +544,17 @@ export class StageMode extends BaseMode {
       this.phonetic = 'WÁNG-GUÓ';
       this.stageTitle = 'El Reino (La Iniciación)';
       this.gravityMultiplier = 1.0;
+      this.tuning = {
+        widthOpt: 78, widthSec: 65, gapMin: 65, gapMax: 80,
+        optimalRatio: 0.70, movingRatio: 0.0, moveSpeed: [0, 0],
+        decayRatio: 0.0, decayTime: 0.0
+      };
+      this.theme = {
+        primaryColor: '#ca8a04',
+        glowColor: 'rgba(202, 138, 4, 0.4)',
+        bgGrad: ['rgba(43, 179, 130, 0.18)', 'rgba(5, 8, 20, 0.88)', '#02040a'],
+        particleColor: '#e2b13c'
+      };
     } else {
       this.stageKey = stageConfig.key || 'stage_1';
       this.stageName = stageConfig.name || 'Wángguó';
@@ -554,6 +565,28 @@ export class StageMode extends BaseMode {
       this.gravityMultiplier = stageConfig.gravityMultiplier || 1.0;
       this.segmentLength = Math.floor(this.stageLength / 3);
       this.repeatCount = 3;
+      this.tuning = stageConfig.tuning || {
+        widthOpt: 70, widthSec: 55, gapMin: 72, gapMax: 92,
+        optimalRatio: 0.60, movingRatio: 0.0, moveSpeed: [0, 0],
+        decayRatio: 0.0, decayTime: 0.0
+      };
+      this.theme = stageConfig.theme || {
+        primaryColor: '#ca8a04',
+        glowColor: 'rgba(202, 138, 4, 0.4)',
+        bgGrad: ['rgba(43, 179, 130, 0.18)', 'rgba(5, 8, 20, 0.88)', '#02040a'],
+        particleColor: '#e2b13c'
+      };
+    }
+
+    this.ambientMotes = [];
+    for (let i = 0; i < 20; i++) {
+      this.ambientMotes.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        radius: 1 + Math.random() * 2,
+        speed: 15 + Math.random() * 25,
+        alpha: 0.2 + Math.random() * 0.5
+      });
     }
 
     // BUGFIX: el mapa está pre-construido hasta -stageLength; el reciclaje por
@@ -566,7 +599,7 @@ export class StageMode extends BaseMode {
     this.sweepSpeed = 9000; // Rápido: ~2s para 18000px
     this.sweepTimer = 0;
     this.sweepComplete = false;
-    this.stageComplete = false; // Nuevo: detecta cuando el jugador llega a la cima
+    this.stageComplete = false; // Detecta cuando el jugador llega a la cima
 
     this.buildStageMap();
   }
@@ -577,8 +610,6 @@ export class StageMode extends BaseMode {
   generatePlatforms(cameraY) {}
 
   buildStageMap() {
-    // La plataforma inicial del BaseMode está en height - 50
-    // Empezamos generando desde ahí hacia arriba
     let startY = this.height - 120;
     
     // Generar cada segmento desde donde terminó el anterior
@@ -588,11 +619,19 @@ export class StageMode extends BaseMode {
       for (const platform of segment) {
         this.addPlatform(platform.x, platform.y, platform.width, 16, {
           isOptimal: platform.isOptimal,
-          isSecondary: platform.isSecondary
+          isSecondary: platform.isSecondary,
+          isMoving: platform.isMoving,
+          originX: platform.originX,
+          moveSpeed: platform.moveSpeed,
+          moveAmplitude: platform.moveAmplitude,
+          movePhase: platform.movePhase,
+          isDecaying: platform.isDecaying,
+          decayTime: platform.decayTime,
+          decayRemaining: platform.decayRemaining,
+          decaying: false
         });
       }
       
-      // El siguiente segmento empieza donde terminó este
       if (segment.length > 0) {
         startY = segment[segment.length - 1].y;
       }
@@ -600,16 +639,26 @@ export class StageMode extends BaseMode {
   }
 
   buildSingleSegment(length, startY) {
-    // Genera un segmento de plataformas y retorna un array con sus datos
-    // startY: posición Y donde comienza este segmento (cerca de la plataforma anterior)
     const platforms = [];
     let currentY = startY;
     const endY = startY - length;
-    let lastOptimalX = this.width / 2; // Centro para la primera plataforma
+    let lastOptimalX = this.width / 2;
+
+    const {
+      widthOpt = 70,
+      widthSec = 55,
+      gapMin = 70,
+      gapMax = 90,
+      optimalRatio = 0.60,
+      movingRatio = 0.0,
+      moveSpeed = [60, 100],
+      decayRatio = 0.0,
+      decayTime = 1.0
+    } = this.tuning;
 
     while (currentY > endY) {
-      const isOptimal = Math.random() < 0.6;
-      const pWidth = isOptimal ? 70 : 55;
+      const isOptimal = Math.random() < optimalRatio;
+      const pWidth = isOptimal ? widthOpt : widthSec;
       
       // Si es óptima, debe estar a distancia alcanzable desde la última óptima
       let pX;
@@ -624,18 +673,43 @@ export class StageMode extends BaseMode {
         pX = Math.random() * (this.width - pWidth);
       }
       
-      currentY -= 72 + Math.random() * 20;
+      const gap = gapMin + Math.random() * (gapMax - gapMin);
+      currentY -= gap;
+
+      const isMoving = Math.random() < movingRatio;
+      const isDecaying = !isOptimal && Math.random() < decayRatio;
+
+      const minSpeed = moveSpeed[0] || 60;
+      const maxSpeed = moveSpeed[1] || 100;
+      const speed = minSpeed + Math.random() * (maxSpeed - minSpeed);
+      const moveAmp = Math.min(pX, (this.width - pWidth - pX), 45 + Math.random() * 55);
 
       platforms.push({
         x: pX,
         y: currentY,
         width: pWidth,
         isOptimal,
-        isSecondary: !isOptimal
+        isSecondary: !isOptimal,
+        isMoving,
+        originX: pX,
+        moveSpeed: speed,
+        moveAmplitude: moveAmp,
+        movePhase: Math.random() * Math.PI * 2,
+        isDecaying,
+        decayTime,
+        decayRemaining: decayTime
       });
     }
     
     return platforms;
+  }
+
+  onPlatformStepped(platform, player) {
+    super.onPlatformStepped(platform, player);
+    if (platform.isDecaying && !platform.decaying) {
+      platform.decaying = true;
+      platform.decayRemaining = platform.decayTime || 0.9;
+    }
   }
 
   update(dt, cameraY, player) {
@@ -658,7 +732,6 @@ export class StageMode extends BaseMode {
           this.sweepY = 0;
           this.isSweepingCamera = false;
           this.sweepComplete = true;
-          // Reposicionar al jugador en la plataforma inicial después del barrido
           this.needsPlayerReposition = true;
         }
       }
@@ -668,7 +741,44 @@ export class StageMode extends BaseMode {
     // Detectar si el jugador alcanzó la cima
     if (cameraY >= this.stageLength && !this.stageComplete) {
       this.stageComplete = true;
-      return; // El engine manejará el callback
+      return;
+    }
+
+    // Actualizar movimiento sinusoidal de plataformas móviles y colapso de efímeras
+    let dirty = false;
+    for (const p of this.platforms) {
+      if (!p.active) continue;
+
+      if (p.isMoving) {
+        const amp = p.moveAmplitude || 50;
+        const speed = p.moveSpeed || 80;
+        p.movePhase = (p.movePhase || 0) + (speed / Math.max(1, amp)) * dt;
+        const targetX = (p.originX !== undefined ? p.originX : p.x) + Math.sin(p.movePhase) * amp;
+        p.x = Math.max(10, Math.min(this.width - p.width - 10, targetX));
+      }
+
+      if (p.decaying) {
+        p.decayRemaining -= dt;
+        if (p.decayRemaining <= 0) {
+          p.active = false;
+          dirty = true;
+        }
+      }
+    }
+
+    if (dirty) {
+      this._optimalDirty = true;
+    }
+
+    // Actualizar partículas ambientales
+    if (this.ambientMotes) {
+      for (const m of this.ambientMotes) {
+        m.y -= m.speed * dt;
+        if (m.y < 0) {
+          m.y = this.height;
+          m.x = Math.random() * this.width;
+        }
+      }
     }
     
     super.update(dt, cameraY, player);
@@ -693,22 +803,36 @@ export class StageMode extends BaseMode {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    // Fondo Cyber-Zen Místico
+    const gradStops = this.theme?.bgGrad || ['rgba(43, 179, 130, 0.18)', 'rgba(5, 8, 20, 0.88)', '#02040a'];
+
+    // Fondo Místico con Paleta Exclusiva del Reino
     const grad = ctx.createRadialGradient(
       this.width * 0.5, this.height * 0.4, 20,
       this.width * 0.5, this.height * 0.5, this.height * 0.85
     );
-    grad.addColorStop(0, 'rgba(43, 179, 130, 0.18)');
-    grad.addColorStop(0.65, 'rgba(5, 8, 20, 0.88)');
-    grad.addColorStop(1, '#02040a');
+    grad.addColorStop(0, gradStops[0]);
+    grad.addColorStop(0.65, gradStops[1]);
+    grad.addColorStop(1, gradStops[2] || '#02040a');
 
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, this.width, this.height);
 
-    // Marca de Agua de la Sefirá
+    // Partículas Ambientales Temáticas
+    if (this.ambientMotes) {
+      ctx.fillStyle = this.theme?.particleColor || '#e2b13c';
+      for (const m of this.ambientMotes) {
+        ctx.globalAlpha = m.alpha;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
+    }
+
+    // Marca de Agua Tipográfica de la Sefirá
     if (this.stageName) {
-      ctx.fillStyle = 'rgba(226, 177, 60, 0.04)';
-      ctx.font = '700 42px "Cinzel", serif';
+      ctx.fillStyle = this.theme?.glowColor ? this.theme.glowColor.replace(/[\d.]+\)$/, '0.08)') : 'rgba(226, 177, 60, 0.05)';
+      ctx.font = '700 44px "Cinzel", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(this.stageName.toUpperCase(), this.width * 0.5, this.height * 0.45);

@@ -261,6 +261,8 @@ const cardSefiraNum = document.getElementById('card-sefira-num');
 const cardSefiraPhonetic = document.getElementById('card-sefira-phonetic');
 const cardStageTitle = document.getElementById('card-stage-title');
 const cardStageDesc = document.getElementById('card-stage-desc');
+const cardStageTrait = document.getElementById('card-stage-trait');
+const cardStageDiff = document.getElementById('card-stage-diff');
 const cardStageLength = document.getElementById('card-stage-length');
 const cardStageGravity = document.getElementById('card-stage-gravity');
 const cardStageMedal = document.getElementById('card-stage-medal');
@@ -649,6 +651,17 @@ function selectOverworldNode(stageKey, playSound = true) {
     if (cardSefiraPhonetic) cardSefiraPhonetic.innerText = node.phonetic;
     if (cardStageTitle) cardStageTitle.innerText = `${node.id}. ${node.name} • ${node.title}`;
     if (cardStageDesc) cardStageDesc.innerText = node.desc;
+    if (cardStageTrait) {
+      cardStageTrait.innerText = node.trait || 'Reino Celestial';
+      if (node.theme?.primaryColor) {
+        cardStageTrait.style.borderColor = node.theme.primaryColor;
+        cardStageTrait.style.color = node.theme.primaryColor;
+        cardStageTrait.style.background = node.theme.glowColor || 'rgba(43, 179, 130, 0.12)';
+      }
+    }
+    if (cardStageDiff) {
+      cardStageDiff.innerText = node.difficultyStars || '★☆☆☆☆';
+    }
     if (cardStageLength) cardStageLength.innerText = `${Math.floor(node.stageLength / 1000)}.000m`;
     if (cardStageGravity) cardStageGravity.innerText = `${node.gravityMultiplier.toFixed(2)}x`;
     
