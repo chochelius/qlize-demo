@@ -31,14 +31,11 @@ export class QlizeAudioManager {
       if (!AudioContext) return;
       this.ctx = new AudioContext();
 
-      // 1. Pistas de Música: Estructura (Normal) y Entropía (Invertida)
+      // 1. Pista de Música de Estructura (la de Entropía se crea de forma
+      // diferida en ensureEntropyAudio para no descargarla al arrancar)
       this.audioStructure = new Audio('/intro_tema.mp3');
       this.audioStructure.loop = true;
       this.audioStructure.crossOrigin = 'anonymous';
-
-      this.audioEntropy = new Audio('/intro_tema_entropy.mp3');
-      this.audioEntropy.loop = true;
-      this.audioEntropy.crossOrigin = 'anonymous';
 
       // 2. Filtro de Paso Bajo para Niebla Sonora (Degradación de Vidas)
       this.degradationFilter = this.ctx.createBiquadFilter();
@@ -51,10 +48,8 @@ export class QlizeAudioManager {
 
       // 4. Cadena de Procesamiento: Sources -> Degradation Filter -> Master Gain -> Destination
       this.sourceStructure = this.ctx.createMediaElementSource(this.audioStructure);
-      this.sourceEntropy = this.ctx.createMediaElementSource(this.audioEntropy);
 
       this.sourceStructure.connect(this.degradationFilter);
-      this.sourceEntropy.connect(this.degradationFilter);
       this.degradationFilter.connect(this.masterGain);
       this.masterGain.connect(this.ctx.destination);
 
@@ -64,8 +59,23 @@ export class QlizeAudioManager {
     }
   }
 
+  // Crea y conecta la pista de Entropía solo cuando se necesita por primera
+  // vez (ahorra ~1 MB de descarga inmediata al iniciar en móvil)
+  ensureEntropyAudio() {
+    if (this.audioEntropy || !this.ctx) return;
+    this.audioEntropy = new Audio('/intro_tema_entropy.mp3');
+    this.audioEntropy.loop = true;
+    this.audioEntropy.crossOrigin = 'anonymous';
+    this.sourceEntropy = this.ctx.createMediaElementSource(this.audioEntropy);
+    this.sourceEntropy.connect(this.degradationFilter);
+  }
+
   getActiveAudio() {
-    return this.currentPhase === 'entropy' ? this.audioEntropy : this.audioStructure;
+    if (this.currentPhase === 'entropy') {
+      this.ensureEntropyAudio();
+      return this.audioEntropy;
+    }
+    return this.audioStructure;
   }
 
   startMusic() {
@@ -161,6 +171,7 @@ export class QlizeAudioManager {
     if (phase === 'entropy') {
       if (this.currentPhase === 'entropy') return;
       this.currentPhase = 'entropy';
+      this.ensureEntropyAudio();
 
       if (this.isPlaying) {
         if (this.audioStructure) this.audioStructure.pause();

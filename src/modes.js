@@ -483,6 +483,10 @@ export class ArcadeMode extends BaseMode {
       ctx.restore();
 
       // Hilo Continuo y Vibrante de Luz Punteada Dorada y Blanca (Sendero de Adherencia)
+      // Recortado a la ventana visible: la lista viene ordenada de abajo hacia
+      // arriba, así que se puede cortar en cuanto se pasa el borde superior
+      const hiloTop = -cameraY - 300;
+      const hiloBottom = -cameraY + this.height + 300;
       ctx.strokeStyle = 'rgba(226, 177, 60, 0.5)';
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
@@ -491,6 +495,8 @@ export class ArcadeMode extends BaseMode {
       for (let i = 0; i < optimalPlatforms.length - 1; i++) {
         const p1 = optimalPlatforms[i];
         const p2 = optimalPlatforms[i + 1];
+        if (p1.y < hiloTop && p2.y < hiloTop) break;
+        if (p1.y > hiloBottom && p2.y > hiloBottom) continue;
         if (Math.abs(p1.y - p2.y) < 220) {
           ctx.moveTo(p1.x + p1.width / 2, p1.y);
           ctx.lineTo(p2.x + p2.width / 2, p2.y);
@@ -841,32 +847,38 @@ export class StageMode extends BaseMode {
     ctx.restore();
 
     // Hilo Dorado Continuo de la Ruta de Constelación
-    // Durante la cinemática de barrido, aumentar brillo y grosor
+    // Durante la cinemática de barrido, aumentar brillo y grosor.
+    // Glow emulado con doble trazo (sin shadowBlur) y recorte al viewport.
     const isSweeping = this.isSweepingCamera;
     const lineAlpha = isSweeping ? 0.95 : 0.65;
     const lineWidth = isSweeping ? 3.5 : 2;
-    const glowBlur = isSweeping ? 16 : 4;
-    
+    const hiloTop = -cameraY - 300;
+    const hiloBottom = -cameraY + this.height + 300;
+    const optimalPlatforms = this.getOptimalPlatforms();
+
+    const trazarHilo = () => {
+      ctx.beginPath();
+      for (let i = 0; i < optimalPlatforms.length - 1; i++) {
+        const p1 = optimalPlatforms[i];
+        const p2 = optimalPlatforms[i + 1];
+        if (p1.y < hiloTop && p2.y < hiloTop) break;
+        if (p1.y > hiloBottom && p2.y > hiloBottom) continue;
+        ctx.moveTo(p1.x + p1.width / 2, p1.y);
+        ctx.lineTo(p2.x + p2.width / 2, p2.y);
+      }
+      ctx.stroke();
+    };
+
+    ctx.setLineDash([4, 4]);
+    // Pasada de glow: trazo ancho translúcido
+    ctx.strokeStyle = `rgba(226, 177, 60, ${isSweeping ? 0.35 : 0.2})`;
+    ctx.lineWidth = lineWidth + (isSweeping ? 6 : 3);
+    trazarHilo();
+    // Pasada de núcleo: trazo fino brillante
     ctx.strokeStyle = `rgba(226, 177, 60, ${lineAlpha})`;
     ctx.lineWidth = lineWidth;
-    ctx.setLineDash([4, 4]);
-    
-    if (glowBlur > 0) {
-      ctx.shadowColor = '#e2b13c';
-      ctx.shadowBlur = glowBlur;
-    }
-    
-    ctx.beginPath();
-    const optimalPlatforms = this.getOptimalPlatforms();
-    for (let i = 0; i < optimalPlatforms.length - 1; i++) {
-      const p1 = optimalPlatforms[i];
-      const p2 = optimalPlatforms[i + 1];
-      ctx.moveTo(p1.x + p1.width / 2, p1.y);
-      ctx.lineTo(p2.x + p2.width / 2, p2.y);
-    }
-    ctx.stroke();
+    trazarHilo();
     ctx.setLineDash([]);
-    ctx.shadowBlur = 0;
   }
 }
 
@@ -1074,7 +1086,9 @@ export class TutorialMode extends BaseMode {
     ctx.fillRect(0, 0, this.width, this.height);
     ctx.restore();
 
-    // Hilo Dorado de Luz Punteada
+    // Hilo Dorado de Luz Punteada (recortado a la ventana visible)
+    const hiloTop = -cameraY - 300;
+    const hiloBottom = -cameraY + this.height + 300;
     ctx.strokeStyle = 'rgba(226, 177, 60, 0.85)';
     ctx.lineWidth = 2.5;
     ctx.setLineDash([4, 4]);
@@ -1083,6 +1097,8 @@ export class TutorialMode extends BaseMode {
     for (let i = 0; i < optimalPlatforms.length - 1; i++) {
       const p1 = optimalPlatforms[i];
       const p2 = optimalPlatforms[i + 1];
+      if (p1.y < hiloTop && p2.y < hiloTop) break;
+      if (p1.y > hiloBottom && p2.y > hiloBottom) continue;
       ctx.moveTo(p1.x + p1.width / 2, p1.y);
       ctx.lineTo(p2.x + p2.width / 2, p2.y);
     }
