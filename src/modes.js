@@ -181,10 +181,14 @@ export class ArcadeMode extends BaseMode {
     if (this.phase === 'structure' && cameraY > 5000) {
       this.phase = 'entropy';
       player.gravityDirection = -1; // Gravedad Invertida
-      // Posicionar al jugador en el "suelo" invertido (parte superior del viewport)
-      player.y = -cameraY; // Pegado al tope del viewport
+      // No posicionar al jugador en el suelo invertido directamente
+      // Dejarlo donde estaba para que "caiga" hacia arriba con noclip
       player.vy = 0;
       player.noclip = true; // Activar noclip para atravesar plataformas
+      // Notificar cambio de fase al engine
+      if (this.onPhaseChange) {
+        this.onPhaseChange('entropy');
+      }
     }
 
     // Actualizar Sefirá / Reino actual
@@ -217,8 +221,8 @@ export class ArcadeMode extends BaseMode {
       engine.lives = 3; // Restaurar vidas para la fase Entropía
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
-      // Posicionar al jugador en el "suelo" invertido (parte superior del viewport)
-      engine.player.y = -engine.cameraY; // Pegado al tope del viewport
+      // Posicionar al jugador donde estaba (para que "caiga" hacia arriba)
+      // No lo posicionamos en el suelo invertido directamente
       engine.player.vy = 0;
       engine.player.noclip = true; // Activar noclip para atravesar plataformas
     } else {

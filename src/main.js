@@ -280,11 +280,14 @@ const btnMenu = document.getElementById('btn-menu');
 const btnSettingsToggle = document.getElementById('btn-settings-toggle');
 const btnSettingsClose = document.getElementById('btn-settings-close');
 const btnSettingsReset = document.getElementById('btn-settings-reset');
+const btnSettingsX = document.getElementById('btn-settings-x');
 const btnExitGame = document.getElementById('btn-exit-game');
 const btnExitCancel = document.getElementById('btn-exit-cancel');
 const btnExitToMenu = document.getElementById('btn-exit-to-menu');
 
 const hud = document.getElementById('hud');
+const phaseIndicator = document.getElementById('phase-indicator');
+const phaseText = document.getElementById('phase-text');
 const syncValEl = document.getElementById('sync-val');
 const syncMultiplierEl = document.getElementById('sync-multiplier');
 const finalScoreEl = document.getElementById('final-score');
@@ -398,6 +401,11 @@ btnSettingsToggle.addEventListener('click', () => {
 });
 
 btnSettingsClose.addEventListener('click', () => {
+  saveSettings();
+  screenSettings.classList.add('hidden');
+});
+
+btnSettingsX.addEventListener('click', () => {
   saveSettings();
   screenSettings.classList.add('hidden');
 });

@@ -34,6 +34,7 @@ export class Engine {
     this.onJumpEffect = () => {};
     this.onLifeLost = () => {};
     this.onStageComplete = () => {}; // Nuevo: callback cuando se completa una etapa
+    this.onPhaseChange = () => {}; // Callback para cambios de fase (ArcadeMode)
   }
 
   setPlayer(player) { this.player = player; }
@@ -148,10 +149,10 @@ export class Engine {
     // Desactivar noclip cuando el jugador llegue al suelo invertido
     if (this.player.noclip && this.player.gravityDirection === -1) {
       // En Entropía, el jugador "cae" hacia arriba (y decreciente)
-      // El suelo invertido está en la parte superior del viewport
-      if (this.player.y <= -this.cameraY + this.player.height) {
+      // El suelo invertido está en la parte superior del viewport (y = -cameraY)
+      if (this.player.y <= -this.cameraY) {
         this.player.noclip = false;
-        this.player.y = -this.cameraY + this.player.height; // Ajustar posición exacta
+        this.player.y = -this.cameraY; // Ajustar posición exacta al borde superior
         this.player.vy = 0;
       }
     }

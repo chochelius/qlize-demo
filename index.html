@@ -97,6 +97,37 @@
       z-index: 20;
     }
 
+    /* Botón cerrar (X) en pantalla de configuración */
+    .settings-close-x {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .settings-close-x:hover {
+      background: rgba(251, 191, 36, 0.2);
+      border-color: #fbbf24;
+      transform: scale(1.1);
+    }
+
+    .settings-close-x:active {
+      transform: scale(0.95);
+    }
+
     .hidden { display: none !important; }
 
     /* Título y Emblem Cyber-Zen */
@@ -381,6 +412,37 @@
       border: 1px solid rgba(56, 189, 248, 0.25);
       backdrop-filter: blur(8px);
     }
+
+    /* Indicador de Fase (Arcade Mode) */
+    .hud-phase-indicator {
+      position: absolute;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(4, 7, 20, 0.85);
+      padding: 8px 20px;
+      border-radius: 20px;
+      border: 2px solid #fbbf24;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #fbbf24;
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+      transition: all 0.5s ease;
+    }
+
+    .hud-phase-indicator.entropy {
+      border-color: #e11d48;
+      color: #e11d48;
+      text-shadow: 0 0 10px rgba(225, 29, 72, 0.6);
+      animation: pulse-entropy 2s infinite;
+    }
+
+    @keyframes pulse-entropy {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
     .sync-gauge {
       width: 22px; height: 22px; border-radius: 50%;
       border: 2px solid #38bdf8;
@@ -431,6 +493,11 @@
     
     <!-- HUD In-Game Cyber-Zen -->
     <div id="hud" class="hidden">
+      <!-- Indicador de Fase (Arcade Mode) -->
+      <div id="phase-indicator" class="hud-phase-indicator hidden">
+        <span id="phase-text">ESTRUCTURA</span>
+      </div>
+
       <!-- Tríptico de Vidas (Esquina Izquierda) -->
       <div class="hud-lives-container">
         <span id="life-1" class="trigram-life">☰</span>
@@ -506,6 +573,7 @@
 
       <!-- Pantalla de Ajustes -->
       <div id="screen-settings" class="screen hidden">
+        <button id="btn-settings-x" class="settings-close-x" title="Cerrar" aria-label="Cerrar configuración">✕</button>
         <h2>⚙️ Configuración</h2>
         
         <div class="presets-container">
