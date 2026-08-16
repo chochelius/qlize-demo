@@ -308,7 +308,7 @@ export class StageMode extends BaseMode {
     this.isSweepingCamera = true;
     this.sweepState = 'UP'; // 'UP' -> 'PAUSE' -> 'DOWN' -> fin de cinemática
     this.sweepY = 0;
-    this.sweepSpeed = 2200;
+    this.sweepSpeed = 9000; // Rápido: ~2s para 18000px
     this.sweepTimer = 0;
     this.sweepComplete = false;
     this.stageComplete = false; // Nuevo: detecta cuando el jugador llega a la cima
@@ -391,7 +391,7 @@ export class StageMode extends BaseMode {
         }
       } else if (this.sweepState === 'PAUSE') {
         this.sweepTimer += dt;
-        if (this.sweepTimer > 0.6) {
+        if (this.sweepTimer > 0.3) {
           this.sweepState = 'DOWN';
         }
       } else if (this.sweepState === 'DOWN') {
