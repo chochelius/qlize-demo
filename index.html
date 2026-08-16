@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>QLIZE | Cyber-Zen Vectorial</title>
   
   <!-- Favicons Autocontenidos (Sin Recursos Externos) -->
@@ -37,6 +37,13 @@
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Textos informativos seleccionables; el resto de la UI del juego
+       mantiene user-select: none */
+    #card-stage-desc, #tutorial-text, .subtitle, #pause-mantra, .medal-title {
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     body, html {
@@ -276,7 +283,7 @@
       opacity: 0.8;
       font-weight: 400;
       letter-spacing: 0.5px;
-      color: #94a3b8;
+      color: #aab6c8;
     }
 
     /* MODO ARCADE: Fuego Gótico Rojo */
@@ -500,7 +507,7 @@
     .presets-container { width: 100%; margin-bottom: 16px; }
     .presets-label {
       font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px;
-      color: #94a3b8; margin-bottom: 8px; font-weight: 600;
+      color: #aab6c8; margin-bottom: 8px; font-weight: 600;
     }
     .presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     
@@ -569,7 +576,7 @@
     .control-mode-btn {
       flex: 1; padding: 10px 8px;
       clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
-      background: rgba(30, 41, 59, 0.5); color: #94a3b8;
+      background: rgba(30, 41, 59, 0.5); color: #aab6c8;
       border: 1px solid rgba(245, 245, 247, 0.1);
       font-family: var(--font-sans); font-weight: 600; font-size: 0.8rem;
       cursor: pointer; transition: all 0.2s ease;
@@ -709,7 +716,7 @@
     .btn-pause-menu-link {
       background: transparent;
       border: none;
-      color: #94a3b8;
+      color: #aab6c8;
       font-size: 0.76rem;
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -727,8 +734,376 @@
     }
 
     /* ---------------------------------------------------------
-       HUD Cyber-Zen Minimalista
+       OVERWORLD: EL ÁRBOL DE LA VIDA (Modo Etapas v1.0)
        --------------------------------------------------------- */
+    #screen-overworld {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(15, 23, 42, 0.96) 0%, #02040a 100%);
+      overflow: hidden;
+    }
+
+    .overworld-header {
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: rgba(5, 8, 20, 0.85);
+      border-bottom: 1px solid rgba(226, 177, 60, 0.2);
+      backdrop-filter: blur(12px);
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .btn-overworld-back {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(245, 245, 247, 0.3);
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      color: var(--color-ivory);
+      font-size: 0.76rem;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-overworld-back:hover,
+    .btn-overworld-back:focus-visible,
+    .btn-overworld-back.keyboard-selected {
+      background: rgba(226, 177, 60, 0.2);
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+      transform: scale(1.04);
+      outline: none;
+    }
+
+    .overworld-title-box {
+      text-align: center;
+    }
+    .overworld-title {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      letter-spacing: 3px;
+      color: var(--color-ivory);
+      margin: 0;
+    }
+    .overworld-subtitle {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--color-gold);
+      margin-top: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .overworld-scroll-viewport {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(226, 177, 60, 0.3) transparent;
+    }
+
+    .overworld-tree-canvas {
+      position: relative;
+      width: 100%;
+      height: 840px;
+      margin: 0 auto 230px auto;
+    }
+
+    .overworld-svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .overworld-line {
+      stroke-width: 2.5;
+      stroke-dasharray: 5 5;
+      transition: all 0.5s ease;
+    }
+    .overworld-line.locked {
+      stroke: rgba(148, 163, 184, 0.18);
+    }
+    .overworld-line.active {
+      stroke: var(--color-gold);
+      stroke-dasharray: 6 4;
+      animation: overworldLineFlow 1.5s linear infinite;
+      filter: drop-shadow(0 0 6px rgba(226, 177, 60, 0.7));
+    }
+    .overworld-line.completed {
+      stroke: var(--color-jade);
+      filter: drop-shadow(0 0 4px rgba(43, 179, 130, 0.5));
+    }
+
+    @keyframes overworldLineFlow {
+      to { stroke-dashoffset: -20; }
+    }
+
+    .overworld-nodes-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+
+    /* Nodo Octogonal del Overworld */
+    .overworld-node {
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      transform: translate(-50%, -50%);
+      clip-path: polygon(
+        12px 0%, calc(100% - 12px) 0%,
+        100% 12px, 100% calc(100% - 12px),
+        calc(100% - 12px) 100%, 12px 100%,
+        0% calc(100% - 12px), 0% 12px
+      );
+      background: rgba(15, 23, 42, 0.9);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 0;
+    }
+
+    .overworld-node::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      clip-path: polygon(
+        12px 0%, calc(100% - 12px) 0%,
+        100% 12px, 100% calc(100% - 12px),
+        calc(100% - 12px) 100%, 12px 100%,
+        0% calc(100% - 12px), 0% 12px
+      );
+      border: 1.5px solid transparent;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    /* Estado 1: Bloqueado (Piedra Inerte) */
+    .overworld-node.node-locked {
+      background: #090d16;
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+    .overworld-node.node-locked::after {
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+    .overworld-node.node-locked .node-num {
+      color: #64748b;
+    }
+    .overworld-node.node-locked .node-icon {
+      font-size: 0.9rem;
+      opacity: 0.6;
+    }
+
+    /* Estado 2: Activo / Desbloqueado (El Sendero) */
+    .overworld-node.node-active {
+      background: linear-gradient(135deg, rgba(100, 181, 246, 0.25) 0%, rgba(15, 23, 42, 0.95) 100%);
+      box-shadow: 0 0 20px rgba(100, 181, 246, 0.35);
+      animation: nodePulseActive 2s infinite ease-in-out;
+    }
+    .overworld-node.node-active::after {
+      border-color: var(--color-sky);
+    }
+    .overworld-node.node-active .node-num {
+      color: #e0f2fe;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(100, 181, 246, 0.8);
+    }
+    .overworld-node.node-active:hover,
+    .overworld-node.node-active:focus-visible,
+    .overworld-node.node-active.keyboard-selected {
+      transform: translate(-50%, -50%) scale(1.18);
+      box-shadow: 0 0 28px rgba(100, 181, 246, 0.75);
+      outline: none;
+    }
+
+    @keyframes nodePulseActive {
+      0%, 100% { transform: translate(-50%, -50%) scale(1.0); }
+      50% { transform: translate(-50%, -50%) scale(1.06); box-shadow: 0 0 24px rgba(100, 181, 246, 0.55); }
+    }
+
+    /* Estado 3: Purificado / Completado (Sincronía) */
+    .overworld-node.node-completed {
+      background: linear-gradient(135deg, rgba(43, 179, 130, 0.3) 0%, rgba(15, 23, 42, 0.95) 100%);
+      box-shadow: 0 0 16px rgba(43, 179, 130, 0.3);
+    }
+    .overworld-node.node-completed::after {
+      border-color: var(--color-jade);
+    }
+    .overworld-node.node-completed .node-num {
+      color: var(--color-gold);
+      font-weight: 700;
+    }
+    .overworld-node.node-completed:hover,
+    .overworld-node.node-completed:focus-visible,
+    .overworld-node.node-completed.keyboard-selected {
+      transform: translate(-50%, -50%) scale(1.15);
+      box-shadow: 0 0 24px var(--color-jade);
+      outline: none;
+    }
+
+    .node-num {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .node-concept-label {
+      font-size: 0.56rem;
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+      color: var(--color-gold);
+      margin-top: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .node-medal-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      font-size: 0.85rem;
+      filter: drop-shadow(0 0 6px rgba(226, 177, 60, 0.8));
+    }
+
+    /* Tarjeta Flotante de Desafío de Sefirá */
+    .overworld-stage-card {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 40px);
+      max-width: 400px;
+      background: rgba(5, 8, 20, 0.94);
+      border: 1px solid rgba(226, 177, 60, 0.45);
+      clip-path: polygon(
+        10px 0%, calc(100% - 10px) 0%,
+        100% 10px, 100% calc(100% - 10px),
+        calc(100% - 10px) 100%, 10px 100%,
+        0% calc(100% - 10px), 0% 10px
+      );
+      padding: 14px 18px;
+      backdrop-filter: blur(14px);
+      z-index: 35;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      animation: fadeInCard 0.3s ease-out;
+    }
+
+    @keyframes fadeInCard {
+      from { opacity: 0; transform: translate(-50%, 15px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    .card-sefira-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .card-sefira-num {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--color-gold);
+      background: rgba(226, 177, 60, 0.15);
+      padding: 2px 7px;
+      border: 1px solid rgba(226, 177, 60, 0.35);
+      clip-path: polygon(4px 0%, calc(100% - 4px) 0%, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0% calc(100% - 4px), 0% 4px);
+    }
+    .card-sefira-phonetic {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      color: var(--color-sky);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .card-stage-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--color-sky);
+      margin: 2px 0 4px 0;
+    }
+    .card-stage-desc {
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      line-height: 1.35;
+      margin: 0 0 10px 0;
+    }
+
+    .card-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 6px 8px;
+      border: 1px solid rgba(245, 245, 247, 0.1);
+    }
+    .card-meta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .meta-label {
+      font-size: 0.58rem;
+      color: #aab6c8;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    .meta-val {
+      font-size: 0.78rem;
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .btn-start-stage {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(226, 177, 60, 0.25) 0%, rgba(100, 181, 246, 0.2) 100%);
+      border: 1px solid var(--color-gold);
+      color: var(--color-ivory);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      padding: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .btn-start-stage:hover,
+    .btn-start-stage:focus-visible,
+    .btn-start-stage.keyboard-selected {
+      background: var(--color-gold);
+      color: #02040a;
+      box-shadow: 0 0 18px var(--color-gold);
+      transform: scale(1.02);
+      outline: none;
+    }
     #hud {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -797,7 +1172,7 @@
       font-size: 0.65rem; font-weight: 700; color: var(--color-sky);
     }
     .sync-text { display: flex; flex-direction: column; text-align: right; }
-    .sync-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; }
+    .sync-label { font-size: 0.6rem; color: #aab6c8; text-transform: uppercase; letter-spacing: 1.5px; }
     .sync-val { font-size: 0.85rem; font-weight: 700; color: var(--color-gold); font-family: var(--font-mono); }
 
     .hud-phase-indicator {
@@ -936,7 +1311,7 @@
 
           <!-- Botonera Central Octogonal -->
           <button id="btn-arcade" class="btn-octagonal">
-            <div class="btn-icon-oct">✨</div>
+            <div class="btn-icon-oct" aria-hidden="true">✨</div>
             <div class="btn-content">
               <h3>MODO ARCADE</h3>
               <p>Ascenso Continuo • Estructura & Entropía</p>
@@ -944,7 +1319,7 @@
           </button>
 
           <button id="btn-stage" class="btn-octagonal">
-            <div class="btn-icon-oct">🏆</div>
+            <div class="btn-icon-oct" aria-hidden="true">🏆</div>
             <div class="btn-content">
               <h3>MODO ETAPAS</h3>
               <p>Ruta de Constelación • 3 Tramos & Medallas</p>
@@ -952,12 +1327,65 @@
           </button>
 
           <button id="btn-tutorial" class="btn-octagonal">
-            <div class="btn-icon-oct">⛩️</div>
+            <div class="btn-icon-oct" aria-hidden="true">⛩️</div>
             <div class="btn-content">
               <h3>INICIACIÓN</h3>
               <p>Tutorial Guiado • Domina las Físicas</p>
             </div>
           </button>
+        </div>
+      </div>
+
+      <!-- Overworld: El Árbol de la Vida (Modo Etapas v1.0) -->
+      <div id="screen-overworld" class="screen hidden">
+        <div class="overworld-header">
+          <button id="btn-overworld-back" class="btn-overworld-back" title="Volver al Menú (Esc)" aria-label="Volver al Menú">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>MENÚ</span>
+          </button>
+          <div class="overworld-title-box">
+            <h2 class="overworld-title">EL ÁRBOL DE LA VIDA</h2>
+            <div class="overworld-subtitle" id="overworld-progress-counter">1 / 10 SEFIROT PURIFICADAS</div>
+          </div>
+          <div style="width: 70px;"></div>
+        </div>
+
+        <div class="overworld-scroll-viewport" id="overworld-viewport">
+          <div class="overworld-tree-canvas" id="overworld-canvas">
+            <!-- SVG de Conexiones del Árbol de la Vida -->
+            <svg id="overworld-lines-svg" class="overworld-svg" viewBox="0 0 450 820" preserveAspectRatio="none"></svg>
+
+            <!-- Contenedor de Nodos Octogonales -->
+            <div id="overworld-nodes-container" class="overworld-nodes-layer"></div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Flotante de Desafío de Sefirá -->
+        <div id="overworld-stage-card" class="overworld-stage-card hidden">
+          <div class="card-sefira-badge">
+            <span id="card-sefira-num" class="card-sefira-num">SEFIRÁ 01</span>
+            <span id="card-sefira-phonetic" class="card-sefira-phonetic">MAL-KOOTH</span>
+          </div>
+          <h3 id="card-stage-title" class="card-stage-title">1. Malkuth • El Reino</h3>
+          <p id="card-stage-desc" class="card-stage-desc">La base física de la creación. Donde comienza todo ascenso espiritual.</p>
+          <div class="card-meta">
+            <div class="card-meta-item">
+              <span class="meta-label">DISTANCIA</span>
+              <span id="card-stage-length" class="meta-val">18.000m</span>
+            </div>
+            <div class="card-meta-item">
+              <span class="meta-label">GRAVEDAD</span>
+              <span id="card-stage-gravity" class="meta-val">1.0x</span>
+            </div>
+            <div class="card-meta-item">
+              <span class="meta-label">MEJOR MEDALLA</span>
+              <span id="card-stage-medal" class="meta-val">—</span>
+            </div>
+          </div>
+          <button id="btn-start-stage" class="btn-start-stage">INICIAR ASCENSO</button>
         </div>
       </div>
 
@@ -1058,7 +1486,7 @@
       <div id="screen-gameover" class="screen hidden">
         <div class="pause-oct-container" style="border-color: rgba(245, 245, 247, 0.4);">
           <h2 id="gameover-title" class="pause-title">RECORRIDO TERMINADO</h2>
-          <div id="medal-icon" class="medal-badge hidden">🥉</div>
+          <div id="medal-icon" class="medal-badge hidden" aria-hidden="true">🥉</div>
           <div id="medal-title" class="medal-title hidden">Medalla de Bronce</div>
           
           <div class="gameover-score-container">

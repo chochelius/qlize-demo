@@ -26,6 +26,10 @@ export class Engine {
     // Partículas de Impacto
     this.impactParticles = [];
 
+    // Caché de gradients de plataforma: los colores son fijos, así que se crean
+    // una sola vez por (tipo, altura) en vez de en cada frame (evita presión al GC)
+    this.platformGradientCache = new Map();
+
     // Callbacks de Eventos
     this.onGameOver = () => {};
     this.onScoreUpdate = () => {};
@@ -72,6 +76,11 @@ export class Engine {
   }
 
   start() {
+    // Sin jugador o modo conectados no hay nada que simular ni dibujar
+    if (!this.player || !this.mode) {
+      console.warn('Engine.start(): llama a setPlayer() y setMode() antes de iniciar.');
+      return;
+    }
     this.stop(); // Prevenir múltiples bucles rAF concurrentes
     this.isRunning = true;
     this.lastTime = performance.now();
@@ -188,22 +197,10 @@ export class Engine {
     // 3. Actualizar Cámara
     this.cameraY = this.mode.updateCamera(this.cameraY, this.player, dt);
 
-    // Puntuación de Distancia y Progreso
-    let currentProgress = 0;
-    if (this.mode.phase === 'entropy') {
-      if (this.mode.entropySubPhase === 'transition') {
-        currentProgress = 100;
-      } else {
-        currentProgress = Math.min(100, Math.max(0, (this.cameraY / 5000) * 100));
-      }
-    } else {
-      const target = this.mode.stageLength || 5000;
-      if (this.cameraY > this.score) {
-        this.score = this.cameraY;
-      }
-      currentProgress = Math.min(100, Math.max(0, (this.cameraY / target) * 100));
-    }
-    this.onScoreUpdate(this.score, currentProgress);
+    // Puntuación de Distancia y Progreso (delegado al modo, que conoce su fase)
+    const { score, progress } = this.mode.getScoreAndProgress(this.cameraY, this.score);
+    this.score = score;
+    this.onScoreUpdate(this.score, progress);
 
     // Verificar si la etapa está completa (StageMode)
     if (this.mode.stageComplete && !this.stageCompleteTriggered) {
@@ -211,14 +208,6 @@ export class Engine {
       const medal = this.mode.calculateMedal(this.score);
       if (this.audio) this.audio.playVictory();
       this.onStageComplete(this.score, medal);
-      this.stop();
-      return;
-    }
-
-    // Verificar si la fase Entropía está completa (ArcadeMode)
-    if (this.mode.entropyComplete && !this.entropyCompleteTriggered) {
-      this.entropyCompleteTriggered = true;
-      this.onGameOver(this.score, this.mode.getCurrentRealm(), null);
       this.stop();
       return;
     }
@@ -330,6 +319,26 @@ export class Engine {
     }
   }
 
+  // Gradient cacheado por (tipo, altura); se usa en coordenadas locales al dibujar
+  getPlatformGradient(type, height) {
+    const key = `${type}:${height}`;
+    let grad = this.platformGradientCache.get(key);
+    if (!grad) {
+      grad = this.ctx.createLinearGradient(0, 0, 0, height);
+      if (type === 'husk') {
+        grad.addColorStop(0, '#d32f2f');
+        grad.addColorStop(0.35, '#4a148c');
+        grad.addColorStop(1, '#02040a');
+      } else {
+        grad.addColorStop(0, '#f5f5f7');
+        grad.addColorStop(0.3, 'rgba(226, 177, 60, 0.6)');
+        grad.addColorStop(1, 'rgba(5, 8, 20, 0.95)');
+      }
+      this.platformGradientCache.set(key, grad);
+    }
+    return grad;
+  }
+
   draw() {
     this.ctx.save();
     if (this.screenShakeTime > 0) {
@@ -350,66 +359,56 @@ export class Engine {
     const realmColor = realm ? realm.color : '#fbbf24';
 
     for (const p of this.impactParticles) {
-      this.ctx.save();
       this.ctx.globalAlpha = Math.max(0, p.alpha);
       this.ctx.fillStyle = p.color;
       this.ctx.beginPath();
       this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       this.ctx.fill();
-      this.ctx.restore();
     }
+    this.ctx.globalAlpha = 1;
 
     const platforms = this.mode.getPlatforms();
     for (const p of platforms) {
       if (!p.active) continue;
 
       this.ctx.save();
+      this.ctx.translate(p.x, p.y);
 
       if (p.isHusk) {
-        const huskGrad = this.ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.height);
-        huskGrad.addColorStop(0, '#d32f2f');
-        huskGrad.addColorStop(0.35, '#4a148c');
-        huskGrad.addColorStop(1, '#02040a');
-
-        this.ctx.fillStyle = huskGrad;
-        this.ctx.fillRect(p.x, p.y, p.width, p.height);
+        this.ctx.fillStyle = this.getPlatformGradient('husk', p.height);
+        this.ctx.fillRect(0, 0, p.width, p.height);
 
         this.ctx.strokeStyle = p.isOptimal ? '#d32f2f' : '#4a148c';
         this.ctx.lineWidth = p.isOptimal ? 2 : 1;
         this.ctx.shadowColor = '#d32f2f';
         this.ctx.shadowBlur = p.isOptimal ? 14 : 4;
-        this.ctx.strokeRect(p.x, p.y, p.width, p.height);
+        this.ctx.strokeRect(0, 0, p.width, p.height);
 
         if (p.isOptimal) {
           this.ctx.fillStyle = '#fca5a5';
           this.ctx.beginPath();
-          this.ctx.arc(p.x + p.width / 2, p.y + p.height / 2, 4, 0, Math.PI * 2);
+          this.ctx.arc(p.width / 2, p.height / 2, 4, 0, Math.PI * 2);
           this.ctx.fill();
         }
       } else if (p.isSecondary) {
         this.ctx.fillStyle = '#2d2d30';
         this.ctx.strokeStyle = '#475569';
         this.ctx.lineWidth = 1;
-        this.ctx.fillRect(p.x, p.y, p.width, p.height);
-        this.ctx.strokeRect(p.x, p.y, p.width, p.height);
+        this.ctx.fillRect(0, 0, p.width, p.height);
+        this.ctx.strokeRect(0, 0, p.width, p.height);
       } else {
-        const platGrad = this.ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.height);
-        platGrad.addColorStop(0, '#f5f5f7');
-        platGrad.addColorStop(0.3, 'rgba(226, 177, 60, 0.6)');
-        platGrad.addColorStop(1, 'rgba(5, 8, 20, 0.95)');
-
-        this.ctx.fillStyle = platGrad;
-        this.ctx.fillRect(p.x, p.y, p.width, p.height);
+        this.ctx.fillStyle = this.getPlatformGradient('normal', p.height);
+        this.ctx.fillRect(0, 0, p.width, p.height);
 
         this.ctx.strokeStyle = '#e2b13c';
         this.ctx.lineWidth = 1.8;
         this.ctx.shadowColor = '#e2b13c';
         this.ctx.shadowBlur = 10;
-        this.ctx.strokeRect(p.x, p.y, p.width, p.height);
+        this.ctx.strokeRect(0, 0, p.width, p.height);
 
         this.ctx.fillStyle = '#e2b13c';
         this.ctx.beginPath();
-        this.ctx.arc(p.x + p.width / 2, p.y + p.height / 2, 4, 0, Math.PI * 2);
+        this.ctx.arc(p.width / 2, p.height / 2, 4, 0, Math.PI * 2);
         this.ctx.fill();
       }
 

@@ -13,6 +13,9 @@ export const SEPHIROTH_NODES = [
   { num: 1,  name: 'Kether',  title: 'Corona', color: '#00e5ff', glow: 'rgba(0, 229, 255, 0.7)', height: 17600 }
 ];
 
+// Longitud total (en metros/píxeles) de la fase Entropía del Modo Arcade
+export const ENTROPY_LENGTH = 5000;
+
 export class BaseMode {
   constructor(width, height) {
     this.width = width;
@@ -27,13 +30,15 @@ export class BaseMode {
     this.adherenceHits = 0;
     this.totalJumps = 0;
     this.lastSafePlatform = null; // Última plataforma pisada (punto de respawn)
+    // Caché de la ruta óptima ordenada (hilo dorado); se invalida al cambiar plataformas
+    this._optimalCache = null;
+    this._optimalDirty = true;
     // Distancia máxima permitida por encima de la cámara antes de reciclar.
     // Los modos con mapa pre-construido (StageMode) lo amplían para no borrar la cima.
     this.pruneHeightAbove = height * 2.5;
 
     // Fondo estelar Cyber-Zen (Paralaje)
     this.starsLayer1 = [];
-    this.starsLayer2 = [];
     for (let i = 0; i < 45; i++) {
       this.starsLayer1.push({
         x: Math.random() * width,
@@ -41,15 +46,6 @@ export class BaseMode {
         size: 1 + Math.random() * 1.5,
         alpha: 0.3 + Math.random() * 0.7,
         twinkleSpeed: 1 + Math.random() * 3
-      });
-    }
-    for (let i = 0; i < 25; i++) {
-      this.starsLayer2.push({
-        x: Math.random() * width,
-        y: Math.random() * height * 4,
-        size: 2 + Math.random() * 2,
-        alpha: 0.5 + Math.random() * 0.5,
-        twinkleSpeed: 2 + Math.random() * 4
       });
     }
 
@@ -65,6 +61,7 @@ export class BaseMode {
     const id = this.platformIdCounter++;
     const p = { id, x, y, width: w, height: h, active: true, isOptimal: false, ...props };
     this.platforms.push(p);
+    this._optimalDirty = true;
     if (p.isOptimal) {
       this.optimalRoute.push(id);
     }
@@ -78,6 +75,28 @@ export class BaseMode {
   }
 
   getPlatforms() { return this.platforms; }
+
+  // Plataformas óptimas ordenadas de abajo hacia arriba (para el hilo dorado).
+  // Cacheadas: se reconstruyen solo cuando cambia el conjunto de plataformas.
+  getOptimalPlatforms() {
+    if (this._optimalDirty || !this._optimalCache) {
+      this._optimalCache = this.platforms
+        .filter(p => p.active && p.isOptimal)
+        .sort((a, b) => b.y - a.y);
+      this._optimalDirty = false;
+    }
+    return this._optimalCache;
+  }
+
+  // Elimina de la ruta óptima los IDs de plataformas ya recicladas,
+  // evitando que el array crezca indefinidamente en sesiones largas.
+  pruneOptimalRoute() {
+    const aliveIds = new Set(this.platforms.map(p => p.id));
+    this.optimalRoute = this.optimalRoute.filter(id => aliveIds.has(id));
+    if (this.currentRouteIndex > this.optimalRoute.length) {
+      this.currentRouteIndex = this.optimalRoute.length;
+    }
+  }
 
   onPlatformStepped(platform, player) {
     this.totalJumps++;
@@ -96,16 +115,22 @@ export class BaseMode {
   }
 
   update(dt, cameraY, player) {
+    let pruned;
     if (player.gravityDirection === 1) {
       // Normal: reciclar plataformas lejanas por debajo de la cámara
       const lowerBound = this.height - cameraY + 350;
       const upperBound = -cameraY - this.pruneHeightAbove;
-      this.platforms = this.platforms.filter(p => p.y < lowerBound && p.y > upperBound);
+      pruned = this.platforms.filter(p => p.y < lowerBound && p.y > upperBound);
     } else {
       // Invertida: reciclar plataformas lejanas por encima de la cámara
       const upperBound = -cameraY - 350;
       const lowerBound = -cameraY + this.height + 2500;
-      this.platforms = this.platforms.filter(p => p.y > upperBound && p.y < lowerBound);
+      pruned = this.platforms.filter(p => p.y > upperBound && p.y < lowerBound);
+    }
+    if (pruned.length !== this.platforms.length) {
+      this.platforms = pruned;
+      this._optimalDirty = true;
+      this.pruneOptimalRoute();
     }
     this.generatePlatforms(cameraY);
   }
@@ -121,6 +146,15 @@ export class BaseMode {
       const targetY = -player.y + this.height * 0.55;
       return targetY < cameraY ? targetY : cameraY;
     }
+  }
+
+  // Puntuación y progreso (0-100) para el HUD. El score nunca baja.
+  // Cada modo puede redefinirlo (p. ej. ArcadeMode durante la Entropía).
+  getScoreAndProgress(cameraY, currentScore) {
+    const target = this.stageLength || ENTROPY_LENGTH;
+    const score = cameraY > currentScore ? cameraY : currentScore;
+    const progress = Math.min(100, Math.max(0, (cameraY / target) * 100));
+    return { score, progress };
   }
 
   getJumpForce() { return 650; }
@@ -228,7 +262,7 @@ export class ArcadeMode extends BaseMode {
   initiateEntropyTransition(player, currentCameraY) {
     this.phase = 'entropy';
     this.entropySubPhase = 'transition';
-    this.entropyStartY = 5000; // Entropía siempre cubre los 5000m completos desde la cima
+    this.entropyStartY = ENTROPY_LENGTH; // Entropía siempre cubre la distancia completa desde la cima
     player.gravityDirection = -1; // Gravedad Invertida
     player.vy = -600; // Impulso continuo hacia arriba para llegar a la base superior
     player.noclip = true;
@@ -289,9 +323,9 @@ export class ArcadeMode extends BaseMode {
     super.update(dt, cameraY, player);
     this.sacredTime += dt;
 
-    // Transición de Estructura a Entropía al alcanzar 5000m
-    if (this.phase === 'structure' && cameraY >= 5000) {
-      this.initiateEntropyTransition(player, 5000);
+    // Transición de Estructura a Entropía al alcanzar la cima de 5000m
+    if (this.phase === 'structure' && cameraY >= ENTROPY_LENGTH) {
+      this.initiateEntropyTransition(player, ENTROPY_LENGTH);
       return;
     }
 
@@ -322,13 +356,13 @@ export class ArcadeMode extends BaseMode {
       return;
     }
 
-    // Fase de descenso en Entropía: verificar si completó el descenso completo de 5000m
+    // Fase de descenso en Entropía: verificar si completó el descenso completo
     if (this.phase === 'entropy' && this.entropySubPhase === 'descent') {
       const startY = -this.entropyStartY + 60;
       const distanceDescended = player.y - startY;
 
-      // Completar la distancia total de 5000m antes de volver a Estructura
-      if (distanceDescended >= 5000 && cameraY <= 100) {
+      // Completar la distancia total antes de volver a Estructura
+      if (distanceDescended >= ENTROPY_LENGTH && cameraY <= 100) {
         this.returnToStructure(player);
         return;
       }
@@ -353,9 +387,27 @@ export class ArcadeMode extends BaseMode {
     return super.updateCamera(cameraY, player, dt);
   }
 
+  // En Entropía el score se congela y el progreso refleja el descenso
+  getScoreAndProgress(cameraY, currentScore) {
+    if (this.phase === 'entropy') {
+      const progress = this.entropySubPhase === 'transition'
+        ? 100
+        : Math.min(100, Math.max(0, (cameraY / ENTROPY_LENGTH) * 100));
+      return { score: currentScore, progress };
+    }
+    return super.getScoreAndProgress(cameraY, currentScore);
+  }
+
   respawnAtInitialPosition(player) {
     // Reposicionar al jugador en la plataforma inicial
     this.platforms = [];
+    // Nuevo ciclo en Estructura: reiniciar Sincronía y Ruta Óptima
+    // (sin esto, los contadores y los IDs de la fase anterior persistirían)
+    this.optimalRoute = [];
+    this.currentRouteIndex = 0;
+    this.adherenceHits = 0;
+    this.totalJumps = 0;
+    this._optimalDirty = true;
     this.highestPlatformY = 0;
     this.lowestPlatformY = this.height - 50;
     this.addPlatform(this.width / 2 - 45, this.height - 50, 90, 16, { isStartingPlatform: true, isOptimal: true, isHusk: false });
@@ -380,10 +432,10 @@ export class ArcadeMode extends BaseMode {
   }
 
   onAllLivesLost(engine) {
-    // Transición a Entropía al perder todas las vidas en Estructura (iniciando siempre en la cima 5000m)
+    // Transición a Entropía al perder todas las vidas en Estructura (iniciando siempre en la cima)
     if (this.phase === 'structure') {
-      engine.cameraY = 5000;
-      this.initiateEntropyTransition(engine.player, 5000);
+      engine.cameraY = ENTROPY_LENGTH;
+      this.initiateEntropyTransition(engine.player, ENTROPY_LENGTH);
       engine.lives = 3; // Restaurar vidas para la fase Entropía
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
@@ -435,7 +487,7 @@ export class ArcadeMode extends BaseMode {
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      const optimalPlatforms = this.platforms.filter(p => p.active && p.isOptimal).sort((a, b) => b.y - a.y);
+      const optimalPlatforms = this.getOptimalPlatforms();
       for (let i = 0; i < optimalPlatforms.length - 1; i++) {
         const p1 = optimalPlatforms[i];
         const p2 = optimalPlatforms[i + 1];
@@ -477,11 +529,33 @@ export class ArcadeMode extends BaseMode {
 // 🏆 Modo Etapas (Por Niveles con Barrido Inicial y Medallas)
 // ---------------------------------------------------------
 export class StageMode extends BaseMode {
-  constructor(width, height, segmentLength = 6000, repeatCount = 3) {
+  constructor(width, height, stageConfig = {}, legacyRepeatCount = 3) {
     super(width, height);
-    this.segmentLength = segmentLength;
-    this.repeatCount = repeatCount;
-    this.stageLength = segmentLength * repeatCount; // 18000px total
+
+    // Soporte para firma heredada (segmentLength, repeatCount) o stageConfig object
+    if (typeof stageConfig === 'number') {
+      const segmentLength = stageConfig;
+      this.segmentLength = segmentLength;
+      this.repeatCount = legacyRepeatCount;
+      this.stageLength = segmentLength * this.repeatCount;
+      this.stageKey = 'stage_1';
+      this.stageName = 'Malkuth';
+      this.code = 'MALKUTH';
+      this.phonetic = 'MAL-KOOTH';
+      this.stageTitle = 'El Reino';
+      this.gravityMultiplier = 1.0;
+    } else {
+      this.stageKey = stageConfig.key || 'stage_1';
+      this.stageName = stageConfig.name || 'Malkuth';
+      this.code = stageConfig.code || 'MALKUTH';
+      this.phonetic = stageConfig.phonetic || 'MAL-KOOTH';
+      this.stageTitle = stageConfig.title || 'El Reino (La Iniciación)';
+      this.stageLength = stageConfig.stageLength || 18000;
+      this.gravityMultiplier = stageConfig.gravityMultiplier || 1.0;
+      this.segmentLength = Math.floor(this.stageLength / 3);
+      this.repeatCount = 3;
+    }
+
     // BUGFIX: el mapa está pre-construido hasta -stageLength; el reciclaje por
     // defecto (height * 2.5 sobre la cámara) borraba los 2/3 superiores del mapa
     // al terminar la cinemática de barrido, haciendo la cima inalcanzable.
@@ -630,6 +704,16 @@ export class StageMode extends BaseMode {
 
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, this.width, this.height);
+
+    // Marca de Agua de la Sefirá
+    if (this.stageName) {
+      ctx.fillStyle = 'rgba(226, 177, 60, 0.04)';
+      ctx.font = '700 42px "Cinzel", serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.stageName.toUpperCase(), this.width * 0.5, this.height * 0.45);
+    }
+
     ctx.restore();
 
     // Hilo Dorado Continuo de la Ruta de Constelación
@@ -649,7 +733,7 @@ export class StageMode extends BaseMode {
     }
     
     ctx.beginPath();
-    const optimalPlatforms = this.platforms.filter(p => p.active && p.isOptimal).sort((a, b) => b.y - a.y);
+    const optimalPlatforms = this.getOptimalPlatforms();
     for (let i = 0; i < optimalPlatforms.length - 1; i++) {
       const p1 = optimalPlatforms[i];
       const p2 = optimalPlatforms[i + 1];
@@ -744,6 +828,13 @@ export class TutorialMode extends BaseMode {
 
   buildTutorialMap() {
     this.platforms = [];
+    // La plataforma inicial del BaseMode ya no existe: limpiar también la ruta
+    // óptima para no conservar una referencia huérfana a su ID
+    this.optimalRoute = [];
+    this.currentRouteIndex = 0;
+    this.adherenceHits = 0;
+    this.totalJumps = 0;
+    this._optimalDirty = true;
     
     // Base de partida
     this.addPlatform(this.width / 2 - 60, this.height - 50, 120, 16, { isStartingPlatform: true, isOptimal: true });
@@ -826,9 +917,14 @@ export class TutorialMode extends BaseMode {
         this.onTutorialStepChange(stepData);
       }
     }
+  }
 
-    // Completar tutorial al posarse en la plataforma cima
-    if (progressY >= 2800 && !this.stageComplete && player.vy === 0) {
+  // La Iniciación se completa al ATERRIZAR en la plataforma sagrada de la cima.
+  // (Antes se chequeaba player.vy === 0 en update, pero el salto automático del
+  // motor hace que vy nunca sea exactamente 0 al posarse, bloqueando el final.)
+  onPlatformStepped(platform, player) {
+    super.onPlatformStepped(platform, player);
+    if (platform.isSummit) {
       this.stageComplete = true;
     }
   }
@@ -859,7 +955,7 @@ export class TutorialMode extends BaseMode {
     ctx.lineWidth = 2.5;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
-    const optimalPlatforms = this.platforms.filter(p => p.active && p.isOptimal).sort((a, b) => b.y - a.y);
+    const optimalPlatforms = this.getOptimalPlatforms();
     for (let i = 0; i < optimalPlatforms.length - 1; i++) {
       const p1 = optimalPlatforms[i];
       const p2 = optimalPlatforms[i + 1];

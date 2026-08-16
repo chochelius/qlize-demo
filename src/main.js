@@ -2,8 +2,21 @@ import { Engine } from './engine.js';
 import { Player } from './player.js';
 import { ArcadeMode, StageMode, TutorialMode, getTutorialStepData } from './modes.js';
 import { QlizeAudioManager } from './audio.js';
+import { OverworldManager, OVERWORLD_GRAPH } from './overworld.js';
 
 const audio = new QlizeAudioManager();
+const overworld = new OverworldManager();
+
+// Claves y nombres centralizados (evita typos en strings mágicos repetidos)
+const SETTINGS_STORAGE_KEY = 'qlize_jump_settings';
+const MEDAL_NAMES = {
+  bronce: 'Bronce',
+  oro: 'Oro',
+  plata: 'Plata',
+  iniciacion: 'Iniciación'
+};
+const VICTORY_MEDALS = new Set([MEDAL_NAMES.bronce, MEDAL_NAMES.oro, MEDAL_NAMES.plata, MEDAL_NAMES.iniciacion]);
+const STAGE_MEDALS = new Set([MEDAL_NAMES.bronce, MEDAL_NAMES.oro, MEDAL_NAMES.plata]);
 
 // Detección de dispositivo
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -58,7 +71,7 @@ const DEFAULT_SETTINGS = {
 export const gameSettings = { ...DEFAULT_SETTINGS };
 
 // Cargar ajustes guardados
-const savedSettings = localStorage.getItem('qlize_jump_settings');
+const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
 if (savedSettings) {
   try {
     Object.assign(gameSettings, JSON.parse(savedSettings));
@@ -72,7 +85,7 @@ if (gameSettings.musicVolume !== undefined) {
 
 function saveSettings() {
   try {
-    localStorage.setItem('qlize_jump_settings', JSON.stringify(gameSettings));
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(gameSettings));
   } catch (e) {
     console.error('Error guardando configuración:', e);
   }
@@ -84,6 +97,10 @@ const input = { left: false, right: false, axis: 0 };
 // --- Teclado ---
 window.addEventListener('keydown', (e) => {
   audio.init();
+  // Solo mueve al jugador con una partida activa: evita el crosstalk con los
+  // atajos de menú (p. ej. KeyA inicia Arcade desde el menú principal y el
+  // jugador arrancaba moviéndose a la izquierda)
+  if (!engine.isRunning) return;
   if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
     input.left = true;
     input.axis = -1;
@@ -94,6 +111,8 @@ window.addEventListener('keydown', (e) => {
   }
 });
 window.addEventListener('keyup', (e) => {
+  // Sin guardia de engine.isRunning a propósito: siempre debe poder limpiarse
+  // una tecla aunque se haya soltado con el juego en pausa o en un menú
   if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
     input.left = false;
     input.axis = input.right ? 1 : 0;
@@ -102,6 +121,18 @@ window.addEventListener('keyup', (e) => {
     input.right = false;
     input.axis = input.left ? -1 : 0;
   }
+});
+
+// Si la ventana pierde el foco (cambio de pestaña/ventana) con una tecla
+// pulsada, el keyup nunca llega: resetear el input para no quedar pegado
+function resetInputState() {
+  input.left = false;
+  input.right = false;
+  input.axis = 0;
+}
+window.addEventListener('blur', resetInputState);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) resetInputState();
 });
 
 // --- Táctil (Swipe) ---
@@ -218,6 +249,23 @@ const btnSettingsReset = document.getElementById('btn-settings-reset');
 const btnSettingsX = document.getElementById('btn-settings-x');
 const btnExitGame = document.getElementById('btn-exit-game');
 
+// Elementos del Overworld (El Árbol de la Vida)
+const screenOverworld = document.getElementById('screen-overworld');
+const overworldViewport = document.getElementById('overworld-viewport');
+const btnOverworldBack = document.getElementById('btn-overworld-back');
+const overworldLinesSvg = document.getElementById('overworld-lines-svg');
+const overworldNodesContainer = document.getElementById('overworld-nodes-container');
+const overworldProgressCounter = document.getElementById('overworld-progress-counter');
+const overworldStageCard = document.getElementById('overworld-stage-card');
+const cardSefiraNum = document.getElementById('card-sefira-num');
+const cardSefiraPhonetic = document.getElementById('card-sefira-phonetic');
+const cardStageTitle = document.getElementById('card-stage-title');
+const cardStageDesc = document.getElementById('card-stage-desc');
+const cardStageLength = document.getElementById('card-stage-length');
+const cardStageGravity = document.getElementById('card-stage-gravity');
+const cardStageMedal = document.getElementById('card-stage-medal');
+const btnStartStage = document.getElementById('btn-start-stage');
+
 const btnPauseResume = document.getElementById('btn-pause-resume');
 const btnPauseRestart = document.getElementById('btn-pause-restart');
 const btnPauseSettings = document.getElementById('btn-pause-settings');
@@ -333,11 +381,14 @@ function updateSettingsUI() {
 }
 
 function isMatchingPreset(p) {
+  // Comparación con tolerancia para los valores flotantes (parseFloat de los
+  // sliders puede introducir artefactos de precisión)
+  const approx = (a, b) => Math.abs(a - b) < 0.001;
   return (
-    gameSettings.swipeSens === p.swipeSens &&
+    approx(gameSettings.swipeSens, p.swipeSens) &&
     gameSettings.acceleration === p.acceleration &&
     gameSettings.maxSpeed === p.maxSpeed &&
-    gameSettings.friction === p.friction &&
+    approx(gameSettings.friction, p.friction) &&
     gameSettings.gyroSens === p.gyroSens &&
     gameSettings.controlMode === p.controlMode
   );
@@ -443,6 +494,9 @@ btnSettingsReset.addEventListener('click', () => {
 });
 
 let currentModeClass = ArcadeMode;
+let currentStageKey = 'stage_1';
+let currentStageConfig = OVERWORLD_GRAPH.stage_1;
+let selectedStageKey = 'stage_1';
 
 const ZEN_MANTRAS = [
   "Respira. Recalibra. Asciende.",
@@ -451,12 +505,174 @@ const ZEN_MANTRAS = [
   "El orden y el caos son dos caras del mismo salto."
 ];
 
-function startGame(modeClass) {
+// ---------------------------------------------------------
+// Controlador del Overworld: El Árbol de la Vida
+// ---------------------------------------------------------
+function openOverworld() {
+  screenMenu.classList.add('hidden');
+  screenGameover.classList.add('hidden');
+  screenPause.classList.add('hidden');
+  hud.classList.add('hidden');
+  if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
+  screenOverworld.classList.remove('hidden');
+  
+  renderOverworld();
+  selectOverworldNode(selectedStageKey || 'stage_1', false);
+
+  if (overworldViewport) {
+    // Si estamos en Malkuth o etapa inicial, posicionar al inicio del árbol (abajo)
+    if (selectedStageKey === 'stage_1') {
+      setTimeout(() => {
+        overworldViewport.scrollTop = overworldViewport.scrollHeight;
+      }, 50);
+    }
+  }
+}
+
+function closeOverworld() {
+  screenOverworld.classList.add('hidden');
+  screenMenu.classList.remove('hidden');
+  updateMenuSelection();
+}
+
+function renderOverworld() {
+  if (!overworldLinesSvg || !overworldNodesContainer) return;
+  
+  // 1. Contador de progreso
+  const completedCount = overworld.getCompletedCount();
+  if (overworldProgressCounter) {
+    overworldProgressCounter.innerText = `${completedCount} / 10 SEFIROT PURIFICADAS`;
+  }
+
+  // 2. Renderizar líneas SVG del Árbol de la Vida
+  let svgHtml = '';
+  Object.keys(OVERWORLD_GRAPH).forEach(srcKey => {
+    const srcNode = OVERWORLD_GRAPH[srcKey];
+    const srcUnlocked = overworld.isUnlocked(srcKey);
+    const srcCompleted = overworld.isCompleted(srcKey);
+
+    srcNode.connections.forEach(tgtKey => {
+      const tgtNode = OVERWORLD_GRAPH[tgtKey];
+      if (!tgtNode) return;
+
+      const tgtUnlocked = overworld.isUnlocked(tgtKey);
+      const tgtCompleted = overworld.isCompleted(tgtKey);
+
+      const x1 = srcNode.x * 450;
+      const y1 = srcNode.y * 820;
+      const x2 = tgtNode.x * 450;
+      const y2 = tgtNode.y * 820;
+
+      let lineClass = 'locked';
+      if (srcCompleted && tgtUnlocked) {
+        lineClass = tgtCompleted ? 'completed' : 'active';
+      } else if (srcUnlocked && tgtUnlocked) {
+        lineClass = 'active';
+      }
+
+      svgHtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="overworld-line ${lineClass}" />`;
+    });
+  });
+  overworldLinesSvg.innerHTML = svgHtml;
+
+  // 3. Renderizar Nodos Octogonales
+  overworldNodesContainer.innerHTML = '';
+  Object.keys(OVERWORLD_GRAPH).forEach(stageKey => {
+    const node = OVERWORLD_GRAPH[stageKey];
+    const isUnlocked = overworld.isUnlocked(stageKey);
+    const isCompleted = overworld.isCompleted(stageKey);
+    const medal = overworld.getMedal(stageKey);
+
+    const nodeBtn = document.createElement('button');
+    nodeBtn.className = 'overworld-node';
+    nodeBtn.id = `node-${stageKey}`;
+    nodeBtn.style.left = `${node.x * 100}%`;
+    nodeBtn.style.top = `${node.y * 100}%`;
+    nodeBtn.setAttribute('data-key', stageKey);
+    nodeBtn.setAttribute('aria-label', `${node.id}. ${node.name} (${node.phonetic})`);
+
+    if (isCompleted) {
+      nodeBtn.classList.add('node-completed');
+      nodeBtn.innerHTML = `
+        <span class="node-num">${node.id}</span>
+        <span class="node-concept-label">${node.shortName}</span>
+        ${medal ? `<span class="node-medal-badge">${medal.icon || '🎖️'}</span>` : ''}
+      `;
+    } else if (isUnlocked) {
+      nodeBtn.classList.add('node-active');
+      nodeBtn.innerHTML = `
+        <span class="node-num">${node.id}</span>
+        <span class="node-concept-label">${node.shortName}</span>
+      `;
+    } else {
+      nodeBtn.classList.add('node-locked');
+      nodeBtn.innerHTML = `<span class="node-icon">🔒</span>`;
+    }
+
+    if (selectedStageKey === stageKey) {
+      nodeBtn.classList.add('keyboard-selected');
+    }
+
+    nodeBtn.addEventListener('click', () => {
+      if (isUnlocked) {
+        selectOverworldNode(stageKey, true);
+      }
+    });
+
+    overworldNodesContainer.appendChild(nodeBtn);
+  });
+}
+
+function selectOverworldNode(stageKey, playSound = true) {
+  const node = OVERWORLD_GRAPH[stageKey];
+  if (!node) return;
+
+  selectedStageKey = stageKey;
+  currentStageKey = stageKey;
+  currentStageConfig = node;
+
+  if (playSound) audio.playNodeHover();
+
+  // Actualizar estado visual de selección en botones
+  document.querySelectorAll('.overworld-node').forEach(btn => {
+    const isSelected = btn.getAttribute('data-key') === stageKey;
+    btn.classList.toggle('keyboard-selected', isSelected);
+    if (isSelected && playSound) {
+      btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+
+  // Poblar tarjeta flotante de la Sefirá
+  if (overworldStageCard) {
+    overworldStageCard.classList.remove('hidden');
+    if (cardSefiraNum) cardSefiraNum.innerText = `SEFIRÁ ${node.id < 10 ? '0' + node.id : node.id}`;
+    if (cardSefiraPhonetic) cardSefiraPhonetic.innerText = node.phonetic;
+    if (cardStageTitle) cardStageTitle.innerText = `${node.id}. ${node.name} • ${node.title}`;
+    if (cardStageDesc) cardStageDesc.innerText = node.desc;
+    if (cardStageLength) cardStageLength.innerText = `${Math.floor(node.stageLength / 1000)}.000m`;
+    if (cardStageGravity) cardStageGravity.innerText = `${node.gravityMultiplier.toFixed(2)}x`;
+    
+    const bestMedal = overworld.getMedal(stageKey);
+    if (cardStageMedal) {
+      cardStageMedal.innerText = bestMedal ? `${bestMedal.icon} ${bestMedal.name}` : '— Sin Medalla';
+    }
+  }
+}
+
+function startSelectedStage() {
+  if (!overworld.isUnlocked(currentStageKey)) return;
+  audio.playTibetanBowl();
+  screenOverworld.classList.add('hidden');
+  startGame(StageMode, currentStageConfig);
+}
+
+function startGame(modeClass, customConfig = null) {
   audio.init();
   requestOrientationPermission();
   currentModeClass = modeClass;
 
   screenMenu.classList.add('hidden');
+  screenOverworld.classList.add('hidden');
   screenGameover.classList.add('hidden');
   screenSettings.classList.add('hidden');
   screenPause.classList.add('hidden');
@@ -468,9 +684,14 @@ function startGame(modeClass) {
   engine.reset();
 
   const player = new Player(canvas.width / 2 - 16, canvas.height - 150, gameSettings);
-  const mode = modeClass === TutorialMode
-    ? new TutorialMode(canvas.width, canvas.height, isDesktop, gameSettings.controlMode)
-    : new modeClass(canvas.width, canvas.height);
+  let mode;
+  if (modeClass === TutorialMode) {
+    mode = new TutorialMode(canvas.width, canvas.height, isDesktop, gameSettings.controlMode);
+  } else if (modeClass === StageMode) {
+    mode = new StageMode(canvas.width, canvas.height, customConfig || currentStageConfig || OVERWORLD_GRAPH.stage_1);
+  } else {
+    mode = new modeClass(canvas.width, canvas.height);
+  }
 
   engine.setPlayer(player);
   engine.setMode(mode);
@@ -520,18 +741,23 @@ function startGame(modeClass) {
 
   engine.onGameOver = (score, realm, medal) => {
     if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
-    if (medal && (medal.name === 'Bronce' || medal.name === 'Iniciación')) {
+    if (medal && VICTORY_MEDALS.has(medal.name)) {
       audio.playVictory();
     } else {
       audio.playLifeLost();
     }
+
+    if (modeClass === StageMode && medal && STAGE_MEDALS.has(medal.name)) {
+      overworld.completeStage(currentStageKey, score, medal);
+    }
+
     finalScoreEl.innerText = Math.floor(score);
     if (medal) {
       medalIconEl.innerText = medal.icon;
       medalTitleEl.innerText = `${medal.name} • ${medal.title}`;
       medalIconEl.classList.remove('hidden');
       medalTitleEl.classList.remove('hidden');
-      gameoverTitleEl.innerText = medal.name === 'Iniciación' ? '¡INICIACIÓN COMPLETADA!' : (medal.name === 'Bronce' ? '¡ETAPA COMPLETADA!' : 'ETAPA FINALIZADA');
+      gameoverTitleEl.innerText = medal.name === MEDAL_NAMES.iniciacion ? '¡INICIACIÓN COMPLETADA!' : (medal.name === MEDAL_NAMES.bronce ? '¡CIMA CONQUISTADA!' : 'ETAPA FINALIZADA');
     } else {
       medalIconEl.classList.add('hidden');
       medalTitleEl.classList.add('hidden');
@@ -564,12 +790,17 @@ function startGame(modeClass) {
   engine.onStageComplete = (score, medal) => {
     if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
     audio.playVictory();
+    
+    if (modeClass === StageMode) {
+      overworld.completeStage(currentStageKey, score, medal);
+    }
+
     finalScoreEl.innerText = Math.floor(score);
     medalIconEl.innerText = medal.icon;
     medalTitleEl.innerText = `${medal.name} • ${medal.title}`;
     medalIconEl.classList.remove('hidden');
     medalTitleEl.classList.remove('hidden');
-    gameoverTitleEl.innerText = medal.name === 'Iniciación' ? '¡INICIACIÓN COMPLETADA!' : '¡ETAPA COMPLETADA!';
+    gameoverTitleEl.innerText = medal.name === MEDAL_NAMES.iniciacion ? '¡INICIACIÓN COMPLETADA!' : '¡CIMA SAGRADA CONQUISTADA!';
     screenGameover.classList.remove('hidden');
     hud.classList.add('hidden');
   };
@@ -578,16 +809,34 @@ function startGame(modeClass) {
 }
 
 btnArcade.addEventListener('click', () => startGame(ArcadeMode));
-btnStage.addEventListener('click', () => startGame(StageMode));
+btnStage.addEventListener('click', () => openOverworld());
 if (btnTutorial) btnTutorial.addEventListener('click', () => startGame(TutorialMode));
-btnRestart.addEventListener('click', () => startGame(currentModeClass));
+btnRestart.addEventListener('click', () => {
+  if (currentModeClass === StageMode) {
+    startGame(StageMode, currentStageConfig);
+  } else {
+    startGame(currentModeClass);
+  }
+});
 btnMenu.addEventListener('click', () => {
   audio.stopMusic();
   if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
   screenGameover.classList.add('hidden');
-  screenMenu.classList.remove('hidden');
+  
+  if (currentModeClass === StageMode) {
+    openOverworld();
+  } else {
+    screenMenu.classList.remove('hidden');
+  }
   hud.classList.add('hidden');
 });
+
+if (btnOverworldBack) {
+  btnOverworldBack.addEventListener('click', () => closeOverworld());
+}
+if (btnStartStage) {
+  btnStartStage.addEventListener('click', () => startSelectedStage());
+}
 
 // Menú de Pausa ("El Silencio Creativo")
 function openPauseMenu() {
@@ -618,24 +867,44 @@ function exitToMenu() {
   input.left = false;
   input.right = false;
   input.axis = 0;
-  screenMenu.classList.remove('hidden');
+  if (currentModeClass === StageMode) {
+    openOverworld();
+  } else {
+    screenMenu.classList.remove('hidden');
+  }
 }
 
-btnExitGame.addEventListener('click', openPauseMenu);
-if (btnPauseResume) btnPauseResume.addEventListener('click', resumeGame);
-if (btnPauseRestart) btnPauseRestart.addEventListener('click', () => startGame(currentModeClass));
-if (btnPauseSettings) {
-  btnPauseSettings.addEventListener('click', () => {
-    updateSettingsUI();
-    screenSettings.classList.remove('hidden');
+btnPauseResume.addEventListener('click', resumeGame);
+btnPauseRestart.addEventListener('click', () => {
+  screenPause.classList.add('hidden');
+  if (currentModeClass === StageMode) {
+    startGame(StageMode, currentStageConfig);
+  } else {
+    startGame(currentModeClass);
+  }
+});
+btnPauseSettings.addEventListener('click', () => {
+  updateSettingsUI();
+  screenSettings.classList.remove('hidden');
+});
+btnPauseMenu.addEventListener('click', exitToMenu);
+
+// (Los listeners de btnSettingsToggle y btnSettingsX ya están registrados
+// junto al resto del cableado de ajustes más arriba; duplicarlos hacía que
+// cada click disparase la acción dos veces)
+
+if (btnExitGame) {
+  btnExitGame.addEventListener('click', () => {
+    saveSettings();
+    screenSettings.classList.add('hidden');
+    exitToMenu();
   });
 }
-if (btnPauseMenu) btnPauseMenu.addEventListener('click', exitToMenu);
 
 // ---------------------------------------------------------
-// Navegación de Menús por Teclado (Desktop & Accesibilidad)
+// Navegación Universal por Teclado (Cyber-Zen Octogonal)
 // ---------------------------------------------------------
-const menuButtons = [btnArcade, btnStage, btnTutorial, btnSettingsToggle].filter(Boolean);
+const menuButtons = [btnArcade, btnStage, btnTutorial].filter(Boolean);
 const pauseButtons = [btnPauseResume, btnPauseRestart, btnPauseSettings, btnPauseMenu].filter(Boolean);
 const gameoverButtons = [btnRestart, btnMenu].filter(Boolean);
 
@@ -643,20 +912,25 @@ let menuFocusIdx = 0;
 let pauseFocusIdx = 0;
 let gameoverFocusIdx = 0;
 
-function setSelection(elements, index) {
-  elements.forEach((btn, i) => {
-    if (btn) btn.classList.toggle('keyboard-selected', i === index);
-  });
-  if (elements[index]) {
-    elements[index].focus();
-  }
-}
-
 function clearSelections() {
   document.querySelectorAll('.keyboard-selected').forEach(el => el.classList.remove('keyboard-selected'));
 }
 
-// Limpiar selección de teclado si el usuario utiliza el mouse
+function setSelection(buttonList, index) {
+  clearSelections();
+  if (buttonList[index]) {
+    buttonList[index].classList.add('keyboard-selected');
+    buttonList[index].focus();
+  }
+}
+
+function updateMenuSelection() {
+  if (!screenMenu.classList.contains('hidden')) {
+    setSelection(menuButtons, menuFocusIdx);
+  }
+}
+
+// Limpiar selección de teclado cuando el usuario usa el ratón
 window.addEventListener('mousemove', () => {
   clearSelections();
 });
@@ -666,6 +940,10 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Escape') {
     if (!screenSettings.classList.contains('hidden')) {
       screenSettings.classList.add('hidden');
+      return;
+    }
+    if (!screenOverworld.classList.contains('hidden')) {
+      closeOverworld();
       return;
     }
     if (!screenPause.classList.contains('hidden')) {
@@ -678,7 +956,46 @@ window.addEventListener('keydown', (e) => {
     }
   }
 
-  // 2. Navegación en Menú de Pausa
+  // 2. Navegación en Pantalla de Overworld (El Árbol de la Vida)
+  if (!screenOverworld.classList.contains('hidden')) {
+    const stageKeys = Object.keys(OVERWORLD_GRAPH);
+    const currentIdx = stageKeys.indexOf(selectedStageKey);
+
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      // Subir en el árbol (hacia Kether / id superior)
+      const nextIdx = Math.min(stageKeys.length - 1, currentIdx + 1);
+      const nextKey = stageKeys[nextIdx];
+      if (overworld.isUnlocked(nextKey)) {
+        selectOverworldNode(nextKey, true);
+      }
+    } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+      e.preventDefault();
+      // Bajar en el árbol (hacia Malkuth / id inferior)
+      const prevIdx = Math.max(0, currentIdx - 1);
+      selectOverworldNode(stageKeys[prevIdx], true);
+    } else if (e.code === 'ArrowLeft' || e.code === 'KeyA' || e.code === 'ArrowRight' || e.code === 'KeyD') {
+      e.preventDefault();
+      // Alternar columnas (e.g. Hod (3) <-> Netzach (4), Gevurah (6) <-> Chesed (7), Binah (8) <-> Chokhmah (9))
+      let counterpart = null;
+      if (selectedStageKey === 'stage_3') counterpart = 'stage_4';
+      else if (selectedStageKey === 'stage_4') counterpart = 'stage_3';
+      else if (selectedStageKey === 'stage_6') counterpart = 'stage_7';
+      else if (selectedStageKey === 'stage_7') counterpart = 'stage_6';
+      else if (selectedStageKey === 'stage_8') counterpart = 'stage_9';
+      else if (selectedStageKey === 'stage_9') counterpart = 'stage_8';
+
+      if (counterpart && overworld.isUnlocked(counterpart)) {
+        selectOverworldNode(counterpart, true);
+      }
+    } else if (e.code === 'Enter' || e.code === 'Space') {
+      e.preventDefault();
+      startSelectedStage();
+    }
+    return;
+  }
+
+  // 3. Navegación en Menú de Pausa
   if (!screenPause.classList.contains('hidden')) {
     if (e.code === 'ArrowDown' || e.code === 'KeyS') {
       e.preventDefault();
@@ -704,7 +1021,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
 
-  // 3. Navegación en Pantalla de Game Over
+  // 4. Navegación en Pantalla de Game Over
   if (!screenGameover.classList.contains('hidden')) {
     if (e.code === 'ArrowDown' || e.code === 'KeyS' || e.code === 'ArrowUp' || e.code === 'KeyW') {
       e.preventDefault();
@@ -721,7 +1038,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
 
-  // 4. Pantalla de Configuración abierta (Escape cierra)
+  // 5. Pantalla de Configuración abierta (Escape cierra)
   if (!screenSettings.classList.contains('hidden')) {
     if (e.code === 'Escape') {
       saveSettings();
@@ -730,7 +1047,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
 
-  // 5. Navegación en Menú Principal (cuando no estamos en partida activa)
+  // 6. Navegación en Menú Principal (cuando no estamos en partida activa)
   if (!screenMenu.classList.contains('hidden') && !engine.isRunning) {
     if (e.code === 'ArrowDown' || e.code === 'KeyS') {
       e.preventDefault();
@@ -746,7 +1063,7 @@ window.addEventListener('keydown', (e) => {
     } else if (e.code === 'Digit1' || e.code === 'KeyA') {
       startGame(ArcadeMode);
     } else if (e.code === 'Digit2' || e.code === 'KeyE') {
-      startGame(StageMode);
+      openOverworld();
     } else if (e.code === 'Digit3' || e.code === 'KeyI' || e.code === 'KeyT') {
       if (btnTutorial) startGame(TutorialMode);
     } else if (e.code === 'Digit4' || e.code === 'KeyC') {
