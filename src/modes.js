@@ -584,6 +584,8 @@ export class StageMode extends BaseMode {
           this.sweepY = 0;
           this.isSweepingCamera = false;
           this.sweepComplete = true;
+          // Reposicionar al jugador en la plataforma inicial después del barrido
+          this.needsPlayerReposition = true;
         }
       }
       return;
