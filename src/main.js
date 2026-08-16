@@ -1,6 +1,6 @@
 import { Engine } from './engine.js';
 import { Player } from './player.js';
-import { ArcadeMode, StageMode } from './modes.js';
+import { ArcadeMode, StageMode, TutorialMode, getTutorialStepData } from './modes.js';
 import { QlizeAudioManager } from './audio.js';
 
 const audio = new QlizeAudioManager();
@@ -209,6 +209,7 @@ const pauseMantraEl = document.getElementById('pause-mantra');
 
 const btnArcade = document.getElementById('btn-arcade');
 const btnStage = document.getElementById('btn-stage');
+const btnTutorial = document.getElementById('btn-tutorial');
 const btnRestart = document.getElementById('btn-restart');
 const btnMenu = document.getElementById('btn-menu');
 const btnSettingsToggle = document.getElementById('btn-settings-toggle');
@@ -221,6 +222,11 @@ const btnPauseResume = document.getElementById('btn-pause-resume');
 const btnPauseRestart = document.getElementById('btn-pause-restart');
 const btnPauseSettings = document.getElementById('btn-pause-settings');
 const btnPauseMenu = document.getElementById('btn-pause-menu');
+
+const hudTutorialBanner = document.getElementById('hud-tutorial-banner');
+const tutorialBadge = document.getElementById('tutorial-badge');
+const tutorialTitle = document.getElementById('tutorial-title');
+const tutorialText = document.getElementById('tutorial-text');
 
 const controlKeyboard = document.getElementById('control-keyboard');
 const controlSwipe = document.getElementById('control-swipe');
@@ -462,11 +468,36 @@ function startGame(modeClass) {
   engine.reset();
 
   const player = new Player(canvas.width / 2 - 16, canvas.height - 150, gameSettings);
-  const mode = new modeClass(canvas.width, canvas.height);
+  const mode = modeClass === TutorialMode
+    ? new TutorialMode(canvas.width, canvas.height, isDesktop, gameSettings.controlMode)
+    : new modeClass(canvas.width, canvas.height);
 
   engine.setPlayer(player);
   engine.setMode(mode);
   engine.setInput(input);
+
+  // Configuración especial de Tutorial Mode (Iniciación Guiada)
+  if (modeClass === TutorialMode) {
+    const initialStep = getTutorialStepData(1, isDesktop, gameSettings.controlMode);
+    if (hudTutorialBanner) {
+      hudTutorialBanner.classList.remove('hidden');
+      if (tutorialBadge) tutorialBadge.innerText = initialStep.badge;
+      if (tutorialTitle) tutorialTitle.innerText = initialStep.title;
+      if (tutorialText) tutorialText.innerText = initialStep.text;
+    }
+    mode.onTutorialStepChange = (stepData) => {
+      if (tutorialBadge) tutorialBadge.innerText = stepData.badge;
+      if (tutorialTitle) tutorialTitle.innerText = stepData.title;
+      if (tutorialText) tutorialText.innerText = stepData.text;
+      if (hudTutorialBanner) {
+        hudTutorialBanner.style.animation = 'none';
+        hudTutorialBanner.offsetHeight; // forzar reflow
+        hudTutorialBanner.style.animation = 'fadeInTutorial 0.4s ease-out';
+      }
+    };
+  } else {
+    if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
+  }
 
   // Iniciar banda sonora adaptativa con intro_tema (1).mp3
   audio.startMusic();
@@ -488,7 +519,8 @@ function startGame(modeClass) {
   };
 
   engine.onGameOver = (score, realm, medal) => {
-    if (medal && medal.name === 'Bronce') {
+    if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
+    if (medal && (medal.name === 'Bronce' || medal.name === 'Iniciación')) {
       audio.playVictory();
     } else {
       audio.playLifeLost();
@@ -499,7 +531,7 @@ function startGame(modeClass) {
       medalTitleEl.innerText = `${medal.name} • ${medal.title}`;
       medalIconEl.classList.remove('hidden');
       medalTitleEl.classList.remove('hidden');
-      gameoverTitleEl.innerText = medal.name === 'Bronce' ? '¡ETAPA COMPLETADA!' : 'ETAPA FINALIZADA';
+      gameoverTitleEl.innerText = medal.name === 'Iniciación' ? '¡INICIACIÓN COMPLETADA!' : (medal.name === 'Bronce' ? '¡ETAPA COMPLETADA!' : 'ETAPA FINALIZADA');
     } else {
       medalIconEl.classList.add('hidden');
       medalTitleEl.classList.add('hidden');
@@ -530,13 +562,14 @@ function startGame(modeClass) {
   };
 
   engine.onStageComplete = (score, medal) => {
+    if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
     audio.playVictory();
     finalScoreEl.innerText = Math.floor(score);
     medalIconEl.innerText = medal.icon;
     medalTitleEl.innerText = `${medal.name} • ${medal.title}`;
     medalIconEl.classList.remove('hidden');
     medalTitleEl.classList.remove('hidden');
-    gameoverTitleEl.innerText = '¡ETAPA COMPLETADA!';
+    gameoverTitleEl.innerText = medal.name === 'Iniciación' ? '¡INICIACIÓN COMPLETADA!' : '¡ETAPA COMPLETADA!';
     screenGameover.classList.remove('hidden');
     hud.classList.add('hidden');
   };
@@ -546,9 +579,11 @@ function startGame(modeClass) {
 
 btnArcade.addEventListener('click', () => startGame(ArcadeMode));
 btnStage.addEventListener('click', () => startGame(StageMode));
+if (btnTutorial) btnTutorial.addEventListener('click', () => startGame(TutorialMode));
 btnRestart.addEventListener('click', () => startGame(currentModeClass));
 btnMenu.addEventListener('click', () => {
   audio.stopMusic();
+  if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
   screenGameover.classList.add('hidden');
   screenMenu.classList.remove('hidden');
   hud.classList.add('hidden');
@@ -577,6 +612,7 @@ function exitToMenu() {
   screenPause.classList.add('hidden');
   screenSettings.classList.add('hidden');
   hud.classList.add('hidden');
+  if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
   engine.stop();
   audio.stopMusic();
   input.left = false;
@@ -596,13 +632,126 @@ if (btnPauseSettings) {
 }
 if (btnPauseMenu) btnPauseMenu.addEventListener('click', exitToMenu);
 
+// ---------------------------------------------------------
+// Navegación de Menús por Teclado (Desktop & Accesibilidad)
+// ---------------------------------------------------------
+const menuButtons = [btnArcade, btnStage, btnTutorial, btnSettingsToggle].filter(Boolean);
+const pauseButtons = [btnPauseResume, btnPauseRestart, btnPauseSettings, btnPauseMenu].filter(Boolean);
+const gameoverButtons = [btnRestart, btnMenu].filter(Boolean);
+
+let menuFocusIdx = 0;
+let pauseFocusIdx = 0;
+let gameoverFocusIdx = 0;
+
+function setSelection(elements, index) {
+  elements.forEach((btn, i) => {
+    if (btn) btn.classList.toggle('keyboard-selected', i === index);
+  });
+  if (elements[index]) {
+    elements[index].focus();
+  }
+}
+
+function clearSelections() {
+  document.querySelectorAll('.keyboard-selected').forEach(el => el.classList.remove('keyboard-selected'));
+}
+
+// Limpiar selección de teclado si el usuario utiliza el mouse
+window.addEventListener('mousemove', () => {
+  clearSelections();
+});
+
 window.addEventListener('keydown', (e) => {
-  if (e.code !== 'Escape') return;
+  // 1. Manejo de Escape
+  if (e.code === 'Escape') {
+    if (!screenSettings.classList.contains('hidden')) {
+      screenSettings.classList.add('hidden');
+      return;
+    }
+    if (!screenPause.classList.contains('hidden')) {
+      resumeGame();
+      return;
+    }
+    if (engine.isRunning) {
+      openPauseMenu();
+      return;
+    }
+  }
+
+  // 2. Navegación en Menú de Pausa
+  if (!screenPause.classList.contains('hidden')) {
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+      e.preventDefault();
+      pauseFocusIdx = (pauseFocusIdx + 1) % pauseButtons.length;
+      setSelection(pauseButtons, pauseFocusIdx);
+    } else if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      pauseFocusIdx = (pauseFocusIdx - 1 + pauseButtons.length) % pauseButtons.length;
+      setSelection(pauseButtons, pauseFocusIdx);
+    } else if (e.code === 'Enter' || e.code === 'Space') {
+      e.preventDefault();
+      if (pauseButtons[pauseFocusIdx]) pauseButtons[pauseFocusIdx].click();
+    } else if (e.code === 'Digit1' || e.code === 'KeyR') {
+      resumeGame();
+    } else if (e.code === 'Digit2' || e.code === 'KeyN') {
+      startGame(currentModeClass);
+    } else if (e.code === 'Digit3' || e.code === 'KeyA') {
+      updateSettingsUI();
+      screenSettings.classList.remove('hidden');
+    } else if (e.code === 'Digit4' || e.code === 'KeyM') {
+      exitToMenu();
+    }
+    return;
+  }
+
+  // 3. Navegación en Pantalla de Game Over
+  if (!screenGameover.classList.contains('hidden')) {
+    if (e.code === 'ArrowDown' || e.code === 'KeyS' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      gameoverFocusIdx = (gameoverFocusIdx + 1) % gameoverButtons.length;
+      setSelection(gameoverButtons, gameoverFocusIdx);
+    } else if (e.code === 'Enter' || e.code === 'Space') {
+      e.preventDefault();
+      if (gameoverButtons[gameoverFocusIdx]) gameoverButtons[gameoverFocusIdx].click();
+    } else if (e.code === 'Digit1' || e.code === 'KeyR') {
+      btnRestart.click();
+    } else if (e.code === 'Digit2' || e.code === 'KeyM') {
+      btnMenu.click();
+    }
+    return;
+  }
+
+  // 4. Pantalla de Configuración abierta (Escape cierra)
   if (!screenSettings.classList.contains('hidden')) {
-    screenSettings.classList.add('hidden');
-  } else if (!screenPause.classList.contains('hidden')) {
-    resumeGame();
-  } else if (engine.isRunning) {
-    openPauseMenu();
+    if (e.code === 'Escape') {
+      saveSettings();
+      screenSettings.classList.add('hidden');
+    }
+    return;
+  }
+
+  // 5. Navegación en Menú Principal (cuando no estamos en partida activa)
+  if (!screenMenu.classList.contains('hidden') && !engine.isRunning) {
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+      e.preventDefault();
+      menuFocusIdx = (menuFocusIdx + 1) % menuButtons.length;
+      setSelection(menuButtons, menuFocusIdx);
+    } else if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      menuFocusIdx = (menuFocusIdx - 1 + menuButtons.length) % menuButtons.length;
+      setSelection(menuButtons, menuFocusIdx);
+    } else if (e.code === 'Enter' || e.code === 'Space') {
+      e.preventDefault();
+      if (menuButtons[menuFocusIdx]) menuButtons[menuFocusIdx].click();
+    } else if (e.code === 'Digit1' || e.code === 'KeyA') {
+      startGame(ArcadeMode);
+    } else if (e.code === 'Digit2' || e.code === 'KeyE') {
+      startGame(StageMode);
+    } else if (e.code === 'Digit3' || e.code === 'KeyI' || e.code === 'KeyT') {
+      if (btnTutorial) startGame(TutorialMode);
+    } else if (e.code === 'Digit4' || e.code === 'KeyC') {
+      updateSettingsUI();
+      screenSettings.classList.remove('hidden');
+    }
   }
 });

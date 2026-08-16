@@ -1,16 +1,19 @@
 // =========================================================
-// QLIZE AUDIO MANAGER (Web Audio API & intro_tema (1).mp3)
+// QLIZE AUDIO MANAGER (Web Audio API: Estructura & Entropía Invertida)
 // Banda sonora adaptativa con filtro de degradación y SFX sintéticos
 // =========================================================
 export class QlizeAudioManager {
   constructor() {
     this.ctx = null;
-    this.audioElement = null;
-    this.sourceNode = null;
+    this.audioStructure = null;
+    this.audioEntropy = null;
+    this.sourceStructure = null;
+    this.sourceEntropy = null;
     this.degradationFilter = null;
     this.masterGain = null;
     this.isInitialized = false;
     this.isPlaying = false;
+    this.currentPhase = 'structure';
     this.volume = 0.65;
     this.isMuted = false;
   }
@@ -28,25 +31,30 @@ export class QlizeAudioManager {
       if (!AudioContext) return;
       this.ctx = new AudioContext();
 
-      // Cargar elemento de audio para intro_tema.mp3 normalizado
-      this.audioElement = new Audio('/intro_tema.mp3');
-      this.audioElement.loop = true;
-      this.audioElement.crossOrigin = 'anonymous';
+      // 1. Pistas de Música: Estructura (Normal) y Entropía (Invertida)
+      this.audioStructure = new Audio('/intro_tema.mp3');
+      this.audioStructure.loop = true;
+      this.audioStructure.crossOrigin = 'anonymous';
 
-      // Fuente de Audio y Cadena de Procesamiento
-      this.sourceNode = this.ctx.createMediaElementSource(this.audioElement);
-      
-      // Filtro de Paso Bajo para Niebla Sonora (Degradación de Vidas)
+      this.audioEntropy = new Audio('/intro_tema_entropy.mp3');
+      this.audioEntropy.loop = true;
+      this.audioEntropy.crossOrigin = 'anonymous';
+
+      // 2. Filtro de Paso Bajo para Niebla Sonora (Degradación de Vidas)
       this.degradationFilter = this.ctx.createBiquadFilter();
       this.degradationFilter.type = 'lowpass';
       this.degradationFilter.frequency.value = 22000; // Abierto por defecto
 
-      // Control de Ganancia Master
+      // 3. Control de Ganancia Master
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.value = this.isMuted ? 0 : this.volume;
 
-      // Conexión: Source -> Degradation Filter -> Master Gain -> Output
-      this.sourceNode.connect(this.degradationFilter);
+      // 4. Cadena de Procesamiento: Sources -> Degradation Filter -> Master Gain -> Destination
+      this.sourceStructure = this.ctx.createMediaElementSource(this.audioStructure);
+      this.sourceEntropy = this.ctx.createMediaElementSource(this.audioEntropy);
+
+      this.sourceStructure.connect(this.degradationFilter);
+      this.sourceEntropy.connect(this.degradationFilter);
       this.degradationFilter.connect(this.masterGain);
       this.masterGain.connect(this.ctx.destination);
 
@@ -56,50 +64,65 @@ export class QlizeAudioManager {
     }
   }
 
+  getActiveAudio() {
+    return this.currentPhase === 'entropy' ? this.audioEntropy : this.audioStructure;
+  }
+
   startMusic() {
     this.init();
-    if (!this.audioElement) return;
-
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
 
-    this.audioElement.playbackRate = 1.0;
-    this.audioElement.currentTime = 0;
-    const playPromise = this.audioElement.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        this.isPlaying = true;
-      }).catch(err => {
-        console.warn('Reproducción de audio bloqueada por el navegador:', err);
-      });
+    this.currentPhase = 'structure';
+    if (this.audioEntropy) {
+      this.audioEntropy.pause();
+      this.audioEntropy.currentTime = 0;
+    }
+
+    if (this.audioStructure) {
+      this.audioStructure.playbackRate = 1.0;
+      this.audioStructure.currentTime = 0;
+      const playPromise = this.audioStructure.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          this.isPlaying = true;
+        }).catch(err => {
+          console.warn('Reproducción de audio bloqueada por el navegador:', err);
+        });
+      }
     }
   }
 
   pauseMusic() {
-    if (this.audioElement && this.isPlaying) {
-      this.audioElement.pause();
-      this.isPlaying = false;
-    }
+    if (this.audioStructure) this.audioStructure.pause();
+    if (this.audioEntropy) this.audioEntropy.pause();
+    this.isPlaying = false;
   }
 
   resumeMusic() {
-    if (this.audioElement && !this.isPlaying) {
-      if (this.ctx && this.ctx.state === 'suspended') {
-        this.ctx.resume();
-      }
-      this.audioElement.play().then(() => {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+    const active = this.getActiveAudio();
+    if (active) {
+      active.play().then(() => {
         this.isPlaying = true;
       }).catch(() => {});
     }
   }
 
   stopMusic() {
-    if (this.audioElement) {
-      this.audioElement.pause();
-      this.audioElement.currentTime = 0;
-      this.isPlaying = false;
+    if (this.audioStructure) {
+      this.audioStructure.pause();
+      this.audioStructure.currentTime = 0;
     }
+    if (this.audioEntropy) {
+      this.audioEntropy.pause();
+      this.audioEntropy.currentTime = 0;
+    }
+    this.currentPhase = 'structure';
+    this.isPlaying = false;
   }
 
   setMasterVolume(volume) {
@@ -135,13 +158,30 @@ export class QlizeAudioManager {
   }
 
   setPhase(phase) {
-    if (!this.audioElement) return;
     if (phase === 'entropy') {
-      // Fase Entropía: Aumentar tempo/velocidad a 1.18x
-      this.audioElement.playbackRate = 1.18;
+      if (this.currentPhase === 'entropy') return;
+      this.currentPhase = 'entropy';
+
+      if (this.isPlaying) {
+        if (this.audioStructure) this.audioStructure.pause();
+        if (this.audioEntropy) {
+          this.audioEntropy.currentTime = 0;
+          this.audioEntropy.playbackRate = 1.15;
+          this.audioEntropy.play().catch(() => {});
+        }
+      }
     } else {
-      // Fase Estructura: Velocidad normal 1.0x
-      this.audioElement.playbackRate = 1.0;
+      if (this.currentPhase === 'structure') return;
+      this.currentPhase = 'structure';
+
+      if (this.isPlaying) {
+        if (this.audioEntropy) this.audioEntropy.pause();
+        if (this.audioStructure) {
+          this.audioStructure.currentTime = 0;
+          this.audioStructure.playbackRate = 1.0;
+          this.audioStructure.play().catch(() => {});
+        }
+      }
     }
   }
 

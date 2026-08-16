@@ -280,21 +280,30 @@
     }
 
     /* MODO ARCADE: Fuego Gótico Rojo */
-    #btn-arcade:hover::after {
+    #btn-arcade:hover::after,
+    #btn-arcade:focus-visible::after,
+    #btn-arcade.keyboard-selected::after {
       border-color: var(--color-gothic-red);
       box-shadow: inset 0 0 16px rgba(211, 47, 47, 0.4);
     }
-    #btn-arcade:hover {
+    #btn-arcade:hover,
+    #btn-arcade:focus-visible,
+    #btn-arcade.keyboard-selected {
       background: linear-gradient(135deg, rgba(211, 47, 47, 0.22) 0%, rgba(15, 23, 42, 0.95) 100%);
       transform: translateY(-2px) scale(1.01);
+      outline: none;
     }
-    #btn-arcade:hover .btn-icon-oct {
+    #btn-arcade:hover .btn-icon-oct,
+    #btn-arcade:focus-visible .btn-icon-oct,
+    #btn-arcade.keyboard-selected .btn-icon-oct {
       background: var(--color-gothic-red);
       color: #fff;
       box-shadow: 0 0 12px var(--color-gothic-red);
       animation: gothicFirePulse 1.2s infinite alternate;
     }
-    #btn-arcade:hover .btn-content h3 {
+    #btn-arcade:hover .btn-content h3,
+    #btn-arcade:focus-visible .btn-content h3,
+    #btn-arcade.keyboard-selected .btn-content h3 {
       color: #fca5a5;
     }
 
@@ -304,22 +313,116 @@
     }
 
     /* MODO ETAPAS: Línea Punteada Dorada y Brillo Celeste */
-    #btn-stage:hover::after {
+    #btn-stage:hover::after,
+    #btn-stage:focus-visible::after,
+    #btn-stage.keyboard-selected::after {
       border-color: var(--color-gold);
       box-shadow: inset 0 0 14px rgba(226, 177, 60, 0.3);
     }
-    #btn-stage:hover {
+    #btn-stage:hover,
+    #btn-stage:focus-visible,
+    #btn-stage.keyboard-selected {
       background: linear-gradient(135deg, rgba(226, 177, 60, 0.15) 0%, rgba(100, 181, 246, 0.12) 100%);
       transform: translateY(-2px) scale(1.01);
+      outline: none;
     }
-    #btn-stage:hover .btn-icon-oct {
+    #btn-stage:hover .btn-icon-oct,
+    #btn-stage:focus-visible .btn-icon-oct,
+    #btn-stage.keyboard-selected .btn-icon-oct {
       background: var(--color-gold);
       color: #000;
       box-shadow: 0 0 12px var(--color-gold);
     }
-    #btn-stage:hover .btn-content h3 {
+    #btn-stage:hover .btn-content h3,
+    #btn-stage:focus-visible .btn-content h3,
+    #btn-stage.keyboard-selected .btn-content h3 {
       color: var(--color-sky);
       text-shadow: 0 0 10px rgba(100, 181, 246, 0.6);
+    }
+
+    /* MODO TUTORIAL: Resplandor Jade Zen */
+    #btn-tutorial:hover::after,
+    #btn-tutorial:focus-visible::after,
+    #btn-tutorial.keyboard-selected::after {
+      border-color: var(--color-jade);
+      box-shadow: inset 0 0 14px rgba(43, 179, 130, 0.35);
+    }
+    #btn-tutorial:hover,
+    #btn-tutorial:focus-visible,
+    #btn-tutorial.keyboard-selected {
+      background: linear-gradient(135deg, rgba(43, 179, 130, 0.16) 0%, rgba(15, 23, 42, 0.95) 100%);
+      transform: translateY(-2px) scale(1.01);
+      outline: none;
+    }
+    #btn-tutorial:hover .btn-icon-oct,
+    #btn-tutorial:focus-visible .btn-icon-oct,
+    #btn-tutorial.keyboard-selected .btn-icon-oct {
+      background: var(--color-jade);
+      color: #02040a;
+      box-shadow: 0 0 12px var(--color-jade);
+    }
+    #btn-tutorial:hover .btn-content h3,
+    #btn-tutorial:focus-visible .btn-content h3,
+    #btn-tutorial.keyboard-selected .btn-content h3 {
+      color: #a7f3d0;
+      text-shadow: 0 0 10px rgba(43, 179, 130, 0.6);
+    }
+
+    /* Banner Tutorial In-Game */
+    .hud-tutorial-banner {
+      position: absolute;
+      top: 75px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 50px);
+      max-width: 390px;
+      background: rgba(5, 8, 20, 0.92);
+      border: 1px solid rgba(226, 177, 60, 0.45);
+      clip-path: polygon(
+        8px 0%, calc(100% - 8px) 0%,
+        100% 8px, 100% calc(100% - 8px),
+        calc(100% - 8px) 100%, 8px 100%,
+        0% calc(100% - 8px), 0% 8px
+      );
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      z-index: 20;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      animation: fadeInTutorial 0.3s ease-out;
+      pointer-events: auto;
+    }
+
+    .tutorial-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+      color: var(--color-gold);
+      border: 1px solid rgba(226, 177, 60, 0.3);
+      padding: 2px 8px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .tutorial-title {
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--color-ivory);
+      margin-bottom: 4px;
+    }
+
+    .tutorial-text {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    @keyframes fadeInTutorial {
+      from { opacity: 0; transform: translate(-50%, -10px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
     }
 
     /* Botón flotante superior de Ajustes */
@@ -328,19 +431,29 @@
       top: 16px; right: 16px;
       width: 40px; height: 40px;
       background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(43, 179, 130, 0.45);
-      clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
-      display: flex; justify-content: center; align-items: center;
-      cursor: pointer; padding: 0; margin: 0; color: var(--color-jade);
-      backdrop-filter: blur(8px);
-      transition: all 0.25s ease;
-      z-index: 25;
+      border: 1px solid rgba(43, 179, 130, 0.4);
+      clip-path: polygon(
+        8px 0%, calc(100% - 8px) 0%,
+        100% 8px, 100% calc(100% - 8px),
+        calc(100% - 8px) 100%, 8px 100%,
+        0% calc(100% - 8px), 0% 8px
+      );
+      color: var(--color-jade);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      z-index: 10;
     }
-    #btn-settings-toggle:hover {
-      background: rgba(43, 179, 130, 0.25);
+    #btn-settings-toggle:hover,
+    #btn-settings-toggle:focus-visible,
+    #btn-settings-toggle.keyboard-selected {
+      background: rgba(43, 179, 130, 0.2);
       border-color: var(--color-jade);
-      transform: rotate(45deg) scale(1.08);
-      box-shadow: 0 0 14px rgba(43, 179, 130, 0.4);
+      box-shadow: 0 0 16px var(--color-jade);
+      transform: scale(1.08);
+      outline: none;
     }
 
     /* ---------------------------------------------------------
@@ -563,35 +676,34 @@
       border: 1px solid var(--color-jade);
       color: var(--color-jade);
     }
-    .btn-pause-resume:hover {
+    .btn-pause-resume:hover,
+    .btn-pause-resume:focus-visible,
+    .btn-pause-resume.keyboard-selected {
       background: var(--color-jade);
       color: #02040a;
       box-shadow: 0 0 16px var(--color-jade);
       transform: scale(1.02);
+      outline: none;
     }
 
-    .btn-pause-restart {
-      background: rgba(211, 47, 47, 0.2);
-      border: 1px solid var(--color-gothic-red);
-      color: #fca5a5;
-    }
-    .btn-pause-restart:hover {
+    .btn-pause-restart:hover,
+    .btn-pause-restart:focus-visible,
+    .btn-pause-restart.keyboard-selected {
       background: var(--color-gothic-red);
       color: #fff;
       box-shadow: 0 0 16px var(--color-gothic-red);
       transform: scale(1.02);
+      outline: none;
     }
 
-    .btn-pause-settings {
-      background: rgba(100, 181, 246, 0.15);
-      border: 1px solid var(--color-sky);
-      color: var(--color-sky);
-    }
-    .btn-pause-settings:hover {
+    .btn-pause-settings:hover,
+    .btn-pause-settings:focus-visible,
+    .btn-pause-settings.keyboard-selected {
       background: var(--color-sky);
       color: #02040a;
       box-shadow: 0 0 16px var(--color-sky);
       transform: scale(1.02);
+      outline: none;
     }
 
     .btn-pause-menu-link {
@@ -605,9 +717,13 @@
       cursor: pointer;
       transition: color 0.2s ease;
     }
-    .btn-pause-menu-link:hover {
+    .btn-pause-menu-link:hover,
+    .btn-pause-menu-link:focus-visible,
+    .btn-pause-menu-link.keyboard-selected {
       color: var(--color-ivory);
+      text-shadow: 0 0 8px rgba(245, 245, 247, 0.6);
       text-decoration: underline;
+      outline: none;
     }
 
     /* ---------------------------------------------------------
@@ -773,6 +889,13 @@
       <div class="hud-distance-bar">
         <div id="distance-cursor" class="hud-distance-cursor" style="top: 100%;"></div>
       </div>
+
+      <!-- Banner de Tutorial / Iniciación -->
+      <div id="hud-tutorial-banner" class="hud-tutorial-banner hidden">
+        <div id="tutorial-badge" class="tutorial-badge">PASO 1 DE 5</div>
+        <div id="tutorial-title" class="tutorial-title">MOVIMIENTO Y SALTO BÁSICO</div>
+        <div id="tutorial-text" class="tutorial-text">El orbe salta automáticamente. Usa A / D o Flechas para moverte.</div>
+      </div>
     </div>
 
     <div id="ui-layer">
@@ -825,6 +948,14 @@
             <div class="btn-content">
               <h3>MODO ETAPAS</h3>
               <p>Ruta de Constelación • 3 Tramos & Medallas</p>
+            </div>
+          </button>
+
+          <button id="btn-tutorial" class="btn-octagonal">
+            <div class="btn-icon-oct">⛩️</div>
+            <div class="btn-content">
+              <h3>INICIACIÓN</h3>
+              <p>Tutorial Guiado • Domina las Físicas</p>
             </div>
           </button>
         </div>

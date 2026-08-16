@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Player } from '../src/player.js';
-import { BaseMode, ArcadeMode, StageMode, SEPHIROTH_NODES } from '../src/modes.js';
+import { BaseMode, ArcadeMode, StageMode, TutorialMode, getTutorialStepData, SEPHIROTH_NODES } from '../src/modes.js';
 import { Engine } from '../src/engine.js';
 
 // ---------- mocks mínimos ----------
@@ -338,3 +338,43 @@ test('Engine: reset restaura el estado inicial', () => {
   assert.equal(e.lives, 3);
   assert.equal(e.degradationLevel, 0);
 });
+
+// =========================================================
+// TutorialMode
+// =========================================================
+test('TutorialMode: genera mapa espaciado, adapta textos al dispositivo y avanza zonas', () => {
+  const tutDesktop = new TutorialMode(450, 800, true, 'keyboard');
+  assert.ok(tutDesktop.isTutorial, 'debe ser modo tutorial');
+  assert.ok(tutDesktop.platforms.length >= 20, 'debe tener un mapa amplio con 20+ plataformas');
+  
+  // Validar textos adaptativos
+  const step1Desktop = getTutorialStepData(1, true, 'keyboard');
+  assert.ok(step1Desktop.text.includes('teclas A / D'), 'debe mencionar teclas en desktop');
+
+  const step1MobileSwipe = getTutorialStepData(1, false, 'swipe');
+  assert.ok(step1MobileSwipe.text.includes('Desliza tu pulgar'), 'debe mencionar swipe en móvil');
+
+  const step1MobileGyro = getTutorialStepData(1, false, 'gyro');
+  assert.ok(step1MobileGyro.text.includes('Inclina suavemente'), 'debe mencionar giro en móvil');
+
+  let stepReceived = null;
+  tutDesktop.onTutorialStepChange = (data) => {
+    stepReceived = data;
+  };
+
+  const p = new Player(225, 750);
+  tutDesktop.update(0.016, 0, p);
+  assert.equal(tutDesktop.currentStep, 1);
+
+  // Simular ascenso a la Zona 2 (Sincronía)
+  p.y = 800 - 50 - 650; // progressY = 650 > 580 -> zona 2
+  tutDesktop.update(0.016, 0, p);
+  assert.equal(tutDesktop.currentStep, 2);
+  assert.ok(stepReceived);
+  assert.equal(stepReceived.step, 2);
+
+  // Reclamar medalla de iniciación
+  const medal = tutDesktop.calculateMedal();
+  assert.equal(medal.name, 'Iniciación');
+});
+
