@@ -17,8 +17,11 @@ export class Player {
     // Estado de Sincronía (0 a 100%)
     this.synchrony = 0;
     this.gravityDirection = 1; // 1 = Estructura (Abajo), -1 = Entropía (Arriba)
-    this.fallSpeedModifier = 1.0; // 0.4 en Caída Lenta (Sincronía >= 60%)
+    this.fallSpeedModifier = 1.0; // 0.4 en Caída Lenta (Sincronía >= 60%
     this.hasVoidShield = false; // Escudo del Vacío (Sincronía >= 90%)
+    
+    // Multiplicador de salto acumulativo (aumenta con óptimas consecutivas)
+    this.jumpMultiplier = 1.0;
 
     // Partículas y Animaciones Vectoriales
     this.trail = [];
@@ -29,7 +32,8 @@ export class Player {
   jump(force) {
     // Si la gravedad es normal (1), saltar es ir hacia arriba (-force)
     // Si es invertida (-1), saltar es ir hacia abajo (+force)
-    this.vy = -force * this.gravityDirection;
+    // Aplica el multiplicador de salto acumulativo
+    this.vy = -force * this.jumpMultiplier * this.gravityDirection;
   }
 
   update(dt, input, screenWidth) {

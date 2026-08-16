@@ -33,6 +33,7 @@ export class Engine {
     this.onSyncUpdate = () => {};
     this.onJumpEffect = () => {};
     this.onLifeLost = () => {};
+    this.onStageComplete = () => {}; // Nuevo: callback cuando se completa una etapa
   }
 
   setPlayer(player) { this.player = player; }
@@ -48,6 +49,10 @@ export class Engine {
     this.screenShakeTime = 0;
     this.staticFlashTime = 0;
     this.impactParticles = [];
+    this.stageCompleteTriggered = false;
+    if (this.player) {
+      this.player.jumpMultiplier = 1.0;
+    }
     this.onScoreUpdate(0);
     this.onLivesUpdate(this.lives);
   }
@@ -152,6 +157,15 @@ export class Engine {
       this.onScoreUpdate(this.score);
     }
 
+    // Verificar si la etapa está completa (StageMode)
+    if (this.mode.stageComplete && !this.stageCompleteTriggered) {
+      this.stageCompleteTriggered = true;
+      const medal = this.mode.calculateMedal(this.score);
+      this.onStageComplete(this.score, medal);
+      this.stop();
+      return;
+    }
+
     // Reino / Sefirá actual
     if (this.mode.getCurrentRealm) {
       this.onRealmUpdate(this.mode.getCurrentRealm());
@@ -192,6 +206,14 @@ export class Engine {
             this.player.y = p.y - this.player.height;
             this.player.jump(this.mode.getJumpForce());
             this.mode.onPlatformStepped(p, this.player);
+            
+            // Multiplicador de salto acumulativo
+            if (p.isOptimal) {
+              this.player.jumpMultiplier *= 1.1; // +10% por óptima consecutiva
+            } else {
+              this.player.jumpMultiplier = 1.0; // Reset en secundaria
+            }
+            
             this.onJumpEffect(p);
             this.spawnImpactParticles(this.player.x + this.player.width / 2, p.y, p.isOptimal ? '#fbbf24' : '#64748b');
             break;
@@ -207,6 +229,14 @@ export class Engine {
             this.player.y = p.y + p.height;
             this.player.jump(this.mode.getJumpForce());
             this.mode.onPlatformStepped(p, this.player);
+            
+            // Multiplicador de salto acumulativo
+            if (p.isOptimal) {
+              this.player.jumpMultiplier *= 1.1; // +10% por óptima consecutiva
+            } else {
+              this.player.jumpMultiplier = 1.0; // Reset en secundaria
+            }
+            
             this.onJumpEffect(p);
             this.spawnImpactParticles(this.player.x + this.player.width / 2, p.y + p.height, '#e11d48');
             break;

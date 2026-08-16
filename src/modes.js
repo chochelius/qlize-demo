@@ -27,6 +27,9 @@ export class BaseMode {
     this.adherenceHits = 0;
     this.totalJumps = 0;
     this.lastSafePlatform = null; // Última plataforma pisada (punto de respawn)
+    // Distancia máxima permitida por encima de la cámara antes de reciclar.
+    // Los modos con mapa pre-construido (StageMode) lo amplían para no borrar la cima.
+    this.pruneHeightAbove = height * 2.5;
 
     // Fondo estelar Cyber-Zen (Paralaje)
     this.starsLayer1 = [];
@@ -91,7 +94,9 @@ export class BaseMode {
 
   update(dt, cameraY, player) {
     // Reciclar plataformas lejanas por debajo de la cámara
-    this.platforms = this.platforms.filter(p => p.y < this.height - cameraY + 350 && p.y > -cameraY - this.height * 2.5);
+    const lowerBound = this.height - cameraY + 350;
+    const upperBound = -cameraY - this.pruneHeightAbove;
+    this.platforms = this.platforms.filter(p => p.y < lowerBound && p.y > upperBound);
     this.generatePlatforms(cameraY);
   }
 
@@ -124,7 +129,7 @@ export class ArcadeMode extends BaseMode {
     super(width, height);
     this.phase = 'structure'; // 'structure' (Luz) -> 'entropy' (Sombra Invertida)
     this.currentNodeIndex = 0;
-    this.platformGapY = 94;
+    this.platformGapY = 72;
     this.sacredTime = 0;
 
     this.generatePlatforms(0);
@@ -136,7 +141,28 @@ export class ArcadeMode extends BaseMode {
     while (this.highestPlatformY > targetY) {
       const isOptimal = Math.random() < 0.65;
       const pWidth = isOptimal ? (60 + Math.random() * 25) : (50 + Math.random() * 30);
-      const pX = Math.random() * (this.width - pWidth);
+      
+      // Si es óptima, debe estar a distancia alcanzable desde la última óptima
+      let pX;
+      if (isOptimal) {
+        const lastOptimal = this.platforms.filter(p => p.isOptimal).pop();
+        if (lastOptimal) {
+          // Distancia horizontal máxima alcanzable durante un salto (~274px teórico)
+          // Usamos 280px: el jugador puede usar secundarias como escalones
+          const maxHorizontalReach = 280;
+          const lastCenterX = lastOptimal.x + lastOptimal.width / 2;
+          const minCenterX = Math.max(pWidth / 2, lastCenterX - maxHorizontalReach);
+          const maxCenterX = Math.min(this.width - pWidth / 2, lastCenterX + maxHorizontalReach);
+          const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
+          pX = newCenterX - pWidth / 2;
+        } else {
+          pX = Math.random() * (this.width - pWidth);
+        }
+      } else {
+        // Plataformas secundarias pueden estar más lejos (son apoyo, no ruta óptima)
+        pX = Math.random() * (this.width - pWidth);
+      }
+      
       const pY = this.highestPlatformY - this.platformGapY - (Math.random() * 30);
 
       this.addPlatform(pX, pY, pWidth, 16, {
@@ -257,12 +283,17 @@ export class StageMode extends BaseMode {
   constructor(width, height, stageLength = 6000) {
     super(width, height);
     this.stageLength = stageLength;
+    // BUGFIX: el mapa está pre-construido hasta -stageLength; el reciclaje por
+    // defecto (height * 2.5 sobre la cámara) borraba los 2/3 superiores del mapa
+    // al terminar la cinemática de barrido, haciendo la cima inalcanzable.
+    this.pruneHeightAbove = this.stageLength + height;
     this.isSweepingCamera = true;
     this.sweepState = 'UP'; // 'UP' -> 'PAUSE' -> 'DOWN' -> fin de cinemática
     this.sweepY = 0;
     this.sweepSpeed = 2200;
     this.sweepTimer = 0;
     this.sweepComplete = false;
+    this.stageComplete = false; // Nuevo: detecta cuando el jugador llega a la cima
 
     this.buildStageMap();
   }
@@ -276,8 +307,26 @@ export class StageMode extends BaseMode {
     while (currentY > endY) {
       const isOptimal = Math.random() < 0.6;
       const pWidth = isOptimal ? 70 : 55;
-      const pX = Math.random() * (this.width - pWidth);
-      currentY -= 90 + Math.random() * 25;
+      
+      // Si es óptima, debe estar a distancia alcanzable desde la última óptima
+      let pX;
+      if (isOptimal) {
+        const lastOptimal = this.platforms.filter(p => p.isOptimal).pop();
+        if (lastOptimal) {
+          const maxHorizontalReach = 280;
+          const lastCenterX = lastOptimal.x + lastOptimal.width / 2;
+          const minCenterX = Math.max(pWidth / 2, lastCenterX - maxHorizontalReach);
+          const maxCenterX = Math.min(this.width - pWidth / 2, lastCenterX + maxHorizontalReach);
+          const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
+          pX = newCenterX - pWidth / 2;
+        } else {
+          pX = Math.random() * (this.width - pWidth);
+        }
+      } else {
+        pX = Math.random() * (this.width - pWidth);
+      }
+      
+      currentY -= 72 + Math.random() * 20;
 
       this.addPlatform(pX, currentY, pWidth, 16, {
         isOptimal,
@@ -310,6 +359,13 @@ export class StageMode extends BaseMode {
       }
       return;
     }
+    
+    // Detectar si el jugador alcanzó la cima
+    if (cameraY >= this.stageLength && !this.stageComplete) {
+      this.stageComplete = true;
+      return; // El engine manejará el callback
+    }
+    
     super.update(dt, cameraY, player);
   }
 

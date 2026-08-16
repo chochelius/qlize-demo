@@ -271,6 +271,7 @@ async function requestOrientationPermission() {
 const screenMenu = document.getElementById('screen-menu');
 const screenGameover = document.getElementById('screen-gameover');
 const screenSettings = document.getElementById('screen-settings');
+const screenExitConfirm = document.getElementById('screen-exit-confirm');
 
 const btnArcade = document.getElementById('btn-arcade');
 const btnStage = document.getElementById('btn-stage');
@@ -279,6 +280,9 @@ const btnMenu = document.getElementById('btn-menu');
 const btnSettingsToggle = document.getElementById('btn-settings-toggle');
 const btnSettingsClose = document.getElementById('btn-settings-close');
 const btnSettingsReset = document.getElementById('btn-settings-reset');
+const btnExitGame = document.getElementById('btn-exit-game');
+const btnExitCancel = document.getElementById('btn-exit-cancel');
+const btnExitToMenu = document.getElementById('btn-exit-to-menu');
 
 const hud = document.getElementById('hud');
 const syncValEl = document.getElementById('sync-val');
@@ -335,7 +339,8 @@ function isMatchingPreset(p) {
     gameSettings.swipeSens === p.swipeSens &&
     gameSettings.acceleration === p.acceleration &&
     gameSettings.maxSpeed === p.maxSpeed &&
-    gameSettings.friction === p.friction
+    gameSettings.friction === p.friction &&
+    gameSettings.gyroSens === p.gyroSens
   );
 }
 
@@ -413,6 +418,7 @@ function startGame(modeClass) {
   screenMenu.classList.add('hidden');
   screenGameover.classList.add('hidden');
   screenSettings.classList.add('hidden');
+  screenExitConfirm.classList.add('hidden');
   hud.classList.remove('hidden');
 
   engine.reset();
@@ -477,6 +483,18 @@ function startGame(modeClass) {
     sfx.playLifeLost();
   };
 
+  engine.onStageComplete = (score, medal) => {
+    sfx.playVictory();
+    finalScoreEl.innerText = Math.floor(score);
+    medalIconEl.innerText = medal.icon;
+    medalTitleEl.innerText = `${medal.name} • ${medal.title}`;
+    medalIconEl.classList.remove('hidden');
+    medalTitleEl.classList.remove('hidden');
+    gameoverTitleEl.innerText = '¡ETAPA COMPLETADA!';
+    screenGameover.classList.remove('hidden');
+    hud.classList.add('hidden');
+  };
+
   engine.start();
 }
 
@@ -487,4 +505,43 @@ btnMenu.addEventListener('click', () => {
   screenGameover.classList.add('hidden');
   screenMenu.classList.remove('hidden');
   hud.classList.add('hidden');
+});
+
+// ---------------------------------------------------------
+// Flujo de Salir / Retroceder (in-game)
+// ---------------------------------------------------------
+function openExitConfirm() {
+  if (!engine.isRunning) return; // solo durante partida activa
+  engine.stop(); // pausa el juego mientras decide
+  screenExitConfirm.classList.remove('hidden');
+}
+
+function resumeGame() {
+  screenExitConfirm.classList.add('hidden');
+  engine.start(); // retoma el bucle (start() resetea lastTime)
+}
+
+function exitToMenu() {
+  screenExitConfirm.classList.add('hidden');
+  hud.classList.add('hidden');
+  engine.stop();
+  // limpiar input para no arrastrar movimiento residual
+  input.left = false;
+  input.right = false;
+  input.axis = 0;
+  screenMenu.classList.remove('hidden');
+}
+
+btnExitGame.addEventListener('click', openExitConfirm);
+btnExitCancel.addEventListener('click', resumeGame);
+btnExitToMenu.addEventListener('click', exitToMenu);
+
+// Tecla Escape: abre la confirmación durante el juego; la cierra si está abierta
+window.addEventListener('keydown', (e) => {
+  if (e.code !== 'Escape') return;
+  if (!screenExitConfirm.classList.contains('hidden')) {
+    resumeGame();
+  } else if (engine.isRunning) {
+    openExitConfirm();
+  }
 });

@@ -227,6 +227,45 @@
       transform: rotate(60deg) scale(1.1);
     }
 
+    /* Botón Salir (in-game, HUD) */
+    #btn-exit-game {
+      position: absolute;
+      top: 58px; left: 14px;
+      width: 36px; height: 36px;
+      background: rgba(4, 7, 20, 0.7);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      border-radius: 50%;
+      display: flex; justify-content: center; align-items: center;
+      cursor: pointer; padding: 0; margin: 0; color: #fbbf24;
+      font-size: 1rem; font-weight: 700; line-height: 1;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
+      pointer-events: auto;
+      z-index: 16;
+    }
+    #btn-exit-game:hover {
+      background: rgba(180, 83, 9, 0.5);
+      border-color: rgba(251, 191, 36, 0.7);
+      transform: scale(1.1);
+    }
+
+    /* Pantalla de confirmación de salida */
+    #screen-exit-confirm {
+      z-index: 30;
+      background: radial-gradient(circle at 50% 40%, rgba(136, 19, 55, 0.35) 0%, rgba(3, 7, 18, 0.96) 100%);
+    }
+    #screen-exit-confirm h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 8px;
+      color: #fecdd3;
+    }
+    #screen-exit-confirm p {
+      font-size: 0.8rem; color: #94a3b8; margin-bottom: 22px;
+      max-width: 280px; line-height: 1.5;
+    }
+    .exit-actions { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+
     /* Pantalla de Ajustes */
     #screen-settings {
       padding: 22px 20px;
@@ -392,6 +431,9 @@
         <span id="life-3" class="trigram-life">☰</span>
       </div>
 
+      <!-- Botón Salir / Retroceder (in-game) -->
+      <button id="btn-exit-game" title="Salir de la partida (Esc)" aria-label="Salir de la partida">✕</button>
+
       <!-- Medidor Circular de Sincronía (Esquina Derecha) -->
       <div class="hud-sync-container">
         <div class="sync-text">
@@ -443,6 +485,16 @@
             <p>Ruta de Constelación • 3 Tramos & Medallas</p>
           </div>
         </button>
+      </div>
+
+      <!-- Confirmación de salida (in-game) -->
+      <div id="screen-exit-confirm" class="screen hidden">
+        <h2>¿Abandonar el recorrido?</h2>
+        <p>El progreso de esta partida se perderá si vuelves al menú.</p>
+        <div class="exit-actions">
+          <button id="btn-exit-cancel" class="btn-action btn-action-primary">Continuar</button>
+          <button id="btn-exit-to-menu" class="btn-action btn-action-secondary">Salir al Menú</button>
+        </div>
       </div>
 
       <!-- Pantalla de Ajustes -->
