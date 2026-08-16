@@ -100,8 +100,9 @@ const sfx = new SoundFX();
 // Detección de dispositivo
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const hasTouchscreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-const hasGyroscope = 'DeviceOrientationEvent' in window && hasTouchscreen;
-const isDesktop = !isMobile && !hasTouchscreen;
+const hasGyroscope = 'DeviceOrientationEvent' in window && isMobile;
+// Desktop = NO es móvil (independiente de touchscreen)
+const isDesktop = !isMobile;
 
 console.log('🎮 Detección de dispositivo:');
 console.log('  - isMobile:', isMobile);
@@ -364,40 +365,43 @@ function updateSettingsUI() {
   controlGyro.classList.toggle('active', gameSettings.controlMode === 'gyro');
 
   // Deshabilitar opciones según dispositivo
-  if (!isDesktop) {
-    controlKeyboard.disabled = true;
-    controlKeyboard.style.opacity = '0.4';
-    controlKeyboard.style.cursor = 'not-allowed';
-    controlKeyboard.textContent = '⌨️ Teclado (No disponible)';
-  } else {
+  // Teclado: solo disponible en escritorio
+  if (isDesktop) {
     controlKeyboard.disabled = false;
     controlKeyboard.style.opacity = '1';
     controlKeyboard.style.cursor = 'pointer';
     controlKeyboard.textContent = '⌨️ Teclado';
+  } else {
+    controlKeyboard.disabled = true;
+    controlKeyboard.style.opacity = '0.4';
+    controlKeyboard.style.cursor = 'not-allowed';
+    controlKeyboard.textContent = '⌨️ Teclado (No disponible)';
   }
 
-  if (!hasGyroscope) {
-    controlGyro.disabled = true;
-    controlGyro.style.opacity = '0.4';
-    controlGyro.style.cursor = 'not-allowed';
-    controlGyro.textContent = '📱 Giroscopio (No disponible)';
-  } else {
-    controlGyro.disabled = false;
-    controlGyro.style.opacity = '1';
-    controlGyro.style.cursor = 'pointer';
-    controlGyro.textContent = '📱 Giroscopio';
-  }
-
-  if (!hasTouchscreen) {
-    controlSwipe.disabled = true;
-    controlSwipe.style.opacity = '0.4';
-    controlSwipe.style.cursor = 'not-allowed';
-    controlSwipe.textContent = '👆 Swipe (No disponible)';
-  } else {
+  // Swipe: disponible en móvil siempre, en escritorio solo si hay touchscreen
+  if (isMobile || hasTouchscreen) {
     controlSwipe.disabled = false;
     controlSwipe.style.opacity = '1';
     controlSwipe.style.cursor = 'pointer';
     controlSwipe.textContent = '👆 Swipe';
+  } else {
+    controlSwipe.disabled = true;
+    controlSwipe.style.opacity = '0.4';
+    controlSwipe.style.cursor = 'not-allowed';
+    controlSwipe.textContent = '👆 Swipe (No disponible)';
+  }
+
+  // Giroscopio: solo disponible en móvil con gyroscope
+  if (hasGyroscope) {
+    controlGyro.disabled = false;
+    controlGyro.style.opacity = '1';
+    controlGyro.style.cursor = 'pointer';
+    controlGyro.textContent = '📱 Giroscopio';
+  } else {
+    controlGyro.disabled = true;
+    controlGyro.style.opacity = '0.4';
+    controlGyro.style.cursor = 'not-allowed';
+    controlGyro.textContent = '📱 Giroscopio (No disponible)';
   }
 
   updatePresetButtonsState();
