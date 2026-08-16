@@ -295,7 +295,7 @@ export class Engine {
     // No detectar caída si el jugador está en noclip (transición a Entropía)
     const isOutOfScreen = this.player.gravityDirection === 1
       ? (this.player.y > this.height - this.cameraY + 120)
-      : (this.player.y < -this.cameraY - 120);
+      : (this.player.y < -this.cameraY - 200);
 
     if (isOutOfScreen && !this.player.noclip) {
       // Escudo del Vacío (Sincronía Perfecta >= 90%)
@@ -354,14 +354,37 @@ export class Engine {
       this.ctx.restore();
     }
 
-    // Dibujar Plataformas (Celestiales u Piedra Inerte)
+    // Dibujar Plataformas (Celestiales, Entropía u Piedra Inerte)
     const platforms = this.mode.getPlatforms();
     for (const p of platforms) {
       if (!p.active) continue;
 
       this.ctx.save();
 
-      if (p.isSecondary) {
+      if (p.isHusk) {
+        // Plataforma de Entropía (Obsidiana con Resplandor Carmesí)
+        const huskGrad = this.ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.height);
+        huskGrad.addColorStop(0, '#9f1239');
+        huskGrad.addColorStop(0.4, '#4c0519');
+        huskGrad.addColorStop(1, '#020617');
+
+        this.ctx.fillStyle = huskGrad;
+        this.ctx.fillRect(p.x, p.y, p.width, p.height);
+
+        this.ctx.strokeStyle = p.isOptimal ? '#e11d48' : '#881337';
+        this.ctx.lineWidth = p.isOptimal ? 2 : 1;
+        this.ctx.shadowColor = '#e11d48';
+        this.ctx.shadowBlur = p.isOptimal ? 12 : 4;
+        this.ctx.strokeRect(p.x, p.y, p.width, p.height);
+
+        // Nodo Carmesí
+        if (p.isOptimal) {
+          this.ctx.fillStyle = '#fda4af';
+          this.ctx.beginPath();
+          this.ctx.arc(p.x + p.width / 2, p.y + p.height / 2, 4, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+      } else if (p.isSecondary) {
         // Plataforma de Apoyo: Piedra Grisácea Inerte
         this.ctx.fillStyle = '#1e293b';
         this.ctx.strokeStyle = '#475569';

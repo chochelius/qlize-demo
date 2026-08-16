@@ -222,24 +222,38 @@ export class ArcadeMode extends BaseMode {
     player.vy = -600; // Impulso continuo hacia arriba para llegar a la base superior
     player.noclip = true;
 
+    // Limpiar plataformas de la fase previa de Estructura para el nuevo recorrido
+    this.platforms = [];
+    this.optimalRoute = [];
+    this.adherenceHits = 0;
+    this.totalJumps = 0;
+
     // Crear la plataforma base superior central del Árbol Invertido
     const topBaseY = -this.entropyStartY + 60;
-    const topBaseWidth = 110;
+    const topBaseWidth = 140;
     const topBaseX = this.width / 2 - topBaseWidth / 2;
 
-    // Quitar plataformas que solapen exactamente la base
-    this.platforms = this.platforms.filter(p => Math.abs(p.y - topBaseY) > 30);
-
     // Agregar la plataforma base superior (raíz del Árbol Invertido)
-    this.entropyTopPlatform = this.addPlatform(topBaseX, topBaseY, topBaseWidth, 18, {
+    this.entropyTopPlatform = this.addPlatform(topBaseX, topBaseY, topBaseWidth, 20, {
       isStartingPlatform: true,
       isOptimal: true,
       isHusk: true
     });
     this.lastSafePlatform = this.entropyTopPlatform;
-    this.lowestPlatformY = topBaseY + 18;
+    this.lowestPlatformY = topBaseY + 20;
 
-    // Generar lote inicial de plataformas hacia abajo
+    // Primera plataforma óptima justo debajo de la base para iniciar el descenso cómodamente
+    const firstPlatformWidth = 80;
+    const firstPlatformY = this.lowestPlatformY + 75;
+    const firstPlatformX = this.width / 2 - firstPlatformWidth / 2;
+    this.addPlatform(firstPlatformX, firstPlatformY, firstPlatformWidth, 16, {
+      isOptimal: true,
+      isSecondary: false,
+      isHusk: true
+    });
+    this.lowestPlatformY = firstPlatformY;
+
+    // Generar lote inicial de plataformas hacia abajo por delante de la cámara
     this.generatePlatforms(this.entropyStartY);
 
     if (this.onPhaseChange) {

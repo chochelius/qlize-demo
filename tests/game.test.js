@@ -104,7 +104,7 @@ test('ArcadeMode: fase Entropía invierte gravedad y genera plataforma base supe
   assert.equal(player.gravityDirection, -1, 'gravedad invertida en Entropía');
   assert.equal(player.noclip, true, 'noclip activo durante transición');
   assert.ok(m.entropyTopPlatform, 'debe generar la plataforma base superior');
-  assert.equal(m.entropyTopPlatform.x, 450 / 2 - 110 / 2, 'base superior centrada horizontalmente');
+  assert.equal(m.entropyTopPlatform.x, 450 / 2 - 140 / 2, 'base superior centrada horizontalmente');
   assert.equal(m.entropyTopPlatform.y, -5000 + 60, 'base superior en el borde superior visible');
 });
 
@@ -145,7 +145,7 @@ test('ArcadeMode: cámara sigue hacia abajo durante descenso en Entropía', () =
   m.entropySubPhase = 'descent';
   player.gravityDirection = -1;
 
-  // Jugador desciende hacia y = -4000 (cámara debe bajar de 5000 a 4000 - 800*0.55 = 4440 o menor)
+  // Jugador desciende hacia y = -4000 (cámara debe bajar de 5000 a 4000 + 800*0.55 = 4440 o menor)
   player.y = -4000;
   const targetCam = -player.y + 800 * 0.55; // 4000 + 440 = 4440
   const cam = m.updateCamera(5000, player, 0.016);
