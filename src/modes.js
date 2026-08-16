@@ -483,26 +483,35 @@ export class ArcadeMode extends BaseMode {
       ctx.restore();
 
       // Hilo Continuo y Vibrante de Luz Punteada Dorada y Blanca (Sendero de Adherencia)
-      // Recortado a la ventana visible: la lista viene ordenada de abajo hacia
-      // arriba, así que se puede cortar en cuanto se pasa el borde superior
+      // Normalizado con doble trazo de glow emulado (sin shadowBlur) y culling de viewport
       const hiloTop = -cameraY - 300;
       const hiloBottom = -cameraY + this.height + 300;
-      ctx.strokeStyle = 'rgba(226, 177, 60, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
       const optimalPlatforms = this.getOptimalPlatforms();
-      for (let i = 0; i < optimalPlatforms.length - 1; i++) {
-        const p1 = optimalPlatforms[i];
-        const p2 = optimalPlatforms[i + 1];
-        if (p1.y < hiloTop && p2.y < hiloTop) break;
-        if (p1.y > hiloBottom && p2.y > hiloBottom) continue;
-        if (Math.abs(p1.y - p2.y) < 220) {
-          ctx.moveTo(p1.x + p1.width / 2, p1.y);
-          ctx.lineTo(p2.x + p2.width / 2, p2.y);
+
+      const trazarHiloArcade = () => {
+        ctx.beginPath();
+        for (let i = 0; i < optimalPlatforms.length - 1; i++) {
+          const p1 = optimalPlatforms[i];
+          const p2 = optimalPlatforms[i + 1];
+          if (p1.y < hiloTop && p2.y < hiloTop) break;
+          if (p1.y > hiloBottom && p2.y > hiloBottom) continue;
+          if (Math.abs(p1.y - p2.y) < 220) {
+            ctx.moveTo(p1.x + p1.width / 2, p1.y);
+            ctx.lineTo(p2.x + p2.width / 2, p2.y);
+          }
         }
-      }
-      ctx.stroke();
+        ctx.stroke();
+      };
+
+      ctx.setLineDash([4, 4]);
+      // Pasada de glow: trazo ancho translúcido
+      ctx.strokeStyle = 'rgba(226, 177, 60, 0.2)';
+      ctx.lineWidth = 5;
+      trazarHiloArcade();
+      // Pasada de núcleo: trazo fino brillante
+      ctx.strokeStyle = 'rgba(226, 177, 60, 0.65)';
+      ctx.lineWidth = 2;
+      trazarHiloArcade();
       ctx.setLineDash([]);
     } else {
       // Árbol de la Sombra: Negro Espacial Ultra Profundo con Fuegos Góticos Carmesí y Púrpura

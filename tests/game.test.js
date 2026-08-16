@@ -457,7 +457,7 @@ test('StageMode: acepta stageConfig personalizada y renderiza marca de agua fon�
   assert.equal(stage.stageName, 'Měilì');
   assert.equal(stage.code, 'MEILI');
   assert.equal(stage.phonetic, 'MĚI-LÌ');
-  assert.equal(stage.gravityMultiplier, 1.10);
+  assert.equal(stage.gravityMultiplier, 1.07);
   assert.ok(stage.tuning.movingRatio > 0, 'debe tener plataformas móviles');
 
   // Verificar llamada segura a drawBackground sin fallos

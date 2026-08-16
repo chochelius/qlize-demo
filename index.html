@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>QLIZE | Cyber-Zen Vectorial</title>
   
   <!-- Favicons Autocontenidos (Sin Recursos Externos) -->
@@ -81,11 +81,95 @@
       overflow: hidden;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
+      body, html {
+        align-items: stretch;
+      }
       #game-container {
+        aspect-ratio: unset;
+        width: 100vw;
+        height: 100%;
+        height: 100dvh;
+        max-width: 100vw;
+        max-height: 100dvh;
+        border: none;
         border-radius: 0;
-        border-left: none;
-        border-right: none;
+        box-shadow: none;
+      }
+
+      .game-title {
+        font-size: 2.8rem;
+        letter-spacing: 7px;
+      }
+      .subtitle {
+        font-size: 0.8rem;
+        letter-spacing: 5px;
+        margin-bottom: 28px;
+      }
+      .btn-octagonal {
+        max-width: 100%;
+        width: 90vw;
+        padding: 16px 20px;
+        margin: 9px 0;
+      }
+      .btn-icon-oct {
+        width: 44px;
+        height: 44px;
+        font-size: 1.35rem;
+      }
+      .btn-content h3 {
+        font-size: 1.12rem;
+      }
+      .btn-content p {
+        font-size: 0.82rem;
+      }
+
+      #screen-settings {
+        padding: 24px 18px;
+      }
+      #screen-settings h2 {
+        font-size: 1.5rem;
+      }
+      .setting-header span {
+        font-size: 0.92rem;
+      }
+      .setting-val {
+        font-size: 0.92rem;
+      }
+      .preset-btn {
+        font-size: 0.85rem;
+        padding: 10px 0;
+      }
+      .control-mode-btn {
+        font-size: 0.88rem;
+        padding: 12px 6px;
+      }
+
+      .overworld-node {
+        width: 58px;
+        height: 58px;
+      }
+      .overworld-node .node-num {
+        font-size: 0.95rem;
+      }
+      .overworld-node .node-phonetic {
+        font-size: 0.62rem;
+      }
+      .overworld-stage-card {
+        width: 92vw;
+        max-width: 420px;
+        bottom: 16px;
+        padding: 16px 18px;
+      }
+      .card-stage-title {
+        font-size: 1.1rem;
+      }
+      .card-stage-desc {
+        font-size: 0.82rem;
+      }
+      .btn-start-stage {
+        padding: 13px;
+        font-size: 0.92rem;
       }
     }
 
@@ -1338,8 +1422,8 @@
           <button id="btn-stage" class="btn-octagonal">
             <div class="btn-icon-oct" aria-hidden="true">🏆</div>
             <div class="btn-content">
-              <h3>MODO ETAPAS</h3>
-              <p>Ruta de Constelación • 3 Tramos & Medallas</p>
+              <h3>MODO HISTORIA</h3>
+              <p>Ruta de Constelación • 10 Reinos & Medallas</p>
             </div>
           </button>
 
@@ -1421,26 +1505,27 @@
           <div class="pause-actions">
             <button id="btn-pause-resume" class="btn-pause-opt btn-pause-resume">REANUDAR</button>
             <button id="btn-pause-restart" class="btn-pause-opt btn-pause-restart">REINICIAR</button>
-            <button id="btn-pause-settings" class="btn-pause-opt btn-pause-settings">AJUSTES DE FÍSICA</button>
+            <button id="btn-pause-settings" class="btn-pause-opt btn-pause-settings">OPCIONES</button>
             <button id="btn-pause-menu" class="btn-pause-menu-link">MENÚ PRINCIPAL</button>
           </div>
         </div>
       </div>
 
-      <!-- Pantalla de Calibración de Físicas -->
+      <!-- Pantalla de Opciones -->
       <div id="screen-settings" class="screen hidden">
         <button id="btn-settings-x" class="settings-close-x" title="Cerrar" aria-label="Cerrar configuración">✕</button>
-        <h2>CALIBRACIÓN DE FÍSICAS</h2>
-        
-        <div class="presets-container">
-          <div class="presets-label">Perfiles Octogonales</div>
-          <div class="presets-grid">
-            <button id="preset-soft" class="preset-btn">SUAVE</button>
-            <button id="preset-balanced" class="preset-btn active">EQUILIBRADO</button>
-            <button id="preset-fast" class="preset-btn">ÁGIL</button>
+        <h2>OPCIONES</h2>
+
+        <!-- 1. Sonido y Música -->
+        <div class="setting-group">
+          <div class="setting-header">
+            <span>Volumen de Música</span>
+            <span id="val-music-volume" class="setting-val">65%</span>
           </div>
+          <input type="range" id="slider-music-volume" class="setting-slider" min="0" max="100" step="5" value="65" />
         </div>
 
+        <!-- 2. Esquema de Control y Sensibilidades -->
         <div class="setting-group">
           <div class="setting-header">
             <span>Modo de Control</span>
@@ -1454,10 +1539,28 @@
 
         <div class="setting-group">
           <div class="setting-header">
-            <span>Volumen de Música</span>
-            <span id="val-music-volume" class="setting-val">65%</span>
+            <span>Sensibilidad de Deslizamiento</span>
+            <span id="val-swipe-sens" class="setting-val">1.0x</span>
           </div>
-          <input type="range" id="slider-music-volume" class="setting-slider" min="0" max="100" step="5" value="65" />
+          <input type="range" id="slider-swipe-sens" class="setting-slider" min="0.3" max="2.5" step="0.1" value="1.0" />
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-header">
+            <span>Sensibilidad Giroscopio</span>
+            <span id="val-gyro-sens" class="setting-val">20°</span>
+          </div>
+          <input type="range" id="slider-gyro-sens" class="setting-slider" min="8" max="35" step="1" value="20" />
+        </div>
+
+        <!-- 3. Físicas y Calibración del Salto -->
+        <div class="presets-container">
+          <div class="presets-label">Perfiles de Movimiento</div>
+          <div class="presets-grid">
+            <button id="preset-soft" class="preset-btn">SUAVE</button>
+            <button id="preset-balanced" class="preset-btn active">EQUILIBRADO</button>
+            <button id="preset-fast" class="preset-btn">ÁGIL</button>
+          </div>
         </div>
 
         <div class="setting-group">
@@ -1466,14 +1569,6 @@
             <span id="val-acceleration" class="setting-val">1400</span>
           </div>
           <input type="range" id="slider-acceleration" class="setting-slider" min="600" max="2600" step="50" value="1400" />
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-header">
-            <span>Sensibilidad de Deslizamiento</span>
-            <span id="val-swipe-sens" class="setting-val">1.0x</span>
-          </div>
-          <input type="range" id="slider-swipe-sens" class="setting-slider" min="0.3" max="2.5" step="0.1" value="1.0" />
         </div>
 
         <div class="setting-group">
@@ -1490,14 +1585,6 @@
             <span id="val-max-speed" class="setting-val">340</span>
           </div>
           <input type="range" id="slider-max-speed" class="setting-slider" min="200" max="500" step="10" value="340" />
-        </div>
-
-        <div class="setting-group">
-          <div class="setting-header">
-            <span>Sensibilidad Giroscopio</span>
-            <span id="val-gyro-sens" class="setting-val">20°</span>
-          </div>
-          <input type="range" id="slider-gyro-sens" class="setting-slider" min="8" max="35" step="1" value="20" />
         </div>
 
         <div class="settings-actions">

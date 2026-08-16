@@ -55,7 +55,7 @@ export const OVERWORLD_GRAPH = {
     x: 0.50,
     y: 0.76,
     stageLength: 6000,
-    gravityMultiplier: 1.03,
+    gravityMultiplier: 1.01,
     connections: ['stage_3', 'stage_4'],
     theme: {
       primaryColor: '#9333ea',
@@ -64,13 +64,13 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#c084fc'
     },
     tuning: {
-      widthOpt: 72,
-      widthSec: 60,
-      gapMin: 70,
-      gapMax: 88,
+      widthOpt: 74,
+      widthSec: 62,
+      gapMin: 68,
+      gapMax: 84,
       optimalRatio: 0.65,
-      movingRatio: 0.20,
-      moveSpeed: [50, 85],
+      movingRatio: 0.12,
+      moveSpeed: [40, 70],
       decayRatio: 0.0,
       decayTime: 0.0
     }
@@ -90,7 +90,7 @@ export const OVERWORLD_GRAPH = {
     x: 0.28,
     y: 0.64,
     stageLength: 6000,
-    gravityMultiplier: 1.06,
+    gravityMultiplier: 1.03,
     connections: ['stage_5'],
     theme: {
       primaryColor: '#ea580c',
@@ -99,13 +99,13 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#fb923c'
     },
     tuning: {
-      widthOpt: 65,
-      widthSec: 52,
-      gapMin: 75,
-      gapMax: 95,
-      optimalRatio: 0.60,
-      movingRatio: 0.25,
-      moveSpeed: [60, 95],
+      widthOpt: 70,
+      widthSec: 58,
+      gapMin: 70,
+      gapMax: 88,
+      optimalRatio: 0.62,
+      movingRatio: 0.16,
+      moveSpeed: [45, 75],
       decayRatio: 0.0,
       decayTime: 0.0
     }
@@ -118,14 +118,14 @@ export const OVERWORLD_GRAPH = {
     phonetic: 'SHÈNG-LÌ',
     shortName: 'SHE',
     title: 'La Victoria (La Perseverancia)',
-    desc: 'La energía viva y la perseverancia. Trayectos largos con menor margen de error.',
+    desc: 'La energía viva y la perseverancia. Trayectos con cadencia dinámica.',
     trait: 'Victoria • Rutas Aisladas',
     difficultyRating: 'Resistencia',
     difficultyStars: '★★★☆☆',
     x: 0.72,
     y: 0.64,
     stageLength: 6000,
-    gravityMultiplier: 1.08,
+    gravityMultiplier: 1.05,
     connections: ['stage_5'],
     theme: {
       primaryColor: '#10b981',
@@ -134,15 +134,15 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#34d399'
     },
     tuning: {
-      widthOpt: 62,
-      widthSec: 48,
-      gapMin: 80,
-      gapMax: 105,
-      optimalRatio: 0.55,
-      movingRatio: 0.30,
-      moveSpeed: [70, 110],
-      decayRatio: 0.12,
-      decayTime: 1.2
+      widthOpt: 66,
+      widthSec: 55,
+      gapMin: 73,
+      gapMax: 92,
+      optimalRatio: 0.60,
+      movingRatio: 0.20,
+      moveSpeed: [50, 85],
+      decayRatio: 0.08,
+      decayTime: 1.3
     }
   },
   stage_5: {
@@ -160,7 +160,7 @@ export const OVERWORLD_GRAPH = {
     x: 0.50,
     y: 0.52,
     stageLength: 6000,
-    gravityMultiplier: 1.10,
+    gravityMultiplier: 1.07,
     connections: ['stage_6', 'stage_7'],
     theme: {
       primaryColor: '#fbbf24',
@@ -169,15 +169,15 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#fde047'
     },
     tuning: {
-      widthOpt: 58,
-      widthSec: 45,
-      gapMin: 85,
-      gapMax: 110,
-      optimalRatio: 0.55,
-      movingRatio: 0.35,
-      moveSpeed: [75, 120],
-      decayRatio: 0.15,
-      decayTime: 1.0
+      widthOpt: 62,
+      widthSec: 52,
+      gapMin: 76,
+      gapMax: 96,
+      optimalRatio: 0.58,
+      movingRatio: 0.24,
+      moveSpeed: [55, 95],
+      decayRatio: 0.12,
+      decayTime: 1.2
     }
   },
   stage_6: {
@@ -195,7 +195,7 @@ export const OVERWORLD_GRAPH = {
     x: 0.28,
     y: 0.40,
     stageLength: 6000,
-    gravityMultiplier: 1.14,
+    gravityMultiplier: 1.09,
     connections: ['stage_8', 'stage_9'],
     theme: {
       primaryColor: '#e11d48',
@@ -204,15 +204,15 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#f43f5e'
     },
     tuning: {
-      widthOpt: 55,
-      widthSec: 42,
-      gapMin: 80,
+      widthOpt: 59,
+      widthSec: 49,
+      gapMin: 79,
       gapMax: 100,
-      optimalRatio: 0.50,
-      movingRatio: 0.35,
-      moveSpeed: [80, 130],
-      decayRatio: 0.20,
-      decayTime: 0.9
+      optimalRatio: 0.55,
+      movingRatio: 0.28,
+      moveSpeed: [60, 105],
+      decayRatio: 0.16,
+      decayTime: 1.1
     }
   },
   stage_7: {
@@ -223,14 +223,14 @@ export const OVERWORLD_GRAPH = {
     phonetic: 'RÉN-CÍ',
     shortName: 'REN',
     title: 'La Benevolencia (La Gracia)',
-    desc: 'La expansión luminosa y la serenidad cósmica. Plataformas móviles de gran alcance.',
+    desc: 'La expansión luminosa y la serenidad cósmica. Plataformas móviles de buen alcance.',
     trait: 'Benevolencia • Oscilación Amplia',
     difficultyRating: 'Gracia',
     difficultyStars: '★★★★☆',
     x: 0.72,
     y: 0.40,
     stageLength: 6000,
-    gravityMultiplier: 1.14,
+    gravityMultiplier: 1.11,
     connections: ['stage_8', 'stage_9'],
     theme: {
       primaryColor: '#2563eb',
@@ -239,15 +239,15 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#60a5fa'
     },
     tuning: {
-      widthOpt: 52,
-      widthSec: 40,
-      gapMin: 90,
-      gapMax: 115,
-      optimalRatio: 0.50,
-      movingRatio: 0.40,
-      moveSpeed: [90, 140],
-      decayRatio: 0.22,
-      decayTime: 0.9
+      widthOpt: 56,
+      widthSec: 46,
+      gapMin: 82,
+      gapMax: 104,
+      optimalRatio: 0.52,
+      movingRatio: 0.32,
+      moveSpeed: [65, 115],
+      decayRatio: 0.20,
+      decayTime: 1.0
     }
   },
   stage_8: {
@@ -265,7 +265,7 @@ export const OVERWORLD_GRAPH = {
     x: 0.28,
     y: 0.28,
     stageLength: 6000,
-    gravityMultiplier: 1.16,
+    gravityMultiplier: 1.12,
     connections: ['stage_10'],
     theme: {
       primaryColor: '#6366f1',
@@ -274,15 +274,15 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#818cf8'
     },
     tuning: {
-      widthOpt: 48,
-      widthSec: 38,
-      gapMin: 95,
-      gapMax: 120,
-      optimalRatio: 0.45,
-      movingRatio: 0.45,
-      moveSpeed: [100, 150],
-      decayRatio: 0.35,
-      decayTime: 0.8
+      widthOpt: 53,
+      widthSec: 43,
+      gapMin: 85,
+      gapMax: 108,
+      optimalRatio: 0.50,
+      movingRatio: 0.35,
+      moveSpeed: [70, 125],
+      decayRatio: 0.24,
+      decayTime: 0.95
     }
   },
   stage_9: {
@@ -293,14 +293,14 @@ export const OVERWORLD_GRAPH = {
     phonetic: 'ZHÌ-HUÌ',
     shortName: 'ZHI',
     title: 'La Sabiduría (El Destello)',
-    desc: 'La chispa original de la iluminación cósmica. Micro-plataformas de altísima precisión.',
+    desc: 'La chispa original de la iluminación cósmica. Micro-plataformas de alta precisión.',
     trait: 'Sabiduría • Micro-Precisión & Destello',
     difficultyRating: 'Iluminación',
     difficultyStars: '★★★★★',
     x: 0.72,
     y: 0.28,
     stageLength: 6000,
-    gravityMultiplier: 1.18,
+    gravityMultiplier: 1.14,
     connections: ['stage_10'],
     theme: {
       primaryColor: '#e2e8f0',
@@ -309,15 +309,15 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#ffffff'
     },
     tuning: {
-      widthOpt: 44,
-      widthSec: 35,
-      gapMin: 100,
-      gapMax: 125,
-      optimalRatio: 0.45,
-      movingRatio: 0.50,
-      moveSpeed: [110, 160],
-      decayRatio: 0.40,
-      decayTime: 0.75
+      widthOpt: 50,
+      widthSec: 40,
+      gapMin: 88,
+      gapMax: 112,
+      optimalRatio: 0.48,
+      movingRatio: 0.38,
+      moveSpeed: [75, 135],
+      decayRatio: 0.27,
+      decayTime: 0.90
     }
   },
   stage_10: {
@@ -330,12 +330,11 @@ export const OVERWORLD_GRAPH = {
     title: 'La Corona Suprema (El Vuelo Sagrado)',
     desc: 'La cúspide suprema de la conciencia. La culminación total del ascenso y el desafío absoluto.',
     trait: 'Corona Suprema • El Vuelo Sagrado',
-    difficultyRating: 'Trascendente',
     difficultyStars: '★★★★★★',
     x: 0.50,
     y: 0.14,
     stageLength: 6000,
-    gravityMultiplier: 1.20,
+    gravityMultiplier: 1.15,
     connections: [],
     theme: {
       primaryColor: '#00e5ff',
@@ -344,15 +343,15 @@ export const OVERWORLD_GRAPH = {
       particleColor: '#67e8f9'
     },
     tuning: {
-      widthOpt: 40,
-      widthSec: 32,
-      gapMin: 105,
-      gapMax: 130,
-      optimalRatio: 0.40,
-      movingRatio: 0.55,
-      moveSpeed: [120, 175],
-      decayRatio: 0.45,
-      decayTime: 0.70
+      widthOpt: 48,
+      widthSec: 38,
+      gapMin: 90,
+      gapMax: 115,
+      optimalRatio: 0.45,
+      movingRatio: 0.40,
+      moveSpeed: [80, 145],
+      decayRatio: 0.30,
+      decayTime: 0.85
     }
   }
 };
