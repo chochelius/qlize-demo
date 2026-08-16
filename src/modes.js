@@ -661,3 +661,212 @@ export class StageMode extends BaseMode {
     ctx.shadowBlur = 0;
   }
 }
+
+// ---------------------------------------------------------
+// ⛩️ Modo Tutorial ("Iniciación Vectorial")
+// ---------------------------------------------------------
+export function getTutorialStepData(stepNumber, isDesktop = true, controlMode = 'keyboard') {
+  let moveText = 'Usa A / D o Flechas para moverte horizontalmente.';
+  if (!isDesktop) {
+    if (controlMode === 'gyro') {
+      moveText = 'Inclina suavemente tu dispositivo a los lados para moverte.';
+    } else {
+      moveText = 'Desliza tu pulgar horizontalmente en la pantalla para moverte.';
+    }
+  } else {
+    moveText = 'Usa las teclas A / D o ← / → para moverte. El salto es automático al tocar cada plataforma.';
+  }
+
+  const steps = {
+    1: {
+      step: 1,
+      totalSteps: 6,
+      badge: 'ZONA 1 • FUNDAMENTOS',
+      title: 'SALTO AUTOMÁTICO Y MOVIMIENTO',
+      text: `${moveText} Practica el balance y siente la inercia en los primeros saltos.`
+    },
+    2: {
+      step: 2,
+      totalSteps: 6,
+      badge: 'ZONA 2 • RUTA SAGRADA',
+      title: 'SINCRONÍA Y MULTIPLICADORES',
+      text: 'Aterrizar en plataformas doradas con nodos mantiene tu Sincronía al 100% y eleva los multiplicadores (x1.5, x2.0, x3.0).'
+    },
+    3: {
+      step: 3,
+      totalSteps: 6,
+      badge: 'ZONA 3 • RED DE SALVAMENTO',
+      title: 'PLATAFORMAS DE CENIZA',
+      text: 'Las plataformas grises son de apoyo: no aumentan la sincronía, pero evitan que caigas al vacío y pierdas vidas.'
+    },
+    4: {
+      step: 4,
+      totalSteps: 6,
+      badge: 'ZONA 4 • TÚNEL ESPACIAL',
+      title: 'SCREEN-WRAP LATERAL',
+      text: 'Cruza el borde derecho de la pantalla para reaparecer de inmediato por la izquierda. ¡Pruébalo en los siguientes saltos!'
+    },
+    5: {
+      step: 5,
+      totalSteps: 6,
+      badge: 'ZONA 5 • LA DUALIDAD',
+      title: 'POLARIDAD Y ENTROPÍA',
+      text: 'Al perder vidas en Arcade, la gravedad se invierte, la música suena al reverso y el objetivo es descender esquivando el vacío.'
+    },
+    6: {
+      step: 6,
+      totalSteps: 6,
+      badge: 'ZONA 6 • CULMINACIÓN',
+      title: '¡INICIACIÓN COMPLETADA!',
+      text: '¡Has dominado los vectores de Qlize! Aterriza en la plataforma sagrada de la cima para reclamar tu medalla.'
+    }
+  };
+
+  return steps[stepNumber] || steps[1];
+}
+
+export class TutorialMode extends BaseMode {
+  constructor(width, height, isDesktop = true, controlMode = 'keyboard') {
+    super(width, height);
+    this.isTutorial = true;
+    this.isDesktop = isDesktop;
+    this.controlMode = controlMode;
+    this.stageLength = 3200; // Mapa amplio para leer y practicar con calma
+    this.pruneHeightAbove = 4500;
+    this.currentStep = 1;
+    this.stageComplete = false;
+    this.onTutorialStepChange = null;
+
+    this.buildTutorialMap();
+  }
+
+  generatePlatforms() {}
+
+  buildTutorialMap() {
+    this.platforms = [];
+    
+    // Base de partida
+    this.addPlatform(this.width / 2 - 60, this.height - 50, 120, 16, { isStartingPlatform: true, isOptimal: true });
+    this.lastSafePlatform = this.platforms[0];
+
+    // ---------------------------------------------------------
+    // ZONA 1 (0m - 500m): Fundamentos de Movimiento y Salto (5 saltos)
+    // ---------------------------------------------------------
+    this.addPlatform(this.width / 2 - 45, this.height - 150, 90, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 30, this.height - 250, 85, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 40, this.height - 350, 85, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 20, this.height - 450, 85, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 30, this.height - 550, 90, 16, { isOptimal: true });
+
+    // ---------------------------------------------------------
+    // ZONA 2 (550m - 1100m): Ruta Sagrada y Sincronía (5 saltos continuos)
+    // ---------------------------------------------------------
+    this.addPlatform(this.width / 2 + 50, this.height - 670, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 60, this.height - 785, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 40, this.height - 900, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 50, this.height - 1015, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 10, this.height - 1130, 80, 16, { isOptimal: true });
+
+    // ---------------------------------------------------------
+    // ZONA 3 (1150m - 1650m): Plataformas de Apoyo (Ceniza) y Recuperación (4 saltos)
+    // ---------------------------------------------------------
+    this.addPlatform(this.width / 2 - 120, this.height - 1250, 80, 16, { isSecondary: true });
+    this.addPlatform(this.width / 2 + 80, this.height - 1365, 80, 16, { isSecondary: true });
+    this.addPlatform(this.width / 2 - 50, this.height - 1480, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 30, this.height - 1595, 80, 16, { isOptimal: true });
+
+    // ---------------------------------------------------------
+    // ZONA 4 (1650m - 2300m): Screen-Wrap Lateral Obligatorio (5 saltos)
+    // ---------------------------------------------------------
+    this.addPlatform(this.width - 65, this.height - 1720, 65, 16, { isOptimal: true });
+    this.addPlatform(10, this.height - 1840, 65, 16, { isOptimal: true });
+    this.addPlatform(this.width - 65, this.height - 1960, 65, 16, { isOptimal: true });
+    this.addPlatform(10, this.height - 2080, 65, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 40, this.height - 2200, 85, 16, { isOptimal: true });
+
+    // ---------------------------------------------------------
+    // ZONA 5 (2300m - 2850m): Polaridad y Dualidad (4 saltos)
+    // ---------------------------------------------------------
+    this.addPlatform(this.width / 2 + 40, this.height - 2330, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 50, this.height - 2460, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 30, this.height - 2590, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 40, this.height - 2720, 80, 16, { isOptimal: true });
+
+    // ---------------------------------------------------------
+    // ZONA 6 (2850m - CIMA): Kether de la Iniciación (Culminación)
+    // ---------------------------------------------------------
+    this.addPlatform(this.width / 2 - 60, this.height - 2870, 120, 18, { isOptimal: true, isSummit: true });
+  }
+
+  update(dt, cameraY, player) {
+    super.update(dt, cameraY, player);
+
+    // Detección de paso tutorial según altura del jugador (en píxeles recorridos)
+    let step = 1;
+    const progressY = (this.height - 50) - player.y;
+
+    if (progressY > 2750) {
+      step = 6;
+    } else if (progressY > 2220) {
+      step = 5;
+    } else if (progressY > 1620) {
+      step = 4;
+    } else if (progressY > 1150) {
+      step = 3;
+    } else if (progressY > 580) {
+      step = 2;
+    } else {
+      step = 1;
+    }
+
+    if (step !== this.currentStep) {
+      this.currentStep = step;
+      if (this.onTutorialStepChange) {
+        const stepData = getTutorialStepData(step, this.isDesktop, this.controlMode);
+        this.onTutorialStepChange(stepData);
+      }
+    }
+
+    // Completar tutorial al posarse en la plataforma cima
+    if (progressY >= 2800 && !this.stageComplete && player.vy === 0) {
+      this.stageComplete = true;
+    }
+  }
+
+  calculateMedal() {
+    return { name: 'Iniciación', icon: '⛩️', title: 'Iniciación Vectorial Completada' };
+  }
+
+  drawBackground(ctx, cameraY) {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // Fondo Cyber-Zen Especial Iniciación (Jade y Espacio Profundo)
+    const grad = ctx.createRadialGradient(
+      this.width * 0.5, this.height * 0.4, 20,
+      this.width * 0.5, this.height * 0.5, this.height * 0.85
+    );
+    grad.addColorStop(0, 'rgba(43, 179, 130, 0.22)');
+    grad.addColorStop(0.6, 'rgba(5, 8, 20, 0.88)');
+    grad.addColorStop(1, '#02040a');
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, this.width, this.height);
+    ctx.restore();
+
+    // Hilo Dorado de Luz Punteada
+    ctx.strokeStyle = 'rgba(226, 177, 60, 0.85)';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    const optimalPlatforms = this.platforms.filter(p => p.active && p.isOptimal).sort((a, b) => b.y - a.y);
+    for (let i = 0; i < optimalPlatforms.length - 1; i++) {
+      const p1 = optimalPlatforms[i];
+      const p2 = optimalPlatforms[i + 1];
+      ctx.moveTo(p1.x + p1.width / 2, p1.y);
+      ctx.lineTo(p2.x + p2.width / 2, p2.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
