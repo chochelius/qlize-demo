@@ -429,9 +429,21 @@ export class StageMode extends BaseMode {
     ctx.restore();
 
     // Hilo Dorado Continuo de la Ruta de Constelación
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
-    ctx.lineWidth = 2;
+    // Durante la cinemática de barrido, aumentar brillo y grosor
+    const isSweeping = this.isSweepingCamera;
+    const lineAlpha = isSweeping ? 0.95 : 0.6;
+    const lineWidth = isSweeping ? 3.5 : 2;
+    const glowBlur = isSweeping ? 16 : 0;
+    
+    ctx.strokeStyle = `rgba(251, 191, 36, ${lineAlpha})`;
+    ctx.lineWidth = lineWidth;
     ctx.setLineDash([4, 3]);
+    
+    if (glowBlur > 0) {
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = glowBlur;
+    }
+    
     ctx.beginPath();
     const optimalPlatforms = this.platforms.filter(p => p.active && p.isOptimal).sort((a, b) => b.y - a.y);
     for (let i = 0; i < optimalPlatforms.length - 1; i++) {
@@ -442,5 +454,6 @@ export class StageMode extends BaseMode {
     }
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
   }
 }
