@@ -99,7 +99,9 @@ const sfx = new SoundFX();
 
 // Detección de dispositivo
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-const hasGyroscope = 'DeviceOrientationEvent' in window;
+const hasTouchscreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const hasGyroscope = 'DeviceOrientationEvent' in window && hasTouchscreen;
+const isDesktop = !isMobile && !hasTouchscreen;
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
@@ -114,7 +116,7 @@ const PRESETS = {
     maxSpeed: 280,
     friction: 0.84,
     gyroSens: 22,
-    controlMode: 'swipe'
+    controlMode: isDesktop ? 'keyboard' : 'swipe'
   },
   balanced: {
     swipeSens: 1.0,
@@ -122,7 +124,7 @@ const PRESETS = {
     maxSpeed: 340,
     friction: 0.86,
     gyroSens: 20,
-    controlMode: 'swipe'
+    controlMode: isDesktop ? 'keyboard' : 'swipe'
   },
   fast: {
     swipeSens: 1.4,
@@ -130,7 +132,7 @@ const PRESETS = {
     maxSpeed: 420,
     friction: 0.89,
     gyroSens: 14,
-    controlMode: 'swipe'
+    controlMode: isDesktop ? 'keyboard' : 'swipe'
   }
 };
 
@@ -296,6 +298,7 @@ const btnSettingsX = document.getElementById('btn-settings-x');
 const btnExitGame = document.getElementById('btn-exit-game');
 const btnExitCancel = document.getElementById('btn-exit-cancel');
 const btnExitToMenu = document.getElementById('btn-exit-to-menu');
+const controlKeyboard = document.getElementById('control-keyboard');
 const controlSwipe = document.getElementById('control-swipe');
 const controlGyro = document.getElementById('control-gyro');
 
@@ -349,15 +352,45 @@ function updateSettingsUI() {
   valGyroSens.innerText = gameSettings.gyroSens + '°';
 
   // Update control mode buttons
+  controlKeyboard.classList.toggle('active', gameSettings.controlMode === 'keyboard');
   controlSwipe.classList.toggle('active', gameSettings.controlMode === 'swipe');
   controlGyro.classList.toggle('active', gameSettings.controlMode === 'gyro');
 
-  // Deshabilitar giroscopio si no está disponible
+  // Deshabilitar opciones según dispositivo
+  if (!isDesktop) {
+    controlKeyboard.disabled = true;
+    controlKeyboard.style.opacity = '0.4';
+    controlKeyboard.style.cursor = 'not-allowed';
+    controlKeyboard.textContent = '⌨️ Teclado (No disponible)';
+  } else {
+    controlKeyboard.disabled = false;
+    controlKeyboard.style.opacity = '1';
+    controlKeyboard.style.cursor = 'pointer';
+    controlKeyboard.textContent = '⌨️ Teclado';
+  }
+
   if (!hasGyroscope) {
     controlGyro.disabled = true;
     controlGyro.style.opacity = '0.4';
     controlGyro.style.cursor = 'not-allowed';
     controlGyro.textContent = '📱 Giroscopio (No disponible)';
+  } else {
+    controlGyro.disabled = false;
+    controlGyro.style.opacity = '1';
+    controlGyro.style.cursor = 'pointer';
+    controlGyro.textContent = '📱 Giroscopio';
+  }
+
+  if (!hasTouchscreen) {
+    controlSwipe.disabled = true;
+    controlSwipe.style.opacity = '0.4';
+    controlSwipe.style.cursor = 'not-allowed';
+    controlSwipe.textContent = '👆 Swipe (No disponible)';
+  } else {
+    controlSwipe.disabled = false;
+    controlSwipe.style.opacity = '1';
+    controlSwipe.style.cursor = 'pointer';
+    controlSwipe.textContent = '👆 Swipe';
   }
 
   updatePresetButtonsState();
@@ -422,14 +455,25 @@ sliderGyroSens.addEventListener('input', (e) => {
   updatePresetButtonsState();
 });
 
+controlKeyboard.addEventListener('click', () => {
+  if (isDesktop) {
+    gameSettings.controlMode = 'keyboard';
+    updateSettingsUI();
+  }
+});
+
 controlSwipe.addEventListener('click', () => {
-  gameSettings.controlMode = 'swipe';
-  updateSettingsUI();
+  if (hasTouchscreen) {
+    gameSettings.controlMode = 'swipe';
+    updateSettingsUI();
+  }
 });
 
 controlGyro.addEventListener('click', () => {
-  gameSettings.controlMode = 'gyro';
-  updateSettingsUI();
+  if (hasGyroscope) {
+    gameSettings.controlMode = 'gyro';
+    updateSettingsUI();
+  }
 });
 
 btnSettingsToggle.addEventListener('click', () => {
