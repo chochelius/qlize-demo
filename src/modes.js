@@ -280,9 +280,11 @@ export class ArcadeMode extends BaseMode {
 // 🏆 Modo Etapas (Por Niveles con Barrido Inicial y Medallas)
 // ---------------------------------------------------------
 export class StageMode extends BaseMode {
-  constructor(width, height, stageLength = 6000) {
+  constructor(width, height, segmentLength = 6000, repeatCount = 3) {
     super(width, height);
-    this.stageLength = stageLength;
+    this.segmentLength = segmentLength;
+    this.repeatCount = repeatCount;
+    this.stageLength = segmentLength * repeatCount; // 18000px total
     // BUGFIX: el mapa está pre-construido hasta -stageLength; el reciclaje por
     // defecto (height * 2.5 sobre la cámara) borraba los 2/3 superiores del mapa
     // al terminar la cinemática de barrido, haciendo la cima inalcanzable.
@@ -301,8 +303,33 @@ export class StageMode extends BaseMode {
   get isSweeping() { return this.isSweepingCamera; }
 
   buildStageMap() {
+    // Generar el primer segmento base
+    const baseSegment = this.buildSingleSegment(this.segmentLength);
+    
+    // Replicar el patrón 3 veces (o el número de repeticiones configurado)
     let currentY = this.height - 120;
-    const endY = -this.stageLength;
+    
+    for (let repeat = 0; repeat < this.repeatCount; repeat++) {
+      // Para cada repetición, usar el mismo patrón de posiciones X
+      // pero ajustar las posiciones Y según el offset de la repetición
+      const yOffset = repeat * this.segmentLength;
+      
+      for (const platform of baseSegment) {
+        const newY = platform.y - yOffset;
+        this.addPlatform(platform.x, newY, platform.width, 16, {
+          isOptimal: platform.isOptimal,
+          isSecondary: platform.isSecondary
+        });
+      }
+    }
+  }
+
+  buildSingleSegment(length) {
+    // Genera un segmento de plataformas y retorna un array con sus datos
+    const platforms = [];
+    let currentY = 0;
+    const endY = -length;
+    let lastOptimalX = this.width / 2; // Centro para la primera plataforma
 
     while (currentY > endY) {
       const isOptimal = Math.random() < 0.6;
@@ -311,28 +338,28 @@ export class StageMode extends BaseMode {
       // Si es óptima, debe estar a distancia alcanzable desde la última óptima
       let pX;
       if (isOptimal) {
-        const lastOptimal = this.platforms.filter(p => p.isOptimal).pop();
-        if (lastOptimal) {
-          const maxHorizontalReach = 280;
-          const lastCenterX = lastOptimal.x + lastOptimal.width / 2;
-          const minCenterX = Math.max(pWidth / 2, lastCenterX - maxHorizontalReach);
-          const maxCenterX = Math.min(this.width - pWidth / 2, lastCenterX + maxHorizontalReach);
-          const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
-          pX = newCenterX - pWidth / 2;
-        } else {
-          pX = Math.random() * (this.width - pWidth);
-        }
+        const maxHorizontalReach = 280;
+        const minCenterX = Math.max(pWidth / 2, lastOptimalX - maxHorizontalReach);
+        const maxCenterX = Math.min(this.width - pWidth / 2, lastOptimalX + maxHorizontalReach);
+        const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
+        pX = newCenterX - pWidth / 2;
+        lastOptimalX = newCenterX;
       } else {
         pX = Math.random() * (this.width - pWidth);
       }
       
       currentY -= 72 + Math.random() * 20;
 
-      this.addPlatform(pX, currentY, pWidth, 16, {
+      platforms.push({
+        x: pX,
+        y: currentY,
+        width: pWidth,
         isOptimal,
         isSecondary: !isOptimal
       });
     }
+    
+    return platforms;
   }
 
   update(dt, cameraY, player) {

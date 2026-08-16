@@ -148,11 +148,25 @@ test('BUGFIX StageMode: las plataformas de la cima sobreviven al reciclaje', () 
 });
 
 test('StageMode: la medalla respeta la jerarquía del GDD', () => {
-  const m = new StageMode(450, 800, 6000);
-  assert.equal(m.calculateMedal(6000).name, 'Bronce', 'cima 100% = Bronce');
-  assert.equal(m.calculateMedal(4600).name, 'Oro', '>=75% en derrota = Oro');
-  assert.equal(m.calculateMedal(3100).name, 'Plata', '>=50% en derrota = Plata');
+  const m = new StageMode(450, 800, 6000, 3); // 18000px total
+  assert.equal(m.calculateMedal(18000).name, 'Bronce', 'cima 100% = Bronce');
+  assert.equal(m.calculateMedal(13600).name, 'Oro', '>=75% en derrota = Oro');
+  assert.equal(m.calculateMedal(9100).name, 'Plata', '>=50% en derrota = Plata');
   assert.equal(m.calculateMedal(1000).name, 'Sin Medalla', '<50% sin medalla');
+});
+
+test('StageMode: genera 3 tramos secuenciales (GDD §2.2)', () => {
+  const m = new StageMode(450, 800, 6000, 3);
+  assert.equal(m.stageLength, 18000, 'longitud total = 3 × segmento');
+  
+  // Verificar que hay plataformas distribuidas en los 3 tramos
+  const tramo1 = m.platforms.filter(p => p.y <= 0 && p.y > -6000);
+  const tramo2 = m.platforms.filter(p => p.y <= -6000 && p.y > -12000);
+  const tramo3 = m.platforms.filter(p => p.y <= -12000 && p.y > -18000);
+  
+  assert.ok(tramo1.length > 30, `tramo 1 debe tener plataformas (hay ${tramo1.length})`);
+  assert.ok(tramo2.length > 30, `tramo 2 debe tener plataformas (hay ${tramo2.length})`);
+  assert.ok(tramo3.length > 30, `tramo 3 debe tener plataformas (hay ${tramo3.length})`);
 });
 
 test('SEPHIROTH_NODES: alturas ascendentes hacia Kether', () => {
