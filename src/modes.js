@@ -71,6 +71,9 @@ export class BaseMode {
     if (y < this.highestPlatformY || this.highestPlatformY === 0) {
       this.highestPlatformY = y;
     }
+    if (this.lowestPlatformY === undefined || y > this.lowestPlatformY) {
+      this.lowestPlatformY = y;
+    }
     return p;
   }
 
@@ -93,10 +96,17 @@ export class BaseMode {
   }
 
   update(dt, cameraY, player) {
-    // Reciclar plataformas lejanas por debajo de la cámara
-    const lowerBound = this.height - cameraY + 350;
-    const upperBound = -cameraY - this.pruneHeightAbove;
-    this.platforms = this.platforms.filter(p => p.y < lowerBound && p.y > upperBound);
+    if (player.gravityDirection === 1) {
+      // Normal: reciclar plataformas lejanas por debajo de la cámara
+      const lowerBound = this.height - cameraY + 350;
+      const upperBound = -cameraY - this.pruneHeightAbove;
+      this.platforms = this.platforms.filter(p => p.y < lowerBound && p.y > upperBound);
+    } else {
+      // Invertida: reciclar plataformas lejanas por encima de la cámara
+      const upperBound = -cameraY - 350;
+      const lowerBound = -cameraY + this.height + 2500;
+      this.platforms = this.platforms.filter(p => p.y > upperBound && p.y < lowerBound);
+    }
     this.generatePlatforms(cameraY);
   }
 
@@ -109,7 +119,7 @@ export class BaseMode {
     } else {
       // Invertida: la cámara sigue al jugador hacia abajo
       const targetY = -player.y + this.height * 0.55;
-      return targetY > cameraY ? targetY : cameraY;
+      return targetY < cameraY ? targetY : cameraY;
     }
   }
 
@@ -128,7 +138,9 @@ export class ArcadeMode extends BaseMode {
   constructor(width, height) {
     super(width, height);
     this.phase = 'structure'; // 'structure' (Luz) -> 'entropy' (Sombra Invertida)
-    this.entropySubPhase = null; // 'transition' (subiendo) -> 'descent' (bajando)
+    this.entropySubPhase = null; // 'transition' (subiendo a base) -> 'descent' (bajando)
+    this.entropyStartY = 0;
+    this.entropyTopPlatform = null;
     this.currentNodeIndex = 0;
     this.platformGapY = 72;
     this.sacredTime = 0;
@@ -137,21 +149,53 @@ export class ArcadeMode extends BaseMode {
   }
 
   generatePlatforms(cameraY) {
-    const targetY = -cameraY - this.height * 1.8;
+    if (this.phase === 'structure') {
+      const targetY = -cameraY - this.height * 1.8;
 
-    while (this.highestPlatformY > targetY) {
-      const isOptimal = Math.random() < 0.65;
-      const pWidth = isOptimal ? (60 + Math.random() * 25) : (50 + Math.random() * 30);
-      
-      // Si es óptima, debe estar a distancia alcanzable desde la última óptima
-      let pX;
-      if (isOptimal) {
-        const lastOptimal = this.platforms.filter(p => p.isOptimal).pop();
-        if (lastOptimal) {
-          // Distancia horizontal máxima alcanzable durante un salto (~274px teórico)
-          // Usamos 280px: el jugador puede usar secundarias como escalones
-          const maxHorizontalReach = 280;
-          const lastCenterX = lastOptimal.x + lastOptimal.width / 2;
+      while (this.highestPlatformY > targetY) {
+        const isOptimal = Math.random() < 0.65;
+        const pWidth = isOptimal ? (60 + Math.random() * 25) : (50 + Math.random() * 30);
+        
+        let pX;
+        if (isOptimal) {
+          const lastOptimal = this.platforms.filter(p => p.isOptimal && !p.isHusk).pop();
+          if (lastOptimal) {
+            const maxHorizontalReach = 280;
+            const lastCenterX = lastOptimal.x + lastOptimal.width / 2;
+            const minCenterX = Math.max(pWidth / 2, lastCenterX - maxHorizontalReach);
+            const maxCenterX = Math.min(this.width - pWidth / 2, lastCenterX + maxHorizontalReach);
+            const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
+            pX = newCenterX - pWidth / 2;
+          } else {
+            pX = Math.random() * (this.width - pWidth);
+          }
+        } else {
+          pX = Math.random() * (this.width - pWidth);
+        }
+        
+        const pY = this.highestPlatformY - this.platformGapY - (Math.random() * 30);
+
+        this.addPlatform(pX, pY, pWidth, 16, {
+          isOptimal,
+          isSecondary: !isOptimal,
+          isHusk: false
+        });
+      }
+    } else if (this.phase === 'entropy') {
+      // Generación continua y dinámica de plataformas carmesí hacia abajo durante todo el descenso
+      const targetY = -cameraY + this.height * 2.2;
+      const startY = -this.entropyStartY + 60;
+      const maxDescentY = startY + 5400;
+
+      while (this.lowestPlatformY < targetY && this.lowestPlatformY < maxDescentY) {
+        const isOptimal = Math.random() < 0.65;
+        const pWidth = isOptimal ? (65 + Math.random() * 20) : (50 + Math.random() * 30);
+
+        let pX;
+        if (isOptimal) {
+          const lastOptimal = this.platforms.filter(p => p.isOptimal && p.isHusk).pop();
+          const lastCenterX = lastOptimal ? (lastOptimal.x + lastOptimal.width / 2) : (this.width / 2);
+          const maxHorizontalReach = 260;
           const minCenterX = Math.max(pWidth / 2, lastCenterX - maxHorizontalReach);
           const maxCenterX = Math.min(this.width - pWidth / 2, lastCenterX + maxHorizontalReach);
           const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
@@ -159,18 +203,60 @@ export class ArcadeMode extends BaseMode {
         } else {
           pX = Math.random() * (this.width - pWidth);
         }
-      } else {
-        // Plataformas secundarias pueden estar más lejos (son apoyo, no ruta óptima)
-        pX = Math.random() * (this.width - pWidth);
-      }
-      
-      const pY = this.highestPlatformY - this.platformGapY - (Math.random() * 30);
 
-      this.addPlatform(pX, pY, pWidth, 16, {
-        isOptimal,
-        isSecondary: !isOptimal,
-        isHusk: this.phase === 'entropy'
-      });
+        const pY = this.lowestPlatformY + this.platformGapY + (Math.random() * 20);
+        this.addPlatform(pX, pY, pWidth, 16, {
+          isOptimal,
+          isSecondary: !isOptimal,
+          isHusk: true
+        });
+      }
+    }
+  }
+
+  initiateEntropyTransition(player, currentCameraY) {
+    this.phase = 'entropy';
+    this.entropySubPhase = 'transition';
+    this.entropyStartY = currentCameraY || 5000;
+    player.gravityDirection = -1; // Gravedad Invertida
+    player.vy = -600; // Impulso continuo hacia arriba para llegar a la base superior
+    player.noclip = true;
+
+    // Crear la plataforma base superior central del Árbol Invertido
+    const topBaseY = -this.entropyStartY + 60;
+    const topBaseWidth = 110;
+    const topBaseX = this.width / 2 - topBaseWidth / 2;
+
+    // Quitar plataformas que solapen exactamente la base
+    this.platforms = this.platforms.filter(p => Math.abs(p.y - topBaseY) > 30);
+
+    // Agregar la plataforma base superior (raíz del Árbol Invertido)
+    this.entropyTopPlatform = this.addPlatform(topBaseX, topBaseY, topBaseWidth, 18, {
+      isStartingPlatform: true,
+      isOptimal: true,
+      isHusk: true
+    });
+    this.lastSafePlatform = this.entropyTopPlatform;
+    this.lowestPlatformY = topBaseY + 18;
+
+    // Generar lote inicial de plataformas hacia abajo
+    this.generatePlatforms(this.entropyStartY);
+
+    if (this.onPhaseChange) {
+      this.onPhaseChange('entropy');
+    }
+  }
+
+  returnToStructure(player) {
+    this.phase = 'structure';
+    this.entropySubPhase = null;
+    this.entropyStartY = 0;
+    this.entropyTopPlatform = null;
+    player.gravityDirection = 1;
+    player.noclip = false;
+    this.needsResetToStructure = true;
+    if (this.onPhaseChange) {
+      this.onPhaseChange('structure');
     }
   }
 
@@ -179,44 +265,46 @@ export class ArcadeMode extends BaseMode {
     this.sacredTime += dt;
 
     // Transición de Estructura a Entropía al alcanzar 5000m
-    if (this.phase === 'structure' && cameraY > 5000) {
-      this.phase = 'entropy';
-      this.entropySubPhase = 'transition'; // Sub-fase: subiendo con noclip
-      this.entropyStartY = cameraY; // Guardar posición de inicio de Entropía
-      player.gravityDirection = -1; // Gravedad Invertida
-      player.vy = 0;
-      player.noclip = true; // Activar noclip para atravesar plataformas
-      if (this.onPhaseChange) {
-        this.onPhaseChange('entropy');
-      }
+    if (this.phase === 'structure' && cameraY >= 5000) {
+      this.initiateEntropyTransition(player, cameraY);
+      return;
     }
 
-    // Sub-fase de transición: jugador sube con noclip hasta la base superior
+    // Sub-fase de transición: jugador sube con noclip hasta la base superior central
     if (this.phase === 'entropy' && this.entropySubPhase === 'transition') {
-      // Cuando el jugador llega a la parte superior del viewport (suelo invertido)
-      if (player.y <= -cameraY + 50) {
+      const topBaseY = -this.entropyStartY + 60;
+      const targetX = this.width / 2 - player.width / 2;
+
+      // Alinear rápidamente hacia el centro horizontal
+      player.x += (targetX - player.x) * Math.min(1, dt * 8);
+
+      // Mantener velocidad de ascenso firme durante noclip
+      if (player.vy > -300) {
+        player.vy = -550;
+      }
+
+      // Cuando el jugador alcanza o supera la plataforma base superior
+      if (player.y <= topBaseY + 18) {
         this.entropySubPhase = 'descent'; // Ahora comienza el descenso
         player.noclip = false;
-        player.y = -cameraY + 10; // Posicionar justo debajo del techo
+        player.x = targetX;
+        player.y = topBaseY + 18 + 4; // Cara inferior de la base invertida
+        player.vx = 0;
         player.vy = 0;
+        this.lastSafePlatform = this.entropyTopPlatform;
+        player.jump(this.getJumpForce()); // Salto inicial hacia abajo
       }
+      return;
     }
 
-    // Fase de descenso en Entropía: verificar si llegó al final (bajar 5000m)
+    // Fase de descenso en Entropía: verificar si completó el descenso
     if (this.phase === 'entropy' && this.entropySubPhase === 'descent') {
-      // La cámara baja durante el descenso, calcular distancia recorrida
-      const descentDistance = this.entropyStartY - cameraY;
-      if (descentDistance >= 5000) {
-        // Llegó al final del descenso, volver a Estructura
-        this.phase = 'structure';
-        this.entropySubPhase = null;
-        player.gravityDirection = 1;
-        player.noclip = false;
-        // Marcar que el engine debe resetear la cámara y posición
-        this.needsResetToStructure = true;
-        if (this.onPhaseChange) {
-          this.onPhaseChange('structure');
-        }
+      const startY = -this.entropyStartY + 60;
+      const distanceDescended = player.y - startY;
+
+      if (distanceDescended >= 5000 || cameraY <= 0) {
+        this.returnToStructure(player);
+        return;
       }
     }
 
@@ -231,15 +319,25 @@ export class ArcadeMode extends BaseMode {
     }
   }
 
+  updateCamera(cameraY, player, dt) {
+    // Durante la transición, la cámara permanece fija en la altitud de la cima
+    if (this.phase === 'entropy' && this.entropySubPhase === 'transition') {
+      return this.entropyStartY || cameraY;
+    }
+    return super.updateCamera(cameraY, player, dt);
+  }
+
   respawnAtInitialPosition(player) {
     // Reposicionar al jugador en la plataforma inicial
-    if (this.lastSafePlatform) {
-      player.x = this.lastSafePlatform.x + this.lastSafePlatform.width / 2 - player.width / 2;
-      player.y = this.lastSafePlatform.y - player.height - 10;
-    } else {
-      player.x = this.width / 2 - player.width / 2;
-      player.y = this.height - 150;
-    }
+    this.platforms = [];
+    this.highestPlatformY = 0;
+    this.lowestPlatformY = this.height - 50;
+    this.addPlatform(this.width / 2 - 45, this.height - 50, 90, 16, { isStartingPlatform: true, isOptimal: true, isHusk: false });
+    this.lastSafePlatform = this.platforms[0];
+    this.generatePlatforms(0);
+
+    player.x = this.width / 2 - player.width / 2;
+    player.y = this.height - 150;
     player.vx = 0;
     player.vy = 0;
   }
@@ -258,29 +356,18 @@ export class ArcadeMode extends BaseMode {
   onAllLivesLost(engine) {
     // Transición a Entropía al perder todas las vidas en Estructura
     if (this.phase === 'structure') {
-      this.phase = 'entropy';
-      this.entropySubPhase = 'transition';
-      this.entropyStartY = engine.cameraY;
-      engine.player.gravityDirection = -1;
+      this.initiateEntropyTransition(engine.player, engine.cameraY);
       engine.lives = 3; // Restaurar vidas para la fase Entropía
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
-      engine.player.vy = 0;
-      engine.player.noclip = true; // Activar noclip para atravesar plataformas
-    } else if (this.phase === 'entropy' && this.entropySubPhase === 'descent') {
-      // Si perdió todas las vidas durante el descenso en Entropía, vuelve a Estructura
-      this.phase = 'structure';
-      this.entropySubPhase = null;
-      engine.player.gravityDirection = 1;
+    } else if (this.phase === 'entropy') {
+      // Si perdió todas las vidas durante Entropía, vuelve a Estructura
+      this.returnToStructure(engine.player);
       engine.lives = 3;
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
-      // Resetear cámara y posición
       engine.cameraY = 0;
       this.respawnAtInitialPosition(engine.player);
-      if (this.onPhaseChange) {
-        this.onPhaseChange('structure');
-      }
     } else {
       // Game over
       engine.stop();

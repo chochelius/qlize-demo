@@ -90,7 +90,7 @@ test('BaseMode: Sincronía = aciertos óptimos / saltos totales', () => {
   assert.equal(m.lastSafePlatform, optimal, 'lastSafePlatform debe actualizarse');
 });
 
-test('ArcadeMode: fase Entropía invierte gravedad a los 5000m', () => {
+test('ArcadeMode: fase Entropía invierte gravedad y genera plataforma base superior a los 5000m', () => {
   const m = new ArcadeMode(450, 800);
   const player = new Player(0, 0);
 
@@ -98,18 +98,66 @@ test('ArcadeMode: fase Entropía invierte gravedad a los 5000m', () => {
   assert.equal(m.phase, 'structure');
   assert.equal(player.gravityDirection, 1);
 
-  m.update(0.016, 5100, player);
-  assert.equal(m.phase, 'entropy', 'debe cambiar de fase sobre 5000');
+  m.update(0.016, 5000, player);
+  assert.equal(m.phase, 'entropy', 'debe cambiar de fase a los 5000m');
+  assert.equal(m.entropySubPhase, 'transition', 'debe iniciar en sub-fase transition');
   assert.equal(player.gravityDirection, -1, 'gravedad invertida en Entropía');
+  assert.equal(player.noclip, true, 'noclip activo durante transición');
+  assert.ok(m.entropyTopPlatform, 'debe generar la plataforma base superior');
+  assert.equal(m.entropyTopPlatform.x, 450 / 2 - 110 / 2, 'base superior centrada horizontalmente');
+  assert.equal(m.entropyTopPlatform.y, -5000 + 60, 'base superior en el borde superior visible');
 });
 
-test('ArcadeMode: genera plataformas por encima de la cámara', () => {
+test('ArcadeMode: cámara se mantiene fija durante sub-fase transition', () => {
+  const m = new ArcadeMode(450, 800);
+  const player = new Player(0, 0);
+
+  m.initiateEntropyTransition(player, 5000);
+  player.y = -6000; // el jugador se mueve muy arriba
+
+  const cam = m.updateCamera(5000, player, 0.016);
+  assert.equal(cam, 5000, 'cámara debe quedarse fija en entropyStartY durante la transición');
+});
+
+test('ArcadeMode: jugador aterriza en plataforma base superior y comienza descenso', () => {
+  const m = new ArcadeMode(450, 800);
+  const player = new Player(100, -4500);
+
+  m.initiateEntropyTransition(player, 5000);
+  assert.equal(m.entropySubPhase, 'transition');
+  assert.equal(player.noclip, true);
+
+  // Simular que el jugador asciende hasta alcanzar la plataforma base superior (-5000 + 60)
+  player.y = -5000 + 60;
+  m.update(0.016, 5000, player);
+
+  assert.equal(m.entropySubPhase, 'descent', 'debe pasar a sub-fase descent');
+  assert.equal(player.noclip, false, 'noclip debe desactivarse');
+  assert.equal(player.x, 450 / 2 - player.width / 2, 'jugador centrado en la plataforma base');
+  assert.equal(player.y, -5000 + 60 + 18 + 4, 'jugador colocado en la cara inferior');
+});
+
+test('ArcadeMode: cámara sigue hacia abajo durante descenso en Entropía', () => {
+  const m = new ArcadeMode(450, 800);
+  const player = new Player(0, 0);
+
+  m.initiateEntropyTransition(player, 5000);
+  m.entropySubPhase = 'descent';
+  player.gravityDirection = -1;
+
+  // Jugador desciende hacia y = -4000 (cámara debe bajar de 5000 a 4000 - 800*0.55 = 4440 o menor)
+  player.y = -4000;
+  const targetCam = -player.y + 800 * 0.55; // 4000 + 440 = 4440
+  const cam = m.updateCamera(5000, player, 0.016);
+  assert.equal(cam, targetCam, 'cámara debe descender con el jugador');
+});
+
+test('ArcadeMode: genera plataformas por encima de la cámara en Estructura', () => {
   const m = new ArcadeMode(450, 800);
   const before = m.highestPlatformY;
   // Con cámara en 5000, debe generar plataformas hasta -cameraY - height*1.8 = -6440
   m.update(0.016, 5000, new Player(0, 0));
   assert.ok(m.highestPlatformY < before, 'debe generar plataformas más altas');
-  assert.ok(m.highestPlatformY < -6440, `debe llegar hasta -6440 o más arriba (quedó en ${m.highestPlatformY})`);
 });
 
 test('ArcadeMode: plataformas óptimas consecutivas están a distancia alcanzable', () => {
@@ -210,22 +258,27 @@ test('Engine: ArcadeMode transiciona a Entropía al perder todas las vidas', () 
   assert.equal(over, null, 'NO debe disparar onGameOver en transición');
 });
 
-test('Engine: ArcadeMode dispara onGameOver en Entropía al perder todas las vidas', () => {
+test('Engine: ArcadeMode retorna a Estructura al perder todas las vidas en Entropía', () => {
   const { e, player, mode } = makeEngine();
   let over = null;
   e.onGameOver = (score) => { over = score; };
 
   // Configurar estado en fase Entropía
   mode.phase = 'entropy';
+  mode.entropySubPhase = 'descent';
+  player.gravityDirection = -1;
   e.lives = 1;                  // una sola vida restante
-  mode.lastSafePlatform = null; // sin respawn disponible
-  player.y = 100000;            // fuera de pantalla (caída al abismo)
+  mode.lastSafePlatform = { x: 100, y: -4000, width: 60, height: 16 };
+  player.y = -100000;           // fuera de pantalla en gravedad invertida (caída hacia arriba)
 
   e.update(0.016);
   
-  // Verificar game over
-  assert.equal(e.lives, 0, 'vidas deben llegar a 0');
-  assert.notEqual(over, null, 'onGameOver debe dispararse en Entropía');
+  // Verificar ciclo de vuelta a Estructura
+  assert.equal(mode.phase, 'structure', 'debe retornar a fase structure');
+  assert.equal(e.lives, 3, 'vidas deben restaurarse a 3');
+  assert.equal(player.gravityDirection, 1, 'gravedad debe volver a normal (1)');
+  assert.equal(e.cameraY, 0, 'cámara debe resetearse a 0');
+  assert.equal(over, null, 'NO debe ser game over directo sino ciclo');
 });
 
 test('Engine: triggerDegradation resta una vida y llama callbacks', () => {

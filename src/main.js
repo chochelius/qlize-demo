@@ -520,18 +520,33 @@ function startGame(modeClass) {
   screenSettings.classList.add('hidden');
   screenExitConfirm.classList.add('hidden');
   hud.classList.remove('hidden');
+  phaseIndicator.classList.add('hidden');
+  phaseIndicator.classList.remove('entropy');
+  phaseText.innerText = 'ESTRUCTURA';
 
   engine.reset();
 
   const player = new Player(canvas.width / 2 - 16, canvas.height - 150, gameSettings);
   const mode = new modeClass(canvas.width, canvas.height);
-  const distanceTarget = mode.stageLength || 6000;
 
   engine.setPlayer(player);
   engine.setMode(mode);
   engine.setInput(input);
 
   // Callbacks del Motor
+  engine.onPhaseChange = (phase) => {
+    if (modeClass === ArcadeMode) {
+      phaseIndicator.classList.remove('hidden');
+      if (phase === 'entropy') {
+        phaseIndicator.classList.add('entropy');
+        phaseText.innerText = 'ENTROPÍA';
+      } else {
+        phaseIndicator.classList.remove('entropy');
+        phaseText.innerText = 'ESTRUCTURA';
+      }
+    }
+  };
+
   engine.onGameOver = (score, realm, medal) => {
     if (medal && medal.name === 'Bronce') {
       sfx.playVictory();
@@ -554,10 +569,10 @@ function startGame(modeClass) {
     hud.classList.add('hidden');
   };
 
-  engine.onScoreUpdate = (score) => {
+  engine.onScoreUpdate = (score, currentProgress) => {
     // Actualizar indicador lateral de distancia
-    const progressPercent = Math.min(100, Math.max(0, (score / distanceTarget) * 100));
-    distanceCursorEl.style.top = `${100 - progressPercent}%`;
+    const progress = currentProgress !== undefined ? currentProgress : 0;
+    distanceCursorEl.style.top = `${100 - progress}%`;
   };
 
   engine.onSyncUpdate = (sync) => {

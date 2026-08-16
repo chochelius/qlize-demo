@@ -38,7 +38,12 @@ export class Engine {
   }
 
   setPlayer(player) { this.player = player; }
-  setMode(mode) { this.mode = mode; }
+  setMode(mode) {
+    this.mode = mode;
+    if (this.mode) {
+      this.mode.onPhaseChange = (phase) => this.onPhaseChange(phase);
+    }
+  }
   setInput(input) { this.input = input; }
 
   reset() {
@@ -54,7 +59,7 @@ export class Engine {
     if (this.player) {
       this.player.jumpMultiplier = 1.0;
     }
-    this.onScoreUpdate(0);
+    this.onScoreUpdate(0, 0);
     this.onLivesUpdate(this.lives);
   }
 
@@ -155,6 +160,9 @@ export class Engine {
     // 2.6. Reset completo a Estructura (después del descenso en Entropía)
     if (this.mode.needsResetToStructure) {
       this.cameraY = 0;
+      this.lives = 3;
+      this.degradationLevel = 0;
+      this.onLivesUpdate(this.lives);
       this.mode.respawnAtInitialPosition(this.player);
       this.mode.needsResetToStructure = false;
     }
@@ -162,28 +170,29 @@ export class Engine {
     // 3. Actualizar Jugador
     this.player.update(dt, this.input, this.width);
 
-    // Desactivar noclip cuando el jugador llegue al suelo invertido
-    if (this.player.noclip && this.player.gravityDirection === -1) {
-      // En Entropía, el jugador "cae" hacia arriba (y decreciente)
-      // El suelo invertido está en la parte superior del viewport (y = -cameraY)
-      if (this.player.y <= -this.cameraY) {
-        this.player.noclip = false;
-        this.player.y = -this.cameraY; // Ajustar posición exacta al borde superior
-        this.player.vy = 0;
-      }
-    }
-
     // Notificar Sincronía a la UI
     this.onSyncUpdate(this.player.synchrony);
 
     // 3. Actualizar Cámara
     this.cameraY = this.mode.updateCamera(this.cameraY, this.player, dt);
 
-    // Puntuación de Distancia
-    if (this.cameraY > this.score) {
-      this.score = this.cameraY;
-      this.onScoreUpdate(this.score);
+    // Puntuación de Distancia y Progreso
+    let currentProgress = 0;
+    if (this.mode.phase === 'entropy') {
+      if (this.mode.entropySubPhase === 'transition') {
+        currentProgress = 100; // En la cima
+      } else {
+        // En descenso: de 100% (cima) a 0% (base)
+        currentProgress = Math.min(100, Math.max(0, (this.cameraY / 5000) * 100));
+      }
+    } else {
+      const target = this.mode.stageLength || 5000;
+      if (this.cameraY > this.score) {
+        this.score = this.cameraY;
+      }
+      currentProgress = Math.min(100, Math.max(0, (this.cameraY / target) * 100));
     }
+    this.onScoreUpdate(this.score, currentProgress);
 
     // Verificar si la etapa está completa (StageMode)
     if (this.mode.stageComplete && !this.stageCompleteTriggered) {
