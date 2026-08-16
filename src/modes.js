@@ -586,6 +586,11 @@ export class StageMode extends BaseMode {
           this.sweepComplete = true;
           // Reposicionar al jugador en la plataforma inicial después del barrido
           this.needsPlayerReposition = true;
+          console.log('[StageMode] Barrido completo');
+          console.log('[StageMode] Plataformas totales:', this.platforms.length);
+          console.log('[StageMode] Plataforma inicial:', this.platforms[0]);
+          console.log('[StageMode] lastSafePlatform:', this.lastSafePlatform);
+          console.log('[StageMode] pruneHeightAbove:', this.pruneHeightAbove);
         }
       }
       return;
