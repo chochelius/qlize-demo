@@ -109,21 +109,24 @@ const PRESETS = {
     acceleration: 1100,
     maxSpeed: 280,
     friction: 0.84,
-    gyroSens: 22
+    gyroSens: 22,
+    controlMode: 'swipe'
   },
   balanced: {
     swipeSens: 1.0,
     acceleration: 1400,
     maxSpeed: 340,
     friction: 0.86,
-    gyroSens: 20
+    gyroSens: 20,
+    controlMode: 'swipe'
   },
   fast: {
     swipeSens: 1.4,
     acceleration: 1900,
     maxSpeed: 420,
     friction: 0.89,
-    gyroSens: 14
+    gyroSens: 14,
+    controlMode: 'swipe'
   }
 };
 
@@ -182,6 +185,7 @@ let touchTimeout = null;
 canvas.addEventListener('touchstart', (e) => {
   e.preventDefault();
   sfx.init();
+  if (gameSettings.controlMode !== 'swipe') return; // Solo si modo swipe está activo
   if (e.touches.length > 0) {
     lastTouchX = e.touches[0].clientX;
     isTouching = true;
@@ -193,6 +197,7 @@ canvas.addEventListener('touchstart', (e) => {
 
 canvas.addEventListener('touchmove', (e) => {
   e.preventDefault();
+  if (gameSettings.controlMode !== 'swipe') return; // Solo si modo swipe está activo
   if (!isTouching || e.touches.length === 0) return;
 
   const currentTouchX = e.touches[0].clientX;
@@ -284,6 +289,8 @@ const btnSettingsX = document.getElementById('btn-settings-x');
 const btnExitGame = document.getElementById('btn-exit-game');
 const btnExitCancel = document.getElementById('btn-exit-cancel');
 const btnExitToMenu = document.getElementById('btn-exit-to-menu');
+const controlSwipe = document.getElementById('control-swipe');
+const controlGyro = document.getElementById('control-gyro');
 
 const hud = document.getElementById('hud');
 const phaseIndicator = document.getElementById('phase-indicator');
@@ -334,6 +341,10 @@ function updateSettingsUI() {
   sliderGyroSens.value = gameSettings.gyroSens;
   valGyroSens.innerText = gameSettings.gyroSens + '°';
 
+  // Update control mode buttons
+  controlSwipe.classList.toggle('active', gameSettings.controlMode === 'swipe');
+  controlGyro.classList.toggle('active', gameSettings.controlMode === 'gyro');
+
   updatePresetButtonsState();
 }
 
@@ -343,7 +354,8 @@ function isMatchingPreset(p) {
     gameSettings.acceleration === p.acceleration &&
     gameSettings.maxSpeed === p.maxSpeed &&
     gameSettings.friction === p.friction &&
-    gameSettings.gyroSens === p.gyroSens
+    gameSettings.gyroSens === p.gyroSens &&
+    gameSettings.controlMode === p.controlMode
   );
 }
 
@@ -393,6 +405,16 @@ sliderGyroSens.addEventListener('input', (e) => {
   gameSettings.gyroSens = parseInt(e.target.value, 10);
   valGyroSens.innerText = gameSettings.gyroSens + '°';
   updatePresetButtonsState();
+});
+
+controlSwipe.addEventListener('click', () => {
+  gameSettings.controlMode = 'swipe';
+  updateSettingsUI();
+});
+
+controlGyro.addEventListener('click', () => {
+  gameSettings.controlMode = 'gyro';
+  updateSettingsUI();
 });
 
 btnSettingsToggle.addEventListener('click', () => {
