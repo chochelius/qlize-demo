@@ -107,9 +107,9 @@ export class BaseMode {
       const targetY = -player.y + this.height * 0.45;
       return targetY > cameraY ? targetY : cameraY;
     } else {
-      // Invertida: la cámara baja siguiendo al jugador
-      const targetY = -player.y + this.height * 0.55;
-      return targetY > cameraY ? targetY : cameraY;
+      // Invertida: la cámara se queda fija en la posición de transición
+      // para que el jugador pueda alcanzar el "techo" del viewport
+      return cameraY;
     }
   }
 
