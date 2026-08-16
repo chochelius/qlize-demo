@@ -407,20 +407,20 @@ export class ArcadeMode extends BaseMode {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     if (this.phase === 'structure') {
-      // Árbol de la Luz: Fondo Azul Marino Ultra Oscuro a Celeste
+      // Árbol de la Luz: Fondo Azul Marino Ultra Profundo a Celeste Suave
       const grad = ctx.createRadialGradient(
         this.width * 0.5, this.height * 0.35, 10,
         this.width * 0.5, this.height * 0.5, this.height * 0.8
       );
-      grad.addColorStop(0, 'rgba(56, 189, 248, 0.15)');
-      grad.addColorStop(0.6, 'rgba(15, 23, 42, 0.8)');
-      grad.addColorStop(1, '#040714');
+      grad.addColorStop(0, 'rgba(100, 181, 246, 0.18)');
+      grad.addColorStop(0.55, 'rgba(5, 8, 20, 0.85)');
+      grad.addColorStop(1, '#02040a');
 
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, this.width, this.height);
 
       // Estrellas en Paralaje
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#f5f5f7';
       for (const s of this.starsLayer1) {
         const sy = (s.y - cameraY * 0.2) % this.height;
         const finalY = sy < 0 ? sy + this.height : sy;
@@ -430,10 +430,10 @@ export class ArcadeMode extends BaseMode {
       }
       ctx.restore();
 
-      // Hilo Continuo de Luz Dorada (Ruta de Adherencia)
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      // Hilo Continuo y Vibrante de Luz Punteada Dorada y Blanca (Sendero de Adherencia)
+      ctx.strokeStyle = 'rgba(226, 177, 60, 0.5)';
       ctx.lineWidth = 2;
-      ctx.setLineDash([5, 4]);
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
       const optimalPlatforms = this.platforms.filter(p => p.active && p.isOptimal).sort((a, b) => b.y - a.y);
       for (let i = 0; i < optimalPlatforms.length - 1; i++) {
@@ -447,20 +447,20 @@ export class ArcadeMode extends BaseMode {
       ctx.stroke();
       ctx.setLineDash([]);
     } else {
-      // Árbol de la Sombra: Negro Absoluto con Fuegos Góticos Carmesí
+      // Árbol de la Sombra: Negro Espacial Ultra Profundo con Fuegos Góticos Carmesí y Púrpura
       const grad = ctx.createRadialGradient(
         this.width * 0.5, this.height * 0.5, 20,
         this.width * 0.5, this.height * 0.5, this.height * 0.9
       );
-      grad.addColorStop(0, 'rgba(225, 29, 72, 0.25)');
-      grad.addColorStop(0.7, 'rgba(136, 19, 55, 0.6)');
-      grad.addColorStop(1, '#030303');
+      grad.addColorStop(0, 'rgba(211, 47, 47, 0.25)');
+      grad.addColorStop(0.65, 'rgba(74, 20, 140, 0.55)');
+      grad.addColorStop(1, '#02040a');
 
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, this.width, this.height);
 
       // Chispas de Entropía en Bordes de Pantalla
-      ctx.fillStyle = '#e11d48';
+      ctx.fillStyle = '#d32f2f';
       for (let i = 0; i < 6; i++) {
         if (Math.random() < 0.4) {
           const ex = Math.random() < 0.5 ? Math.random() * 25 : this.width - Math.random() * 25;
@@ -619,9 +619,9 @@ export class StageMode extends BaseMode {
       this.width * 0.5, this.height * 0.4, 20,
       this.width * 0.5, this.height * 0.5, this.height * 0.85
     );
-    grad.addColorStop(0, 'rgba(16, 185, 129, 0.15)');
-    grad.addColorStop(0.7, 'rgba(15, 23, 42, 0.85)');
-    grad.addColorStop(1, '#040714');
+    grad.addColorStop(0, 'rgba(43, 179, 130, 0.18)');
+    grad.addColorStop(0.65, 'rgba(5, 8, 20, 0.88)');
+    grad.addColorStop(1, '#02040a');
 
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, this.width, this.height);
@@ -630,16 +630,16 @@ export class StageMode extends BaseMode {
     // Hilo Dorado Continuo de la Ruta de Constelación
     // Durante la cinemática de barrido, aumentar brillo y grosor
     const isSweeping = this.isSweepingCamera;
-    const lineAlpha = isSweeping ? 0.95 : 0.6;
+    const lineAlpha = isSweeping ? 0.95 : 0.65;
     const lineWidth = isSweeping ? 3.5 : 2;
-    const glowBlur = isSweeping ? 16 : 0;
+    const glowBlur = isSweeping ? 16 : 4;
     
-    ctx.strokeStyle = `rgba(251, 191, 36, ${lineAlpha})`;
+    ctx.strokeStyle = `rgba(226, 177, 60, ${lineAlpha})`;
     ctx.lineWidth = lineWidth;
-    ctx.setLineDash([4, 3]);
+    ctx.setLineDash([4, 4]);
     
     if (glowBlur > 0) {
-      ctx.shadowColor = '#fbbf24';
+      ctx.shadowColor = '#e2b13c';
       ctx.shadowBlur = glowBlur;
     }
     

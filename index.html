@@ -5,32 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>QLIZE | Cyber-Zen Vectorial</title>
   
-  <!-- Favicons -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <!-- Favicons Autocontenidos (Sin Recursos Externos) -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <!-- Google Fonts: Plus Jakarta Sans (ultra-thin a bold) y Cinzel -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --gold-primary: #fbbf24;
-      --gold-dark: #b45309;
-      --gold-glow: rgba(251, 191, 36, 0.35);
-      --cyan-celestial: #38bdf8;
-      --cyan-glow: rgba(56, 189, 248, 0.35);
-      --crimson-abyss: #e11d48;
-      --bg-dark: #040714;
+      /* Tipografía Autocontenida (Zero Redes / CDNs Externas) */
+      --font-serif: 'Cinzel', 'Trajan Pro', 'Georgia', 'Times New Roman', serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+      /* Fondo Base Universal (Cyber-Zen OLED) */
+      --bg-deep-space: #02040a;      /* Negro espacial ultra-profundo */
+      --bg-dark-void: #050814;       /* Azul marino oscuro para gradientes atmosféricos */
+
+      /* Paleta de la Luz (Árbol de la Estructura) */
+      --color-ivory: #f5f5f7;        /* Blanco marfil para tipografía y bordes limpios */
+      --color-gold: #e2b13c;         /* Oro mate para la ruta óptima y la Sincronía Perfecta */
+      --color-jade: #2bb382;         /* Verde jade para botones de éxito, reanudación y checkpoints */
+      --color-sky: #64b5f6;          /* Azul celeste para estelas, partículas y el perfil suave */
+
+      /* Paleta de la Sombra (Árbol de la Entropía) */
+      --color-gothic-red: #d32f2f;   /* Rojo fuego gótico para Modo Arcade y estados de peligro/reinicio */
+      --color-purple-entropy: #4a148c;/* Púrpura profundo para niebla de fondo en gravedad invertida */
+      --color-ash: #2d2d30;          /* Gris ceniza inerte para plataformas fuera de ruta */
     }
 
     * {
       box-sizing: border-box;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body, html {
@@ -38,32 +44,42 @@
       padding: 0;
       width: 100%;
       height: 100%;
-      background-color: var(--bg-dark);
+      height: 100dvh;
+      background-color: var(--bg-deep-space);
       background-image: 
-        radial-gradient(circle at 50% 20%, rgba(30, 58, 138, 0.25) 0%, transparent 65%),
-        radial-gradient(circle at 50% 80%, rgba(3, 7, 18, 0.9) 0%, var(--bg-dark) 100%);
+        radial-gradient(circle at 50% 20%, rgba(5, 8, 20, 0.95) 0%, transparent 70%),
+        radial-gradient(circle at 50% 80%, var(--bg-deep-space) 0%, #000 100%);
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: var(--font-sans);
       touch-action: none;
-      color: #f8fafc;
+      color: var(--color-ivory);
     }
 
     #game-container {
       position: relative;
-      background-color: #030712;
+      background-color: var(--bg-deep-space);
       aspect-ratio: 45 / 80;
       width: 100%;
       max-width: 450px;
       max-height: 100vh;
+      max-height: 100dvh;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), 0 0 15px rgba(251, 191, 36, 0.1);
-      border: 1px solid rgba(251, 191, 36, 0.25);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.95), 0 0 20px rgba(226, 177, 60, 0.08);
+      border: 1px solid rgba(245, 245, 247, 0.12);
       overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      #game-container {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
     }
 
     canvas {
@@ -78,7 +94,7 @@
       pointer-events: none;
       display: flex;
       flex-direction: column;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: var(--font-sans);
     }
 
     .screen {
@@ -88,226 +104,251 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 40%, rgba(15, 23, 42, 0.94) 0%, rgba(3, 7, 18, 0.98) 100%);
+      background: radial-gradient(circle at 50% 40%, rgba(5, 8, 20, 0.92) 0%, rgba(2, 4, 10, 0.98) 100%);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       pointer-events: auto;
       text-align: center;
       padding: 24px;
       z-index: 20;
-    }
-
-    /* Botón cerrar (X) en pantalla de configuración */
-    .settings-close-x {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(251, 191, 36, 0.4);
-      color: #fbbf24;
-      font-size: 1.1rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-      z-index: 10;
-    }
-
-    .settings-close-x:hover {
-      background: rgba(251, 191, 36, 0.2);
-      border-color: #fbbf24;
-      transform: scale(1.1);
-    }
-
-    .settings-close-x:active {
-      transform: scale(0.95);
+      overflow-y: auto;
     }
 
     .hidden { display: none !important; }
 
-    /* Título y Emblem Cyber-Zen */
-    .title-emblem {
-      width: 64px;
-      height: 64px;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 0 16px var(--gold-glow));
-      animation: floatSlow 4s ease-in-out infinite alternate;
+    /* Red Vectorial del Árbol de la Vida en Fondos */
+    .tree-of-life-grid {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.75;
     }
 
-    @keyframes floatSlow {
-      0% { transform: translateY(0px) rotate(0deg); }
-      100% { transform: translateY(-6px) rotate(4deg); }
+    .screen-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* ---------------------------------------------------------
+       Isologo Oficial: La "Q" Octogonal
+       --------------------------------------------------------- */
+    .isologo-container {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .isologo-q {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .isologo-octagon {
+      transform-origin: 60px 60px;
+      animation: rotateOctagon 16s linear infinite;
+    }
+
+    @keyframes rotateOctagon {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .isologo-tail {
+      animation: pulseGoldTail 4s ease-in-out infinite;
+    }
+
+    @keyframes pulseGoldTail {
+      0%, 100% {
+        opacity: 0.8;
+        filter: drop-shadow(0 0 2px var(--color-gold));
+      }
+      50% {
+        opacity: 1;
+        filter: drop-shadow(0 0 10px var(--color-gold));
+      }
     }
 
     h1.game-title {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 2.4rem;
-      margin: 0 0 4px 0;
-      background: linear-gradient(180deg, #ffffff 0%, #fde68a 40%, #f59e0b 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 4px;
-      font-weight: 900;
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      margin: 0;
+      color: var(--color-ivory);
+      letter-spacing: 6px;
+      font-weight: 700;
+      text-shadow: 0 0 24px rgba(245, 245, 247, 0.25);
     }
 
     .subtitle {
-      font-size: 0.78rem;
-      letter-spacing: 3px;
-      color: #94a3b8;
+      font-size: 0.72rem;
+      letter-spacing: 6px;
+      color: var(--color-gold);
       text-transform: uppercase;
-      margin-bottom: 28px;
+      margin-top: 4px;
+      margin-bottom: 24px;
       font-weight: 300;
+      opacity: 0.9;
     }
 
-    /* Botones Místicos */
-    .btn-card {
+    /* ---------------------------------------------------------
+       Menú Principal: Botonera Octogonal Sólida
+       --------------------------------------------------------- */
+    .btn-octagonal {
       position: relative;
       width: 100%;
       max-width: 320px;
-      padding: 16px 20px;
-      margin: 9px 0;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 14px 18px;
+      margin: 7px 0;
+      clip-path: polygon(
+        10px 0%, calc(100% - 10px) 0%,
+        100% 10px, 100% calc(100% - 10px),
+        calc(100% - 10px) 100%, 10px 100%,
+        0% calc(100% - 10px), 0% 10px
+      );
+      background: rgba(15, 23, 42, 0.88);
+      border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
       gap: 14px;
       text-align: left;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--color-ivory);
       overflow: hidden;
     }
 
-    .btn-card::before {
+    .btn-octagonal::after {
       content: '';
       position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-      transition: left 0.5s ease;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border: 1px solid rgba(245, 245, 247, 0.2);
+      clip-path: polygon(
+        10px 0%, calc(100% - 10px) 0%,
+        100% 10px, 100% calc(100% - 10px),
+        calc(100% - 10px) 100%, 10px 100%,
+        0% calc(100% - 10px), 0% 10px
+      );
+      pointer-events: none;
+      transition: all 0.25s ease;
     }
 
-    .btn-card:hover::before { left: 100%; }
-    .btn-card:hover { transform: translateY(-3px) scale(1.02); }
-    .btn-card:active { transform: translateY(1px) scale(0.98); }
-
-    .btn-icon-sphere {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
+    .btn-icon-oct {
+      width: 38px;
+      height: 38px;
+      clip-path: polygon(
+        8px 0%, calc(100% - 8px) 0%,
+        100% 8px, 100% calc(100% - 8px),
+        calc(100% - 8px) 100%, 8px 100%,
+        0% calc(100% - 8px), 0% 8px
+      );
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       flex-shrink: 0;
+      background: rgba(245, 245, 247, 0.08);
+      color: var(--color-ivory);
+      transition: all 0.25s ease;
     }
 
     .btn-content h3 {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
-      letter-spacing: 1.5px;
-      font-family: 'Cinzel', serif;
+      letter-spacing: 2px;
+      font-family: var(--font-serif);
+      color: var(--color-ivory);
+      transition: color 0.25s ease;
     }
 
     .btn-content p {
       margin: 3px 0 0 0;
-      font-size: 0.74rem;
-      opacity: 0.85;
+      font-size: 0.72rem;
+      opacity: 0.8;
       font-weight: 400;
       letter-spacing: 0.5px;
+      color: #94a3b8;
     }
 
-    #btn-arcade {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(30, 58, 138, 0.4) 100%);
-      border: 1px solid rgba(251, 191, 36, 0.4);
-      color: #fef08a;
-      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+    /* MODO ARCADE: Fuego Gótico Rojo */
+    #btn-arcade:hover::after {
+      border-color: var(--color-gothic-red);
+      box-shadow: inset 0 0 16px rgba(211, 47, 47, 0.4);
     }
-    #btn-arcade .btn-icon-sphere {
-      background: radial-gradient(circle at 35% 35%, #fef08a, #f59e0b 60%, #b45309 100%);
-      box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+    #btn-arcade:hover {
+      background: linear-gradient(135deg, rgba(211, 47, 47, 0.22) 0%, rgba(15, 23, 42, 0.95) 100%);
+      transform: translateY(-2px) scale(1.01);
     }
-
-    #btn-stage {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(15, 23, 42, 0.6) 100%);
-      border: 1px solid rgba(52, 211, 153, 0.4);
-      color: #a7f3d0;
-      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+    #btn-arcade:hover .btn-icon-oct {
+      background: var(--color-gothic-red);
+      color: #fff;
+      box-shadow: 0 0 12px var(--color-gothic-red);
+      animation: gothicFirePulse 1.2s infinite alternate;
     }
-    #btn-stage .btn-icon-sphere {
-      background: radial-gradient(circle at 35% 35%, #a7f3d0, #10b981 60%, #064e3b 100%);
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+    #btn-arcade:hover .btn-content h3 {
+      color: #fca5a5;
     }
 
-    /* Botón Ajustes */
+    @keyframes gothicFirePulse {
+      0% { filter: drop-shadow(0 0 4px var(--color-gothic-red)); }
+      100% { filter: drop-shadow(0 0 14px #ff5252); }
+    }
+
+    /* MODO ETAPAS: Línea Punteada Dorada y Brillo Celeste */
+    #btn-stage:hover::after {
+      border-color: var(--color-gold);
+      box-shadow: inset 0 0 14px rgba(226, 177, 60, 0.3);
+    }
+    #btn-stage:hover {
+      background: linear-gradient(135deg, rgba(226, 177, 60, 0.15) 0%, rgba(100, 181, 246, 0.12) 100%);
+      transform: translateY(-2px) scale(1.01);
+    }
+    #btn-stage:hover .btn-icon-oct {
+      background: var(--color-gold);
+      color: #000;
+      box-shadow: 0 0 12px var(--color-gold);
+    }
+    #btn-stage:hover .btn-content h3 {
+      color: var(--color-sky);
+      text-shadow: 0 0 10px rgba(100, 181, 246, 0.6);
+    }
+
+    /* Botón flotante superior de Ajustes */
     #btn-settings-toggle {
       position: absolute;
       top: 16px; right: 16px;
-      width: 42px; height: 42px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(251, 191, 36, 0.35);
-      border-radius: 50%;
+      width: 40px; height: 40px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(43, 179, 130, 0.45);
+      clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
       display: flex; justify-content: center; align-items: center;
-      cursor: pointer; padding: 0; margin: 0; color: #fde68a;
+      cursor: pointer; padding: 0; margin: 0; color: var(--color-jade);
       backdrop-filter: blur(8px);
       transition: all 0.25s ease;
-      box-shadow: 0 0 14px rgba(251, 191, 36, 0.2);
       z-index: 25;
     }
     #btn-settings-toggle:hover {
-      background: rgba(30, 58, 138, 0.8);
-      transform: rotate(60deg) scale(1.1);
+      background: rgba(43, 179, 130, 0.25);
+      border-color: var(--color-jade);
+      transform: rotate(45deg) scale(1.08);
+      box-shadow: 0 0 14px rgba(43, 179, 130, 0.4);
     }
 
-    /* Botón Salir (in-game, HUD) */
-    #btn-exit-game {
-      position: absolute;
-      top: 58px; left: 14px;
-      width: 36px; height: 36px;
-      background: rgba(4, 7, 20, 0.7);
-      border: 1px solid rgba(251, 191, 36, 0.35);
-      border-radius: 50%;
-      display: flex; justify-content: center; align-items: center;
-      cursor: pointer; padding: 0; margin: 0; color: #fbbf24;
-      font-size: 1rem; font-weight: 700; line-height: 1;
-      backdrop-filter: blur(8px);
-      transition: all 0.2s ease;
-      box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
-      pointer-events: auto;
-      z-index: 16;
-    }
-    #btn-exit-game:hover {
-      background: rgba(180, 83, 9, 0.5);
-      border-color: rgba(251, 191, 36, 0.7);
-      transform: scale(1.1);
-    }
-
-    /* Pantalla de confirmación de salida */
-    #screen-exit-confirm {
-      z-index: 30;
-      background: radial-gradient(circle at 50% 40%, rgba(136, 19, 55, 0.35) 0%, rgba(3, 7, 18, 0.96) 100%);
-    }
-    #screen-exit-confirm h2 {
-      font-family: 'Cinzel', serif;
-      font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 8px;
-      color: #fecdd3;
-    }
-    #screen-exit-confirm p {
-      font-size: 0.8rem; color: #94a3b8; margin-bottom: 22px;
-      max-width: 280px; line-height: 1.5;
-    }
-    .exit-actions { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
-
-    /* Pantalla de Ajustes */
+    /* ---------------------------------------------------------
+       Pantalla de Calibración de Físicas
+       --------------------------------------------------------- */
     #screen-settings {
-      padding: 22px 20px;
-      background: radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%);
+      padding: 24px 20px;
+      background: radial-gradient(circle at 50% 10%, rgba(5, 8, 20, 0.96) 0%, rgba(2, 4, 10, 0.98) 100%);
       backdrop-filter: blur(18px);
       justify-content: flex-start;
       overflow-y: auto;
@@ -315,85 +356,263 @@
       z-index: 35;
     }
     #screen-settings h2 {
-      font-family: 'Cinzel', serif;
+      font-family: var(--font-serif);
       text-align: center;
-      margin-top: 5px; margin-bottom: 16px;
-      font-size: 1.5rem; letter-spacing: 2px;
-      background: linear-gradient(180deg, #ffffff, #fde68a);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-top: 6px; margin-bottom: 16px;
+      font-size: 1.4rem; letter-spacing: 3px;
+      color: var(--color-ivory);
+      text-shadow: 0 0 12px rgba(245, 245, 247, 0.3);
       width: 100%;
     }
 
-    .presets-container { width: 100%; margin-bottom: 18px; }
+    .settings-close-x {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 34px; height: 34px;
+      clip-path: polygon(7px 0%, calc(100% - 7px) 0%, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0% calc(100% - 7px), 0% 7px);
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(245, 245, 247, 0.3);
+      color: var(--color-ivory);
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease; z-index: 10;
+    }
+    .settings-close-x:hover {
+      background: rgba(211, 47, 47, 0.3);
+      border-color: var(--color-gothic-red);
+      color: #fca5a5;
+      transform: scale(1.08);
+    }
+
+    .presets-container { width: 100%; margin-bottom: 16px; }
     .presets-label {
-      font-size: 0.74rem; text-transform: uppercase; letter-spacing: 2px;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px;
       color: #94a3b8; margin-bottom: 8px; font-weight: 600;
     }
     .presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    
     .preset-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px; padding: 9px 4px; color: #e2e8f0;
-      font-size: 0.74rem; font-weight: 500; cursor: pointer;
-      transition: all 0.2s ease; text-align: center;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(245, 245, 247, 0.15);
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      padding: 10px 4px; color: var(--color-ivory);
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 1px;
+      cursor: pointer; transition: all 0.2s ease; text-align: center;
     }
-    .preset-btn:hover, .preset-btn.active {
-      background: rgba(251, 191, 36, 0.2);
-      border-color: #f59e0b; color: #fef08a;
+    .preset-btn#preset-soft.active {
+      background: rgba(100, 181, 246, 0.2);
+      border: 1px solid var(--color-sky);
+      color: var(--color-sky);
+      box-shadow: 0 0 10px rgba(100, 181, 246, 0.35);
+    }
+    .preset-btn#preset-balanced.active {
+      background: rgba(245, 245, 247, 0.18);
+      border: 1px solid var(--color-ivory);
+      color: var(--color-ivory);
+      box-shadow: 0 0 10px rgba(245, 245, 247, 0.35);
+    }
+    .preset-btn#preset-fast.active {
+      background: rgba(226, 177, 60, 0.2);
+      border: 1px solid var(--color-gold);
+      color: var(--color-gold);
+      box-shadow: 0 0 10px rgba(226, 177, 60, 0.35);
     }
 
     .setting-group {
-      width: 100%; margin-bottom: 14px; background: rgba(255, 255, 255, 0.03);
-      padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);
+      width: 100%; margin-bottom: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 10px 14px;
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      border: 1px solid rgba(245, 245, 247, 0.08);
     }
     .setting-header {
       display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.82rem; font-weight: 400; margin-bottom: 8px; color: #e2e8f0;
+      font-size: 0.8rem; font-weight: 500; margin-bottom: 8px; color: var(--color-ivory);
     }
     .setting-val {
-      font-family: monospace; color: #38bdf8; font-size: 0.82rem;
-      background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 6px;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-    }
-    .setting-slider {
-      width: 100%; height: 6px; border-radius: 3px; background: #1e293b;
-      outline: none; -webkit-appearance: none; cursor: pointer;
-    }
-    .setting-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #bae6fd, #38bdf8 60%, #0284c7 100%);
-      cursor: pointer; box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+      font-family: var(--font-mono); color: var(--color-gold); font-size: 0.8rem;
+      background: rgba(226, 177, 60, 0.12); padding: 2px 7px;
+      border: 1px solid rgba(226, 177, 60, 0.3);
     }
 
-    .control-mode-toggle {
-      display: flex; gap: 10px; width: 100%;
+    /* Sliders Vectoriales Ultrafinos (1px) con Tirador Octogonal Dorado */
+    .setting-slider {
+      width: 100%; height: 1px; background: rgba(245, 245, 247, 0.25);
+      outline: none; -webkit-appearance: none; cursor: pointer; margin: 10px 0;
     }
+    .setting-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      clip-path: polygon(4px 0%, calc(100% - 4px) 0%, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0% calc(100% - 4px), 0% 4px);
+      background: var(--color-gold);
+      cursor: pointer; box-shadow: 0 0 8px var(--color-gold);
+      transition: transform 0.15s ease;
+    }
+    .setting-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+      box-shadow: 0 0 14px var(--color-gold);
+    }
+
+    .control-mode-toggle { display: flex; gap: 8px; width: 100%; }
     .control-mode-btn {
-      flex: 1; padding: 12px 14px; border-radius: 10px;
-      background: rgba(71, 85, 105, 0.4); color: #94a3b8;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 0.85rem;
+      flex: 1; padding: 10px 8px;
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      background: rgba(30, 41, 59, 0.5); color: #94a3b8;
+      border: 1px solid rgba(245, 245, 247, 0.1);
+      font-family: var(--font-sans); font-weight: 600; font-size: 0.8rem;
       cursor: pointer; transition: all 0.2s ease;
     }
     .control-mode-btn.active {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.15));
-      color: #38bdf8; border-color: rgba(56, 189, 248, 0.5);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
-    }
-    .control-mode-btn:hover:not(.active) {
-      background: rgba(71, 85, 105, 0.6); color: #cbd5e1;
+      background: rgba(100, 181, 246, 0.18);
+      color: var(--color-sky); border-color: var(--color-sky);
+      box-shadow: 0 0 10px rgba(100, 181, 246, 0.3);
     }
 
-    .settings-actions { width: 100%; display: flex; gap: 10px; margin-top: 16px; margin-bottom: 10px; }
-    .btn-action {
-      flex: 1; padding: 12px 14px; border-radius: 10px; border: none;
-      font-family: 'Cinzel', serif; font-weight: 600; font-size: 0.88rem;
-      letter-spacing: 1px; cursor: pointer; transition: all 0.2s ease;
+    .settings-actions { width: 100%; display: flex; gap: 10px; margin-top: 14px; margin-bottom: 8px; }
+    .btn-action-oct {
+      flex: 1; padding: 12px 14px;
+      clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
+      border: none;
+      font-family: var(--font-serif); font-weight: 600; font-size: 0.85rem;
+      letter-spacing: 1.5px; cursor: pointer; transition: all 0.2s ease;
     }
-    .btn-action-secondary { background: rgba(71, 85, 105, 0.6); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.1); }
-    .btn-action-primary { background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+    .btn-action-sec {
+      background: rgba(30, 41, 59, 0.8); color: #cbd5e1;
+      border: 1px solid rgba(245, 245, 247, 0.15);
+    }
+    .btn-action-sec:hover { background: rgba(51, 65, 85, 0.9); color: #fff; }
+    .btn-action-pri {
+      background: var(--color-gold); color: #02040a;
+      font-weight: 700;
+    }
+    .btn-action-pri:hover {
+      background: #f1c40f;
+      box-shadow: 0 0 14px var(--color-gold);
+    }
 
-    /* HUD Cyber-Zen Minimalista en Esquinas */
+    /* ---------------------------------------------------------
+       Menú de Pausa ("El Silencio Creativo")
+       --------------------------------------------------------- */
+    #screen-pause {
+      z-index: 30;
+      background: radial-gradient(circle at 50% 50%, rgba(5, 8, 20, 0.88) 0%, rgba(2, 4, 10, 0.96) 100%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .pause-oct-container {
+      width: 100%;
+      max-width: 340px;
+      padding: 28px 20px;
+      clip-path: polygon(
+        16px 0%, calc(100% - 16px) 0%,
+        100% 16px, 100% calc(100% - 16px),
+        calc(100% - 16px) 100%, 16px 100%,
+        0% calc(100% - 16px), 0% 16px
+      );
+      background: rgba(5, 8, 20, 0.95);
+      border: 1px solid var(--color-ivory);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(245, 245, 247, 0.05);
+    }
+
+    .pause-title {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      letter-spacing: 4px;
+      margin: 0;
+      color: var(--color-ivory);
+      text-shadow: 0 0 16px rgba(245, 245, 247, 0.3);
+    }
+
+    .pause-mantra {
+      font-size: 0.78rem;
+      letter-spacing: 3px;
+      color: var(--color-gold);
+      text-transform: uppercase;
+      margin-top: 6px;
+      margin-bottom: 22px;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
+    .pause-actions {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-pause-opt {
+      width: 100%;
+      padding: 13px 16px;
+      clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
+      border: none;
+      font-family: var(--font-serif);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .btn-pause-resume {
+      background: rgba(43, 179, 130, 0.2);
+      border: 1px solid var(--color-jade);
+      color: var(--color-jade);
+    }
+    .btn-pause-resume:hover {
+      background: var(--color-jade);
+      color: #02040a;
+      box-shadow: 0 0 16px var(--color-jade);
+      transform: scale(1.02);
+    }
+
+    .btn-pause-restart {
+      background: rgba(211, 47, 47, 0.2);
+      border: 1px solid var(--color-gothic-red);
+      color: #fca5a5;
+    }
+    .btn-pause-restart:hover {
+      background: var(--color-gothic-red);
+      color: #fff;
+      box-shadow: 0 0 16px var(--color-gothic-red);
+      transform: scale(1.02);
+    }
+
+    .btn-pause-settings {
+      background: rgba(100, 181, 246, 0.15);
+      border: 1px solid var(--color-sky);
+      color: var(--color-sky);
+    }
+    .btn-pause-settings:hover {
+      background: var(--color-sky);
+      color: #02040a;
+      box-shadow: 0 0 16px var(--color-sky);
+      transform: scale(1.02);
+    }
+
+    .btn-pause-menu-link {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.76rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 8px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .btn-pause-menu-link:hover {
+      color: var(--color-ivory);
+      text-decoration: underline;
+    }
+
+    /* ---------------------------------------------------------
+       HUD Cyber-Zen Minimalista
+       --------------------------------------------------------- */
     #hud {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -401,108 +620,122 @@
       z-index: 15;
     }
 
-    /* Esquina Superior Izquierda: Tríptico de Trigramas/Hexágonos de Vida */
     .hud-lives-container {
       position: absolute;
       top: 14px; left: 14px;
       display: flex; gap: 8px; align-items: center;
-      background: rgba(4, 7, 20, 0.7);
-      padding: 6px 12px; border-radius: 20px;
-      border: 1px solid rgba(251, 191, 36, 0.25);
+      background: rgba(2, 4, 10, 0.8);
+      padding: 6px 12px;
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      border: 1px solid rgba(226, 177, 60, 0.35);
       backdrop-filter: blur(8px);
     }
     .trigram-life {
-      font-size: 1rem; color: #fbbf24;
+      font-size: 1rem; color: var(--color-gold);
       transition: all 0.3s ease;
-      filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5));
+      filter: drop-shadow(0 0 6px rgba(226, 177, 60, 0.6));
     }
     .trigram-life.lost {
-      color: #475569; filter: none; opacity: 0.4;
+      color: var(--color-ash); filter: none; opacity: 0.4;
       transform: scale(0.85);
     }
 
-    /* Esquina Superior Derecha: Indicador Circular Fragmentado de Sincronía */
+    #btn-exit-game {
+      position: absolute;
+      top: 56px; left: 14px;
+      width: 36px; height: 36px;
+      background: rgba(2, 4, 10, 0.8);
+      border: 1px solid rgba(245, 245, 247, 0.3);
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      display: flex; justify-content: center; align-items: center;
+      cursor: pointer; padding: 0; margin: 0; color: var(--color-ivory);
+      font-size: 0.95rem; font-weight: 700; line-height: 1;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      pointer-events: auto;
+      z-index: 16;
+    }
+    #btn-exit-game:hover {
+      background: rgba(226, 177, 60, 0.25);
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+      transform: scale(1.08);
+    }
+
     .hud-sync-container {
       position: absolute;
       top: 14px; right: 14px;
       display: flex; align-items: center; gap: 8px;
-      background: rgba(4, 7, 20, 0.7);
-      padding: 6px 12px; border-radius: 20px;
-      border: 1px solid rgba(56, 189, 248, 0.25);
+      background: rgba(2, 4, 10, 0.8);
+      padding: 6px 12px;
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      border: 1px solid rgba(100, 181, 246, 0.35);
       backdrop-filter: blur(8px);
     }
+    .sync-gauge {
+      width: 22px; height: 22px;
+      clip-path: polygon(4px 0%, calc(100% - 4px) 0%, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0% calc(100% - 4px), 0% 4px);
+      background: rgba(100, 181, 246, 0.2);
+      border: 1px solid var(--color-sky);
+      display: flex; justify-content: center; align-items: center;
+      font-size: 0.65rem; font-weight: 700; color: var(--color-sky);
+    }
+    .sync-text { display: flex; flex-direction: column; text-align: right; }
+    .sync-label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; }
+    .sync-val { font-size: 0.85rem; font-weight: 700; color: var(--color-gold); font-family: var(--font-mono); }
 
-    /* Indicador de Fase (Arcade Mode) */
     .hud-phase-indicator {
       position: absolute;
       top: 14px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(4, 7, 20, 0.85);
-      padding: 8px 20px;
-      border-radius: 20px;
-      border: 2px solid #fbbf24;
-      font-size: 0.9rem;
+      background: rgba(2, 4, 10, 0.9);
+      padding: 7px 18px;
+      clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
+      border: 1px solid var(--color-gold);
+      font-size: 0.85rem;
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
-      color: #fbbf24;
-      text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+      color: var(--color-gold);
+      text-shadow: 0 0 10px rgba(226, 177, 60, 0.6);
       transition: all 0.5s ease;
     }
-
     .hud-phase-indicator.entropy {
-      border-color: #e11d48;
-      color: #e11d48;
-      text-shadow: 0 0 10px rgba(225, 29, 72, 0.6);
+      border-color: var(--color-gothic-red);
+      color: var(--color-gothic-red);
+      text-shadow: 0 0 10px rgba(211, 47, 47, 0.6);
       animation: pulse-entropy 2s infinite;
     }
 
-    @keyframes pulse-entropy {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    .sync-gauge {
-      width: 22px; height: 22px; border-radius: 50%;
-      border: 2px solid #38bdf8;
-      display: flex; justify-content: center; align-items: center;
-      font-size: 0.65rem; font-weight: 700; color: #38bdf8;
-    }
-    .sync-text { display: flex; flex-direction: column; text-align: right; }
-    .sync-label { font-size: 0.62rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; }
-    .sync-val { font-size: 0.85rem; font-weight: 700; color: #38bdf8; font-family: monospace; }
-
-    /* Barra Vertical Lateral Derecha: Progreso de Distancia */
     .hud-distance-bar {
       position: absolute;
-      top: 70px; right: 14px; bottom: 70px; width: 4px;
-      background: rgba(255, 255, 255, 0.1); border-radius: 2px;
+      top: 70px; right: 14px; bottom: 70px; width: 2px;
+      background: rgba(245, 245, 247, 0.15);
     }
     .hud-distance-cursor {
-      position: absolute; left: -4px; width: 12px; height: 12px;
-      border-radius: 50%; background: #fbbf24;
-      box-shadow: 0 0 10px #fbbf24;
+      position: absolute; left: -5px; width: 12px; height: 12px;
+      clip-path: polygon(3px 0%, calc(100% - 3px) 0%, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0% calc(100% - 3px), 0% 3px);
+      background: var(--color-gold);
+      box-shadow: 0 0 10px var(--color-gold);
       transition: top 0.1s linear;
     }
 
-    /* Pantalla Game Over / Fin de Etapa */
+    /* Pantalla Game Over */
     #screen-gameover h2 {
-      font-size: 2rem; margin-bottom: 4px;
-      background: linear-gradient(180deg, #fecdd3, #e11d48);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      letter-spacing: 2px; font-family: 'Cinzel', serif;
+      font-size: 1.8rem; margin-bottom: 4px;
+      color: var(--color-ivory);
+      letter-spacing: 3px; font-family: var(--font-serif);
     }
-
     .medal-badge {
-      font-size: 3rem; margin: 10px 0 2px 0;
-      filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.5));
+      font-size: 2.8rem; margin: 8px 0 2px 0;
+      filter: drop-shadow(0 0 16px rgba(226, 177, 60, 0.5));
     }
-    .medal-title { font-size: 0.95rem; color: #fde68a; font-weight: 600; margin-bottom: 12px; letter-spacing: 1px; }
+    .medal-title { font-size: 0.9rem; color: var(--color-gold); font-weight: 600; margin-bottom: 12px; letter-spacing: 1px; }
 
     .gameover-score-container { margin: 8px 0 20px 0; }
     .gameover-score {
-      font-size: 2.6rem; font-weight: 800; font-family: monospace;
-      color: #38bdf8; text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+      font-size: 2.8rem; font-weight: 800; font-family: var(--font-mono);
+      color: var(--color-sky); text-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
     }
   </style>
 </head>
@@ -524,8 +757,8 @@
         <span id="life-3" class="trigram-life">☰</span>
       </div>
 
-      <!-- Botón Salir / Retroceder (in-game) -->
-      <button id="btn-exit-game" title="Salir de la partida (Esc)" aria-label="Salir de la partida">✕</button>
+      <!-- Botón Pausa / Salir (in-game) -->
+      <button id="btn-exit-game" title="Pausa (Esc)" aria-label="Pausa">⏸</button>
 
       <!-- Medidor Circular de Sincronía (Esquina Derecha) -->
       <div class="hud-sync-container">
@@ -545,82 +778,103 @@
     <div id="ui-layer">
       <!-- Menú Principal -->
       <div id="screen-menu" class="screen">
-        <button id="btn-settings-toggle" title="Configuración" aria-label="Configuración">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
-
-        <!-- Emblema Sagrado Cyber-Zen -->
-        <svg class="title-emblem" viewBox="0 0 100 100" fill="none" stroke="#fbbf24" stroke-width="2">
-          <circle cx="50" cy="50" r="44" stroke="rgba(251, 191, 36, 0.35)" stroke-dasharray="4 3"/>
-          <circle cx="50" cy="50" r="32" stroke="rgba(56, 189, 248, 0.4)"/>
-          <line x1="50" y1="12" x2="50" y2="88" stroke="#fbbf24" stroke-width="1.8"/>
-          <circle cx="50" cy="50" r="6" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>
+        <!-- Red Geométrica de Fondo del Árbol de la Vida -->
+        <svg class="tree-of-life-grid" viewBox="0 0 450 800" fill="none">
+          <line x1="225" y1="120" x2="225" y2="580" stroke="rgba(226, 177, 60, 0.12)" stroke-width="1" stroke-dasharray="3 4"/>
+          <line x1="225" y1="160" x2="110" y2="340" stroke="rgba(245, 245, 247, 0.08)" stroke-width="1"/>
+          <line x1="225" y1="160" x2="340" y2="340" stroke="rgba(245, 245, 247, 0.08)" stroke-width="1"/>
+          <line x1="110" y1="340" x2="225" y2="440" stroke="rgba(245, 245, 247, 0.06)" stroke-width="1"/>
+          <line x1="340" y1="340" x2="225" y2="440" stroke="rgba(245, 245, 247, 0.06)" stroke-width="1"/>
+          <line x1="110" y1="340" x2="340" y2="340" stroke="rgba(226, 177, 60, 0.09)" stroke-width="1" stroke-dasharray="2 3"/>
+          <circle cx="225" cy="160" r="4" fill="#e2b13c" opacity="0.3"/>
+          <circle cx="110" cy="340" r="3" fill="#f5f5f7" opacity="0.2"/>
+          <circle cx="340" cy="340" r="3" fill="#f5f5f7" opacity="0.2"/>
+          <circle cx="225" cy="440" r="3.5" fill="#2bb382" opacity="0.25"/>
         </svg>
 
-        <h1 class="game-title">QLIZE</h1>
-        <div class="subtitle">Cyber-Zen Vectorial</div>
+        <div class="screen-content">
+          <button id="btn-settings-toggle" title="Configuración" aria-label="Configuración">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
 
-        <button id="btn-arcade" class="btn-card">
-          <div class="btn-icon-sphere">✨</div>
-          <div class="btn-content">
-            <h3>Modo Arcade</h3>
-            <p>Ascenso Continuo • Estructura & Entropía Invertida</p>
+          <!-- Isologo Oficial: La "Q" Octogonal -->
+          <div class="isologo-container">
+            <svg class="isologo-q" viewBox="0 0 120 120" fill="none">
+              <polygon class="isologo-octagon" points="35,5 85,5 115,35 115,85 85,115 35,115 5,85 5,35" stroke="var(--color-ivory)" stroke-width="6" stroke-linejoin="miter" />
+              <line class="isologo-tail" x1="72" y1="72" x2="114" y2="114" stroke="var(--color-gold)" stroke-width="9" stroke-linecap="square" />
+            </svg>
           </div>
-        </button>
 
-        <button id="btn-stage" class="btn-card">
-          <div class="btn-icon-sphere">🏆</div>
-          <div class="btn-content">
-            <h3>Modo Etapas</h3>
-            <p>Ruta de Constelación • 3 Tramos & Medallas</p>
-          </div>
-        </button>
-      </div>
+          <h1 class="game-title">QLIZE</h1>
+          <div class="subtitle">MISTICISMO VECTORIAL</div>
 
-      <!-- Confirmación de salida (in-game) -->
-      <div id="screen-exit-confirm" class="screen hidden">
-        <h2>¿Abandonar el recorrido?</h2>
-        <p>El progreso de esta partida se perderá si vuelves al menú.</p>
-        <div class="exit-actions">
-          <button id="btn-exit-cancel" class="btn-action btn-action-primary">Continuar</button>
-          <button id="btn-exit-to-menu" class="btn-action btn-action-secondary">Salir al Menú</button>
+          <!-- Botonera Central Octogonal -->
+          <button id="btn-arcade" class="btn-octagonal">
+            <div class="btn-icon-oct">✨</div>
+            <div class="btn-content">
+              <h3>MODO ARCADE</h3>
+              <p>Ascenso Continuo • Estructura & Entropía</p>
+            </div>
+          </button>
+
+          <button id="btn-stage" class="btn-octagonal">
+            <div class="btn-icon-oct">🏆</div>
+            <div class="btn-content">
+              <h3>MODO ETAPAS</h3>
+              <p>Ruta de Constelación • 3 Tramos & Medallas</p>
+            </div>
+          </button>
         </div>
       </div>
 
-      <!-- Pantalla de Ajustes -->
+      <!-- Menú de Pausa ("El Silencio Creativo") -->
+      <div id="screen-pause" class="screen hidden">
+        <div class="pause-oct-container">
+          <h2 class="pause-title">PAUSA</h2>
+          <div id="pause-mantra" class="pause-mantra">Respira. Recalibra. Asciende.</div>
+          <div class="pause-actions">
+            <button id="btn-pause-resume" class="btn-pause-opt btn-pause-resume">REANUDAR</button>
+            <button id="btn-pause-restart" class="btn-pause-opt btn-pause-restart">REINICIAR</button>
+            <button id="btn-pause-settings" class="btn-pause-opt btn-pause-settings">AJUSTES DE FÍSICA</button>
+            <button id="btn-pause-menu" class="btn-pause-menu-link">MENÚ PRINCIPAL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pantalla de Calibración de Físicas -->
       <div id="screen-settings" class="screen hidden">
         <button id="btn-settings-x" class="settings-close-x" title="Cerrar" aria-label="Cerrar configuración">✕</button>
-        <h2>⚙️ Configuración</h2>
+        <h2>CALIBRACIÓN DE FÍSICAS</h2>
         
+        <div class="presets-container">
+          <div class="presets-label">Perfiles Octogonales</div>
+          <div class="presets-grid">
+            <button id="preset-soft" class="preset-btn">SUAVE</button>
+            <button id="preset-balanced" class="preset-btn active">EQUILIBRADO</button>
+            <button id="preset-fast" class="preset-btn">ÁGIL</button>
+          </div>
+        </div>
+
         <div class="setting-group">
           <div class="setting-header">
             <span>Modo de Control</span>
           </div>
           <div class="control-mode-toggle">
-            <button id="control-keyboard" class="control-mode-btn">⌨️ Teclado</button>
-            <button id="control-swipe" class="control-mode-btn active">👆 Swipe</button>
-            <button id="control-gyro" class="control-mode-btn">📱 Giroscopio</button>
-          </div>
-        </div>
-
-        <div class="presets-container">
-          <div class="presets-label">Perfiles Rápidos</div>
-          <div class="presets-grid">
-            <button id="preset-soft" class="preset-btn">✨ Suave</button>
-            <button id="preset-balanced" class="preset-btn active">⚖️ Equilibrado</button>
-            <button id="preset-fast" class="preset-btn">⚡ Ágil</button>
+            <button id="control-keyboard" class="control-mode-btn">Teclado</button>
+            <button id="control-swipe" class="control-mode-btn active">Swipe</button>
+            <button id="control-gyro" class="control-mode-btn">Giroscopio</button>
           </div>
         </div>
 
         <div class="setting-group">
           <div class="setting-header">
-            <span>Sensibilidad Swipe</span>
-            <span id="val-swipe-sens" class="setting-val">1.0x</span>
+            <span>Volumen de Música</span>
+            <span id="val-music-volume" class="setting-val">65%</span>
           </div>
-          <input type="range" id="slider-swipe-sens" class="setting-slider" min="0.3" max="2.5" step="0.1" value="1.0" />
+          <input type="range" id="slider-music-volume" class="setting-slider" min="0" max="100" step="5" value="65" />
         </div>
 
         <div class="setting-group">
@@ -633,10 +887,10 @@
 
         <div class="setting-group">
           <div class="setting-header">
-            <span>Velocidad Máxima</span>
-            <span id="val-max-speed" class="setting-val">340</span>
+            <span>Sensibilidad de Deslizamiento</span>
+            <span id="val-swipe-sens" class="setting-val">1.0x</span>
           </div>
-          <input type="range" id="slider-max-speed" class="setting-slider" min="200" max="500" step="10" value="340" />
+          <input type="range" id="slider-swipe-sens" class="setting-slider" min="0.3" max="2.5" step="0.1" value="1.0" />
         </div>
 
         <div class="setting-group">
@@ -649,6 +903,14 @@
 
         <div class="setting-group">
           <div class="setting-header">
+            <span>Velocidad Máxima</span>
+            <span id="val-max-speed" class="setting-val">340</span>
+          </div>
+          <input type="range" id="slider-max-speed" class="setting-slider" min="200" max="500" step="10" value="340" />
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-header">
             <span>Sensibilidad Giroscopio</span>
             <span id="val-gyro-sens" class="setting-val">20°</span>
           </div>
@@ -656,33 +918,26 @@
         </div>
 
         <div class="settings-actions">
-          <button id="btn-settings-reset" class="btn-action btn-action-secondary">Restablecer</button>
-          <button id="btn-settings-close" class="btn-action btn-action-primary">Guardar</button>
+          <button id="btn-settings-reset" class="btn-action-oct btn-action-sec">RESTABLECER</button>
+          <button id="btn-settings-close" class="btn-action-oct btn-action-pri">VOLVER</button>
         </div>
       </div>
 
       <!-- Pantalla Game Over / Fin de Etapa -->
       <div id="screen-gameover" class="screen hidden">
-        <h2 id="gameover-title">RECORRIDO TERMINADO</h2>
-        <div id="medal-icon" class="medal-badge hidden">🥉</div>
-        <div id="medal-title" class="medal-title hidden">Medalla de Bronce</div>
-        
-        <div class="gameover-score-container">
-          <div class="gameover-score" id="final-score">0</div>
-          <div style="font-size:0.75rem; color:#94a3b8; letter-spacing:2px; text-transform:uppercase;">Metros Recorridos</div>
+        <div class="pause-oct-container" style="border-color: rgba(245, 245, 247, 0.4);">
+          <h2 id="gameover-title" class="pause-title">RECORRIDO TERMINADO</h2>
+          <div id="medal-icon" class="medal-badge hidden">🥉</div>
+          <div id="medal-title" class="medal-title hidden">Medalla de Bronce</div>
+          
+          <div class="gameover-score-container">
+            <div class="gameover-score" id="final-score">0</div>
+            <div style="font-size:0.72rem; color:#94a3b8; letter-spacing:2.5px; text-transform:uppercase;">Metros Recorridos</div>
+          </div>
+
+          <button id="btn-restart" class="btn-pause-opt btn-pause-resume" style="margin-bottom: 8px;">REINTENTAR</button>
+          <button id="btn-menu" class="btn-pause-menu-link">VOLVER AL MENÚ</button>
         </div>
-
-        <button id="btn-restart" class="btn-card" style="background: linear-gradient(135deg, #0284c7, #0369a1); border-color:#38bdf8; justify-content:center; text-align:center; color:#fff;">
-          <div class="btn-content" style="text-align:center;">
-            <h3>Reintentar</h3>
-          </div>
-        </button>
-
-        <button id="btn-menu" class="btn-card" style="background: rgba(30, 41, 59, 0.8); border-color:rgba(255,255,255,0.15); justify-content:center; text-align:center; color:#cbd5e1; padding: 12px 20px;">
-          <div class="btn-content" style="text-align:center;">
-            <p style="font-size:0.85rem; font-weight:500;">Volver al Menú</p>
-          </div>
-        </button>
       </div>
     </div>
   </div>
