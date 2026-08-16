@@ -163,28 +163,9 @@ export class Engine {
 
     // 2.5. Reposicionar al jugador si el modo lo requiere
     if (this.mode.needsPlayerReposition) {
-      console.log('[Engine] Repositionando jugador después del barrido');
-      console.log('[Engine] lastSafePlatform:', this.mode.lastSafePlatform);
       this.respawnAtSafePlatform();
       this.mode.needsPlayerReposition = false;
       this.cameraY = 0;
-      console.log('[Engine] Jugador reposicionado en:', { x: this.player.x, y: this.player.y });
-      console.log('[Engine] Estado del jugador:', {
-        gravityDirection: this.player.gravityDirection,
-        vy: this.player.vy,
-        vx: this.player.vx,
-        noclip: this.player.noclip
-      });
-    }
-
-    // DEBUG: Log después del barrido
-    if (this.mode.sweepComplete && !this.mode.isSweepingCamera && this.cameraY < 100) {
-      if (!this.loggedAfterSweep) {
-        console.log('[Engine] Después del barrido - cámara:', this.cameraY);
-        console.log('[Engine] Jugador posición:', { x: this.player.x, y: this.player.y });
-        console.log('[Engine] Plataformas cercanas:', this.mode.platforms.filter(p => p.y < 1000 && p.y > -100).length);
-        this.loggedAfterSweep = true;
-      }
     }
 
     // 2.6. Reset completo a Estructura
