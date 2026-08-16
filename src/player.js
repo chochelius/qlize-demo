@@ -23,6 +23,9 @@ export class Player {
     // Multiplicador de salto acumulativo (aumenta con óptimas consecutivas)
     this.jumpMultiplier = 1.0;
 
+    // Noclip temporal (para transición a Entropía)
+    this.noclip = false;
+
     // Partículas y Animaciones Vectoriales
     this.trail = [];
     this.pulseAngle = 0;

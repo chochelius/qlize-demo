@@ -184,6 +184,7 @@ export class ArcadeMode extends BaseMode {
       // Posicionar al jugador en el "suelo" invertido (parte superior del viewport)
       player.y = -cameraY; // Pegado al tope del viewport
       player.vy = 0;
+      player.noclip = true; // Activar noclip para atravesar plataformas
     }
 
     // Actualizar Sefirá / Reino actual
@@ -219,6 +220,7 @@ export class ArcadeMode extends BaseMode {
       // Posicionar al jugador en el "suelo" invertido (parte superior del viewport)
       engine.player.y = -engine.cameraY; // Pegado al tope del viewport
       engine.player.vy = 0;
+      engine.player.noclip = true; // Activar noclip para atravesar plataformas
     } else {
       // Si ya estamos en Entropía, game over
       engine.stop();

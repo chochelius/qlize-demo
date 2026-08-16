@@ -145,6 +145,17 @@ export class Engine {
     // 3. Actualizar Jugador
     this.player.update(dt, this.input, this.width);
 
+    // Desactivar noclip cuando el jugador llegue al suelo invertido
+    if (this.player.noclip && this.player.gravityDirection === -1) {
+      // En Entropía, el jugador "cae" hacia arriba (y decreciente)
+      // El suelo invertido está en la parte superior del viewport
+      if (this.player.y <= -this.cameraY + this.player.height) {
+        this.player.noclip = false;
+        this.player.y = -this.cameraY + this.player.height; // Ajustar posición exacta
+        this.player.vy = 0;
+      }
+    }
+
     // Notificar Sincronía a la UI
     this.onSyncUpdate(this.player.synchrony);
 
@@ -187,7 +198,8 @@ export class Engine {
     const isFallingNormal = this.player.gravityDirection === 1 && this.player.vy > 0;
     const isFallingInverted = this.player.gravityDirection === -1 && this.player.vy < 0;
 
-    if (isFallingNormal || isFallingInverted) {
+    // Solo detectar colisiones si no está en modo noclip
+    if (!this.player.noclip && (isFallingNormal || isFallingInverted)) {
       const platforms = this.mode.getPlatforms();
       for (const p of platforms) {
         if (!p.active) continue;
