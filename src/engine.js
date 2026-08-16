@@ -387,8 +387,13 @@ export class Engine {
     this.ctx.globalAlpha = 1;
 
     const platforms = this.mode.getPlatforms();
+    // Culling de viewport: en Etapas viven ~200 plataformas pero solo ~12 son
+    // visibles; dibujarlas todas por frame es el mayor coste en móvil
+    const viewTop = -this.cameraY - 60;
+    const viewBottom = -this.cameraY + this.height + 60;
     for (const p of platforms) {
       if (!p.active) continue;
+      if (p.y + p.height < viewTop || p.y > viewBottom) continue;
 
       this.ctx.save();
       this.ctx.translate(p.x, p.y);
@@ -403,17 +408,23 @@ export class Engine {
         this.ctx.fillStyle = this.getPlatformGradient('husk', p.height);
         this.ctx.fillRect(0, 0, p.width, p.height);
 
-        this.ctx.strokeStyle = p.isOptimal ? '#d32f2f' : '#4a148c';
-        this.ctx.lineWidth = p.isOptimal ? 2 : 1;
-        this.ctx.shadowColor = '#d32f2f';
-        this.ctx.shadowBlur = p.isOptimal ? 14 : 4;
-        this.ctx.strokeRect(0, 0, p.width, p.height);
-
         if (p.isOptimal) {
+          // Glow emulado con doble trazo (shadowBlur es muy caro en móvil)
+          this.ctx.strokeStyle = 'rgba(211, 47, 47, 0.28)';
+          this.ctx.lineWidth = 5;
+          this.ctx.strokeRect(0, 0, p.width, p.height);
+          this.ctx.strokeStyle = '#d32f2f';
+          this.ctx.lineWidth = 2;
+          this.ctx.strokeRect(0, 0, p.width, p.height);
+
           this.ctx.fillStyle = '#fca5a5';
           this.ctx.beginPath();
           this.ctx.arc(p.width / 2, p.height / 2, 4, 0, Math.PI * 2);
           this.ctx.fill();
+        } else {
+          this.ctx.strokeStyle = '#4a148c';
+          this.ctx.lineWidth = 1;
+          this.ctx.strokeRect(0, 0, p.width, p.height);
         }
       } else if (p.isSecondary) {
         this.ctx.fillStyle = '#2d2d30';
@@ -431,14 +442,16 @@ export class Engine {
         this.ctx.fillRect(0, 0, p.width, p.height);
 
         const borderStroke = p.isDecaying ? '#fb923c' : '#e2b13c';
-        this.ctx.strokeStyle = borderStroke;
-        this.ctx.lineWidth = 1.8;
-        this.ctx.shadowColor = borderStroke;
-        this.ctx.shadowBlur = 10;
-        
+
         if (p.isDecaying) {
           this.ctx.setLineDash([4, 2]);
         }
+        // Glow emulado con doble trazo (shadowBlur es muy caro en móvil)
+        this.ctx.strokeStyle = p.isDecaying ? 'rgba(251, 146, 60, 0.28)' : 'rgba(226, 177, 60, 0.28)';
+        this.ctx.lineWidth = 4.5;
+        this.ctx.strokeRect(0, 0, p.width, p.height);
+        this.ctx.strokeStyle = borderStroke;
+        this.ctx.lineWidth = 1.8;
         this.ctx.strokeRect(0, 0, p.width, p.height);
         this.ctx.setLineDash([]);
 
