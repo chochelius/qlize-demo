@@ -303,32 +303,34 @@ export class StageMode extends BaseMode {
   get isSweeping() { return this.isSweepingCamera; }
 
   buildStageMap() {
-    // Generar el primer segmento base
-    const baseSegment = this.buildSingleSegment(this.segmentLength);
+    // La plataforma inicial del BaseMode está en height - 50
+    // Empezamos generando desde ahí hacia arriba
+    let startY = this.height - 120;
     
-    // Replicar el patrón 3 veces (o el número de repeticiones configurado)
-    let currentY = this.height - 120;
-    
+    // Generar cada segmento desde donde terminó el anterior
     for (let repeat = 0; repeat < this.repeatCount; repeat++) {
-      // Para cada repetición, usar el mismo patrón de posiciones X
-      // pero ajustar las posiciones Y según el offset de la repetición
-      const yOffset = repeat * this.segmentLength;
+      const segment = this.buildSingleSegment(this.segmentLength, startY);
       
-      for (const platform of baseSegment) {
-        const newY = platform.y - yOffset;
-        this.addPlatform(platform.x, newY, platform.width, 16, {
+      for (const platform of segment) {
+        this.addPlatform(platform.x, platform.y, platform.width, 16, {
           isOptimal: platform.isOptimal,
           isSecondary: platform.isSecondary
         });
       }
+      
+      // El siguiente segmento empieza donde terminó este
+      if (segment.length > 0) {
+        startY = segment[segment.length - 1].y;
+      }
     }
   }
 
-  buildSingleSegment(length) {
+  buildSingleSegment(length, startY) {
     // Genera un segmento de plataformas y retorna un array con sus datos
+    // startY: posición Y donde comienza este segmento (cerca de la plataforma anterior)
     const platforms = [];
-    let currentY = 0;
-    const endY = -length;
+    let currentY = startY;
+    const endY = startY - length;
     let lastOptimalX = this.width / 2; // Centro para la primera plataforma
 
     while (currentY > endY) {
