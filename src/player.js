@@ -142,14 +142,13 @@ export class Player {
 
     // 1. Dibujar Estela de Luz Stardust
     for (const p of this.trail) {
-      ctx.save();
       ctx.globalAlpha = Math.max(0, p.alpha);
       ctx.fillStyle = p.color;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
     }
+    ctx.globalAlpha = 1;
 
     ctx.save();
 

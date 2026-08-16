@@ -201,7 +201,7 @@ export class QlizeAudioManager {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(this.masterGain || this.ctx.destination);
 
       osc.start(now);
       osc.stop(now + 0.12);
@@ -224,7 +224,7 @@ export class QlizeAudioManager {
       gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(this.masterGain || this.ctx.destination);
 
       osc.start(now);
       osc.stop(now + 0.08);
@@ -247,7 +247,7 @@ export class QlizeAudioManager {
       gain.gain.linearRampToValueAtTime(0.001, now + 0.3);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(this.masterGain || this.ctx.destination);
 
       osc.start(now);
       osc.stop(now + 0.3);
@@ -271,11 +271,63 @@ export class QlizeAudioManager {
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
 
         osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        gain.connect(this.masterGain || this.ctx.destination);
 
         osc.start(startTime);
         osc.stop(startTime + 0.35);
       });
+    } catch (e) {}
+  }
+
+  // SFX: Cuenco Tibetano Sintético (Selección de Etapa en Overworld)
+  // Armónicos sagrados a 216Hz, 432Hz y 864Hz con envolvente meditativa
+  playTibetanBowl() {
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const freqs = [216, 432, 864, 1296];
+      const amps = [0.22, 0.18, 0.08, 0.03];
+      const durations = [2.2, 1.8, 1.2, 0.8];
+
+      freqs.forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        // El volumen/mute lo aplica masterGain; no multiplicar aquí (volume²)
+        gain.gain.setValueAtTime(amps[i], now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + durations[i]);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain || this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + durations[i]);
+      });
+    } catch (e) {}
+  }
+
+  // SFX: Resonancia de Navegación entre Nodos del Overworld
+  playNodeHover() {
+    if (!this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(864, now);
+      osc.frequency.exponentialRampToValueAtTime(1080, now + 0.08);
+
+      // El volumen/mute lo aplica masterGain; no multiplicar aquí (volume²)
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain || this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.09);
     } catch (e) {}
   }
 }

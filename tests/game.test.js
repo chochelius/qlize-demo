@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Player } from '../src/player.js';
 import { BaseMode, ArcadeMode, StageMode, TutorialMode, getTutorialStepData, SEPHIROTH_NODES } from '../src/modes.js';
+import { OverworldManager, OVERWORLD_GRAPH } from '../src/overworld.js';
 import { Engine } from '../src/engine.js';
 
 // ---------- mocks mínimos ----------
@@ -217,7 +218,7 @@ test('StageMode: genera 3 tramos secuenciales (GDD §2.2)', () => {
   assert.ok(tramo3.length > 30, `tramo 3 debe tener plataformas (hay ${tramo3.length})`);
 });
 
-test('SEPHIROTH_NODES: alturas ascendentes hacia Kether', () => {
+test('REALM_NODES: alturas ascendentes hacia Wángguān', () => {
   for (let i = 1; i < SEPHIROTH_NODES.length; i++) {
     assert.ok(SEPHIROTH_NODES[i].height > SEPHIROTH_NODES[i - 1].height,
       `${SEPHIROTH_NODES[i].name} debe estar por encima de ${SEPHIROTH_NODES[i - 1].name}`);
@@ -376,5 +377,264 @@ test('TutorialMode: genera mapa espaciado, adapta textos al dispositivo y avanza
   // Reclamar medalla de iniciación
   const medal = tutDesktop.calculateMedal();
   assert.equal(medal.name, 'Iniciación');
+});
+
+// =========================================================
+// Overworld: Tiāndào • Árbol de la Estructura (Grafo, Pinyin y Progreso)
+// =========================================================
+test('Overworld: grafo contiene 10 Reinos con nomenclatura Pinyin y conexiones válidas', () => {
+  const keys = Object.keys(OVERWORLD_GRAPH);
+  assert.equal(keys.length, 10, 'debe contener exactamente 10 etapas (Reinos)');
+  
+  // Validar Wángguó (inicio)
+  const wangguo = OVERWORLD_GRAPH.stage_1;
+  assert.equal(wangguo.name, 'Wángguó');
+  assert.equal(wangguo.code, 'WANGGUO');
+  assert.equal(wangguo.phonetic, 'WÁNG-GUÓ');
+  assert.equal(wangguo.shortName, 'WAN');
+  assert.deepEqual(wangguo.connections, ['stage_2']);
+
+  // Validar Wángguān (cima final)
+  const wangguan = OVERWORLD_GRAPH.stage_10;
+  assert.equal(wangguan.name, 'Wángguān');
+  assert.equal(wangguan.code, 'WANGGUAN');
+  assert.equal(wangguan.phonetic, 'WÁNG-GUĀN');
+  assert.equal(wangguan.shortName, 'WAG');
+  assert.deepEqual(wangguan.connections, []);
+
+  // Validar que todas las conexiones apuntan a etapas existentes
+  keys.forEach(k => {
+    const node = OVERWORLD_GRAPH[k];
+    assert.ok(node.name, `la etapa ${k} debe tener nombre Pinyin`);
+    assert.ok(node.phonetic, `la etapa ${k} debe tener pronunciación fonética`);
+    assert.ok(node.shortName, `la etapa ${k} debe tener nombre corto`);
+    node.connections.forEach(targetKey => {
+      assert.ok(OVERWORLD_GRAPH[targetKey], `la conexión ${targetKey} desde ${k} debe existir en el grafo`);
+    });
+  });
+});
+
+test('OverworldManager: desbloqueo progresivo y registro de medallas', () => {
+  // Mock simple de localStorage para el test
+  const storageMap = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => storageMap.get(k) || null,
+    setItem: (k, v) => storageMap.set(k, String(v)),
+    removeItem: (k) => storageMap.delete(k),
+    clear: () => storageMap.clear()
+  };
+
+  const mgr = new OverworldManager();
+  assert.ok(mgr.isUnlocked('stage_1'), 'Wángguó debe estar desbloqueado por defecto');
+  assert.ok(!mgr.isUnlocked('stage_2'), 'Jīchǔ debe estar bloqueado inicialmente');
+  assert.equal(mgr.getCompletedCount(), 0);
+
+  // Completar etapa 1 (Wángguó)
+  const newlyUnlocked = mgr.completeStage('stage_1', 18000, { name: 'Bronce', icon: '🥉' });
+  assert.deepEqual(newlyUnlocked, ['stage_2'], 'debe desbloquear Jīchǔ al superar Wángguó');
+  assert.ok(mgr.isCompleted('stage_1'), 'Wángguó debe figurar como completada');
+  assert.ok(mgr.isUnlocked('stage_2'), 'Jīchǔ debe estar ahora desbloqueado');
+  assert.equal(mgr.getCompletedCount(), 1);
+  assert.equal(mgr.getMedal('stage_1').name, 'Bronce');
+
+  // Completar etapa 2 (Jīchǔ) -> bifurcación hacia Guānghuī y Shènglì
+  const unlock2 = mgr.completeStage('stage_2', 15000, { name: 'Oro', icon: '🥇' });
+  assert.deepEqual(unlock2, ['stage_3', 'stage_4'], 'debe desbloquear Guānghuī (3) y Shènglì (4)');
+  assert.ok(mgr.isUnlocked('stage_3'));
+  assert.ok(mgr.isUnlocked('stage_4'));
+
+  // Test de persistencia
+  const mgr2 = new OverworldManager();
+  assert.ok(mgr2.isCompleted('stage_1'), 'debe persistir Wángguó completada');
+  assert.ok(mgr2.isUnlocked('stage_3'), 'debe persistir Guānghuī desbloqueada');
+});
+
+test('StageMode: acepta stageConfig personalizada y renderiza marca de agua fonética', () => {
+  const customConfig = OVERWORLD_GRAPH.stage_5; // Měilì
+  const stage = new StageMode(450, 800, customConfig);
+  assert.equal(stage.stageKey, 'stage_5');
+  assert.equal(stage.stageName, 'Měilì');
+  assert.equal(stage.code, 'MEILI');
+  assert.equal(stage.phonetic, 'MĚI-LÌ');
+  assert.equal(stage.gravityMultiplier, 1.10);
+  assert.ok(stage.tuning.movingRatio > 0, 'debe tener plataformas móviles');
+
+  // Verificar llamada segura a drawBackground sin fallos
+  const dummyCtx = new Proxy({}, { get: () => () => dummyCtx });
+  assert.doesNotThrow(() => {
+    stage.drawBackground(dummyCtx, 0);
+  });
+});
+
+test('Overworld: cada una de las 10 etapas cuenta con tema cromático, trait y tuning progresivo', () => {
+  Object.keys(OVERWORLD_GRAPH).forEach(key => {
+    const node = OVERWORLD_GRAPH[key];
+    assert.ok(node.trait, `${key} debe tener rasgo mecánico (trait)`);
+    assert.ok(node.difficultyStars, `${key} debe tener estrellas de dificultad`);
+    assert.ok(node.theme?.primaryColor, `${key} debe tener color primario`);
+    assert.ok(Array.isArray(node.theme?.bgGrad), `${key} debe tener gradiente de fondo`);
+    assert.ok(node.tuning?.widthOpt > 0, `${key} debe tener widthOpt`);
+    assert.ok(node.tuning?.gapMin > 0, `${key} debe tener gapMin`);
+  });
+
+  // Progresión de dificultad entre etapa 1 (Wángguó) y etapa 10 (Wángguān)
+  const stage1 = OVERWORLD_GRAPH.stage_1;
+  const stage10 = OVERWORLD_GRAPH.stage_10;
+  assert.ok(stage1.tuning.widthOpt > stage10.tuning.widthOpt, 'etapa 1 debe tener plataformas más anchas que etapa 10');
+  assert.ok(stage1.tuning.gapMin < stage10.tuning.gapMin, 'etapa 1 debe tener gaps más pequeños que etapa 10');
+  assert.ok(stage1.gravityMultiplier < stage10.gravityMultiplier, 'gravedad debe ser mayor en etapa 10');
+  assert.ok(stage10.tuning.movingRatio > stage1.tuning.movingRatio, 'etapa 10 debe tener mayor ratio de móviles');
+});
+
+test('StageMode: plataformas móviles actualizan su posición X con el tiempo', () => {
+  const stage = new StageMode(450, 800, OVERWORLD_GRAPH.stage_2);
+  stage.isSweepingCamera = false; // Desactivar barrido para testear update regular
+  
+  const movingPlat = stage.platforms.find(p => p.isMoving);
+  assert.ok(movingPlat, 'debe generarse al menos una plataforma móvil en etapa 2');
+
+  const initialX = movingPlat.x;
+  const dummyPlayer = new Player(225, 400);
+  
+  // Ejecutar varios frames de actualización
+  for (let i = 0; i < 20; i++) {
+    stage.update(0.016, 0, dummyPlayer);
+  }
+
+  assert.notEqual(movingPlat.x, initialX, 'la plataforma móvil debe haber desplazado su posición X');
+});
+
+test('StageMode: plataformas efímeras (decaying) se colapsan y desactivan tras ser pisadas', () => {
+  const stage = new StageMode(450, 800, OVERWORLD_GRAPH.stage_8);
+  stage.isSweepingCamera = false;
+
+  const decayingPlat = stage.platforms.find(p => p.isDecaying);
+  assert.ok(decayingPlat, 'debe generarse al menos una plataforma efímera en etapa 8');
+  assert.equal(decayingPlat.decaying, false);
+  assert.equal(decayingPlat.active, true);
+
+  const player = new Player(decayingPlat.x, decayingPlat.y - 32);
+  stage.onPlatformStepped(decayingPlat, player);
+
+  assert.equal(decayingPlat.decaying, true, 'debe activarse el estado decaying al pisarla');
+
+  // Avanzar tiempo suficiente para que expire el decayTime (0.8s)
+  stage.update(1.0, 0, player);
+
+  assert.equal(decayingPlat.active, false, 'la plataforma efímera debe quedar inactiva tras colapsar');
+});
+
+// =========================================================
+// Regresiones CODE_REVIEW (2026-08-16)
+// =========================================================
+test('BUGFIX TutorialMode: la Iniciación se completa al aterrizar en la plataforma de la cima', () => {
+  const tut = new TutorialMode(450, 800, true, 'keyboard');
+  const summit = tut.platforms.find(p => p.isSummit);
+  assert.ok(summit, 'debe existir una plataforma de cima (isSummit)');
+
+  const p = new Player(225, summit.y - 32);
+  assert.equal(tut.stageComplete, false);
+  tut.onPlatformStepped(summit, p);
+  assert.equal(tut.stageComplete, true, 'debe completarse al pisar la cima');
+  assert.equal(tut.calculateMedal().name, 'Iniciación');
+
+  // En el aire por encima del umbral NO debe completarse (solo al aterrizar)
+  const tut2 = new TutorialMode(450, 800, true, 'keyboard');
+  const airborne = new Player(225, 800 - 50 - 2900);
+  airborne.vy = -200;
+  tut2.update(0.016, 0, airborne);
+  assert.equal(tut2.stageComplete, false, 'no debe completarse en el aire');
+});
+
+test('BUGFIX TutorialMode: optimalRoute no conserva IDs huérfanos tras el rebuild del mapa', () => {
+  const tut = new TutorialMode(450, 800, true, 'keyboard');
+  const aliveIds = new Set(tut.platforms.map(p => p.id));
+  tut.optimalRoute.forEach(id => {
+    assert.ok(aliveIds.has(id), `el ID ${id} de optimalRoute debe existir en platforms`);
+  });
+});
+
+test('BUGFIX ArcadeMode: volver a Estructura reinicia Sincronía y Ruta Óptima', () => {
+  const arcade = new ArcadeMode(450, 800);
+  const p = new Player(225, 750);
+
+  // Simular progreso previo en Estructura
+  const plat = arcade.platforms.find(pl => pl.isOptimal && !pl.isStartingPlatform);
+  arcade.onPlatformStepped(plat, p);
+  assert.ok(arcade.totalJumps > 0, 'debe registrar saltos antes del ciclo');
+
+  // Ciclo completo: Entropía y retorno a Estructura
+  arcade.initiateEntropyTransition(p, 5000);
+  arcade.returnToStructure(p);
+  arcade.respawnAtInitialPosition(p);
+
+  assert.equal(arcade.adherenceHits, 0, 'los aciertos deben reiniciarse');
+  assert.equal(arcade.totalJumps, 0, 'los saltos deben reiniciarse');
+  const aliveIds = new Set(arcade.platforms.map(pl => pl.id));
+  arcade.optimalRoute.forEach(id => {
+    assert.ok(aliveIds.has(id), 'la ruta no debe conservar IDs de fases anteriores');
+  });
+});
+
+test('Modos: getScoreAndProgress delega puntuación y progreso al modo', () => {
+  const stage = new StageMode(450, 800, 6000, 3); // 18000px total
+  let r = stage.getScoreAndProgress(9000, 0);
+  assert.equal(r.score, 9000);
+  assert.equal(r.progress, 50);
+
+  // El score nunca baja
+  r = stage.getScoreAndProgress(4000, 9000);
+  assert.equal(r.score, 9000);
+
+  // Arcade en Entropía congela el score y refleja el descenso
+  const arcade = new ArcadeMode(450, 800);
+  const p = new Player(225, 750);
+  arcade.initiateEntropyTransition(p, 5000);
+  arcade.entropySubPhase = 'descent';
+  const ra = arcade.getScoreAndProgress(2500, 4321);
+  assert.equal(ra.score, 4321, 'el score no cambia durante la Entropía');
+  assert.equal(ra.progress, 50);
+});
+
+test('BaseMode: getOptimalPlatforms cachea y se invalida al añadir plataformas', () => {
+  const stage = new StageMode(450, 800, 6000, 3);
+  const first = stage.getOptimalPlatforms();
+  const second = stage.getOptimalPlatforms();
+  assert.equal(first, second, 'debe devolver la misma referencia cacheada');
+  assert.ok(first.length > 0, 'el mapa debe tener plataformas óptimas');
+  for (let i = 0; i < first.length - 1; i++) {
+    assert.ok(first[i].y >= first[i + 1].y, 'orden descendente por Y');
+  }
+
+  stage.addPlatform(10, -20000, 70, 16, { isOptimal: true });
+  const third = stage.getOptimalPlatforms();
+  assert.notEqual(third, first, 'el caché debe invalidarse al añadir plataformas');
+  assert.equal(third.length, first.length + 1);
+});
+
+test('OverworldManager: persiste el mejor puntaje por etapa', () => {
+  const storageMap = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => storageMap.get(k) || null,
+    setItem: (k, v) => storageMap.set(k, String(v)),
+    removeItem: (k) => storageMap.delete(k),
+    clear: () => storageMap.clear()
+  };
+
+  const mgr = new OverworldManager();
+  mgr.completeStage('stage_1', 12000, { name: 'Oro', icon: '🥇' });
+  assert.equal(mgr.getBestScore('stage_1'), 12000);
+
+  // Un puntaje menor no debe reemplazar al mejor
+  mgr.completeStage('stage_1', 9000, null);
+  assert.equal(mgr.getBestScore('stage_1'), 12000);
+
+  // Uno mayor sí lo reemplaza
+  mgr.completeStage('stage_1', 15500, { name: 'Bronce', icon: '🥉' });
+  assert.equal(mgr.getBestScore('stage_1'), 15500);
+
+  // Persistencia entre instancias
+  const mgr2 = new OverworldManager();
+  assert.equal(mgr2.getBestScore('stage_1'), 15500);
 });
 
