@@ -166,7 +166,7 @@ export class BaseMode {
 }
 
 // ---------------------------------------------------------
-// 🌌 Modo Arcade (Juego Continuo con Transición a Entropía Invertida)
+// Modo Arcade (Juego Continuo con Transición a Entropía Invertida)
 // ---------------------------------------------------------
 export class ArcadeMode extends BaseMode {
   constructor(width, height) {
@@ -541,7 +541,7 @@ export class ArcadeMode extends BaseMode {
 }
 
 // ---------------------------------------------------------
-// 🏆 Modo Etapas (Por Niveles con Barrido Inicial y Medallas)
+// Modo Etapas (Por Niveles con Barrido Inicial y Medallas)
 // ---------------------------------------------------------
 export class StageMode extends BaseMode {
   constructor(width, height, stageConfig = {}, legacyRepeatCount = 3) {
@@ -808,10 +808,10 @@ export class StageMode extends BaseMode {
 
   calculateMedal(reachedDistance) {
     const percent = (reachedDistance / this.stageLength) * 100;
-    if (percent >= 100) return { name: 'Bronce', icon: '🥉', title: 'Cima Alcanzada (Templanza)' };
-    if (percent >= 75) return { name: 'Oro', icon: '🥇', title: 'Gran Resistencia (75%+)' };
-    if (percent >= 50) return { name: 'Plata', icon: '🥈', title: 'Resistencia Media (50%+)' };
-    return { name: 'Sin Medalla', icon: '🛡️', title: 'Sigue Intentándolo' };
+    if (percent >= 100) return { name: 'Bronce', icon: '✠', title: 'Cima Alcanzada (Templanza)' };
+    if (percent >= 75) return { name: 'Oro', icon: '✠', title: 'Gran Resistencia (75%+)' };
+    if (percent >= 50) return { name: 'Plata', icon: '✠', title: 'Resistencia Media (50%+)' };
+    return { name: 'Sin Medalla', icon: 'E', title: 'Sigue Intentándolo' };
   }
 
   drawBackground(ctx, cameraY) {
@@ -1075,7 +1075,7 @@ export class TutorialMode extends BaseMode {
   }
 
   calculateMedal() {
-    return { name: 'Iniciación', icon: '⛩️', title: 'Iniciación Vectorial Completada' };
+    return { name: 'Iniciación', icon: '✠', title: 'Iniciación Vectorial Completada' };
   }
 
   drawBackground(ctx, cameraY) {
