@@ -499,6 +499,9 @@ export class StageMode extends BaseMode {
 
   get isSweeping() { return this.isSweepingCamera; }
 
+  // StageMode no genera plataformas dinámicamente, todo está pre-construido
+  generatePlatforms(cameraY) {}
+
   buildStageMap() {
     // La plataforma inicial del BaseMode está en height - 50
     // Empezamos generando desde ahí hacia arriba
