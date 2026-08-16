@@ -200,6 +200,13 @@ export class ArcadeMode extends BaseMode {
         }
       }
     }
+
+    // Fase Entropía: verificar si el jugador llegó al suelo invertido
+    if (this.phase === 'entropy' && !player.noclip) {
+      // El jugador llegó al suelo invertido (parte superior del viewport)
+      // Marcar como completado para que el engine termine el juego
+      this.entropyComplete = true;
+    }
   }
 
   getCurrentRealm() {
@@ -411,12 +418,6 @@ export class StageMode extends BaseMode {
           this.sweepY = 0;
           this.isSweepingCamera = false;
           this.sweepComplete = true;
-          // Reposicionar al jugador en la plataforma inicial después del barrido
-          if (this.lastSafePlatform) {
-            // El player será reposicionado por el engine en el próximo frame
-            // pero necesitamos marcar que debe ser reposicionado
-            this.needsPlayerReposition = true;
-          }
         }
       }
       return;

@@ -187,6 +187,14 @@ export class Engine {
       return;
     }
 
+    // Verificar si la fase Entropía está completa (ArcadeMode)
+    if (this.mode.entropyComplete && !this.entropyCompleteTriggered) {
+      this.entropyCompleteTriggered = true;
+      this.onGameOver(this.score, this.mode.getCurrentRealm(), null);
+      this.stop();
+      return;
+    }
+
     // Reino / Sefirá actual
     if (this.mode.getCurrentRealm) {
       this.onRealmUpdate(this.mode.getCurrentRealm());
