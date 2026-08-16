@@ -181,6 +181,9 @@ export class ArcadeMode extends BaseMode {
     if (this.phase === 'structure' && cameraY > 5000) {
       this.phase = 'entropy';
       player.gravityDirection = -1; // Gravedad Invertida
+      // Posicionar al jugador en la parte superior de la pantalla
+      player.y = -cameraY + 50; // Arriba del viewport
+      player.vy = 0;
     }
 
     // Actualizar Sefirá / Reino actual
@@ -213,7 +216,9 @@ export class ArcadeMode extends BaseMode {
       engine.lives = 3; // Restaurar vidas para la fase Entropía
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
-      engine.respawnAtSafePlatform();
+      // Posicionar al jugador en la parte superior de la pantalla
+      engine.player.y = -engine.cameraY + 50; // Arriba del viewport
+      engine.player.vy = 0;
     } else {
       // Si ya estamos en Entropía, game over
       engine.stop();
