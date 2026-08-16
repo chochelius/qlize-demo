@@ -4,7 +4,7 @@ import { ArcadeMode, StageMode } from './modes.js';
 
 // =========================================================
 // SINTETIZADOR DE AUDIO PROCEDIMENTAL (Web Audio API)
-// Efectos de sonido dinámicos para salto, chispas, portales y medallas
+// Efectos de sonido dinámicos para salto, pérdida de vida y victoria
 // =========================================================
 class SoundFX {
   constructor() {
@@ -45,29 +45,6 @@ class SoundFX {
 
       osc.start(now);
       osc.stop(now + 0.12);
-    } catch (e) {}
-  }
-
-  playSpark() {
-    if (!this.ctx) return;
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-
-      const now = this.ctx.currentTime;
-      osc.frequency.setValueAtTime(587.33, now); // D5
-      osc.frequency.setValueAtTime(880.00, now + 0.06); // A5
-      osc.frequency.setValueAtTime(1174.66, now + 0.12); // D6
-
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.22);
     } catch (e) {}
   }
 
@@ -120,11 +97,9 @@ class SoundFX {
 
 const sfx = new SoundFX();
 
-// =========================================================
-// INICIALIZACIÓN DEL CANVAS & MOTOR
-// =========================================================
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
+
 const engine = new Engine(canvas, ctx);
 
 // Perfiles Predefinidos (Presets)
@@ -174,11 +149,7 @@ function saveSettings() {
 }
 
 // Controles
-const input = {
-  left: false,
-  right: false,
-  axis: 0 // -1 a 1
-};
+const input = { left: false, right: false, axis: 0 };
 
 // --- Teclado ---
 window.addEventListener('keydown', (e) => {
@@ -203,14 +174,14 @@ window.addEventListener('keyup', (e) => {
   }
 });
 
-// --- Táctil (Swipe Proporcional) ---
+// --- Táctil (Swipe) ---
 let lastTouchX = 0;
 let isTouching = false;
 let touchTimeout = null;
 
 canvas.addEventListener('touchstart', (e) => {
-  sfx.init();
   e.preventDefault();
+  sfx.init();
   if (e.touches.length > 0) {
     lastTouchX = e.touches[0].clientX;
     isTouching = true;
@@ -262,7 +233,7 @@ canvas.addEventListener('touchend', (e) => {
   }
 }, { passive: false });
 
-// --- Giroscopio / Inclinación ---
+// --- Giroscopio ---
 window.addEventListener('deviceorientation', (e) => {
   const tilt = e.gamma;
   if (tilt === null) return;
@@ -286,13 +257,23 @@ window.addEventListener('deviceorientation', (e) => {
   }
 });
 
-// Elementos de UI
+async function requestOrientationPermission() {
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      await DeviceOrientationEvent.requestPermission();
+    } catch(e) {
+      console.error(e);
+    }
+  }
+}
+
+// Elementos UI
 const screenMenu = document.getElementById('screen-menu');
 const screenGameover = document.getElementById('screen-gameover');
 const screenSettings = document.getElementById('screen-settings');
 
-const btnStages = document.getElementById('btn-stages');
 const btnArcade = document.getElementById('btn-arcade');
+const btnStage = document.getElementById('btn-stage');
 const btnRestart = document.getElementById('btn-restart');
 const btnMenu = document.getElementById('btn-menu');
 const btnSettingsToggle = document.getElementById('btn-settings-toggle');
@@ -300,35 +281,18 @@ const btnSettingsClose = document.getElementById('btn-settings-close');
 const btnSettingsReset = document.getElementById('btn-settings-reset');
 
 const hud = document.getElementById('hud');
-const scoreEl = document.getElementById('score');
-const hudMultTag = document.getElementById('hud-mult-tag');
-const hudGem = document.getElementById('hud-gem');
-const hudRealmName = document.getElementById('hud-realm-name');
-const hudRealmTitle = document.getElementById('hud-realm-title');
-const hudLivesContainer = document.getElementById('hud-lives-container');
-const lifeOrbs = [
-  document.getElementById('life-1'),
-  document.getElementById('life-2'),
-  document.getElementById('life-3')
-];
-
-// Sincronía UI
 const syncValEl = document.getElementById('sync-val');
-const syncFillEl = document.getElementById('sync-fill');
-const perkTrailEl = document.getElementById('perk-trail');
-const perkFloatEl = document.getElementById('perk-float');
-const perkFlowEl = document.getElementById('perk-flow');
-
-// Modal Game Over / Medallas
-const gameoverTitleEl = document.getElementById('gameover-title');
-const gameoverRealmEl = document.getElementById('gameover-realm');
-const medalBoxEl = document.getElementById('medal-box');
-const medalTitleEl = document.getElementById('medal-title');
-const medalDescEl = document.getElementById('medal-desc');
+const syncMultiplierEl = document.getElementById('sync-multiplier');
 const finalScoreEl = document.getElementById('final-score');
-const finalDistEl = document.getElementById('final-dist');
-const finalSyncEl = document.getElementById('final-sync');
-const finalSparksEl = document.getElementById('final-sparks');
+const distanceCursorEl = document.getElementById('distance-cursor');
+
+const medalIconEl = document.getElementById('medal-icon');
+const medalTitleEl = document.getElementById('medal-title');
+const gameoverTitleEl = document.getElementById('gameover-title');
+
+const life1 = document.getElementById('life-1');
+const life2 = document.getElementById('life-2');
+const life3 = document.getElementById('life-3');
 
 // Sliders de Configuración
 const sliderSwipeSens = document.getElementById('slider-swipe-sens');
@@ -343,7 +307,6 @@ const valMaxSpeed = document.getElementById('val-max-speed');
 const valFriction = document.getElementById('val-friction');
 const valGyroSens = document.getElementById('val-gyro-sens');
 
-// Presets
 const presetSoft = document.getElementById('preset-soft');
 const presetBalanced = document.getElementById('preset-balanced');
 const presetFast = document.getElementById('preset-fast');
@@ -364,16 +327,15 @@ function updateSettingsUI() {
   sliderGyroSens.value = gameSettings.gyroSens;
   valGyroSens.innerText = gameSettings.gyroSens + '°';
 
-  presetSoft.classList.toggle('active', isMatchingPreset(PRESETS.soft));
-  presetBalanced.classList.toggle('active', isMatchingPreset(PRESETS.balanced));
-  presetFast.classList.toggle('active', isMatchingPreset(PRESETS.fast));
+  updatePresetButtonsState();
 }
 
 function isMatchingPreset(p) {
   return (
     gameSettings.swipeSens === p.swipeSens &&
     gameSettings.acceleration === p.acceleration &&
-    gameSettings.maxSpeed === p.maxSpeed
+    gameSettings.maxSpeed === p.maxSpeed &&
+    gameSettings.friction === p.friction
   );
 }
 
@@ -383,65 +345,69 @@ function applyPreset(p) {
   updateSettingsUI();
 }
 
+function updatePresetButtonsState() {
+  presetSoft.classList.toggle('active', isMatchingPreset(PRESETS.soft));
+  presetBalanced.classList.toggle('active', isMatchingPreset(PRESETS.balanced));
+  presetFast.classList.toggle('active', isMatchingPreset(PRESETS.fast));
+}
+
 presetSoft.addEventListener('click', () => applyPreset(PRESETS.soft));
 presetBalanced.addEventListener('click', () => applyPreset(PRESETS.balanced));
 presetFast.addEventListener('click', () => applyPreset(PRESETS.fast));
 
+updateSettingsUI();
+
 sliderSwipeSens.addEventListener('input', (e) => {
   gameSettings.swipeSens = parseFloat(e.target.value);
   valSwipeSens.innerText = gameSettings.swipeSens.toFixed(1) + 'x';
+  updatePresetButtonsState();
 });
+
 sliderAcceleration.addEventListener('input', (e) => {
   gameSettings.acceleration = parseInt(e.target.value, 10);
   valAcceleration.innerText = gameSettings.acceleration;
+  updatePresetButtonsState();
 });
+
 sliderMaxSpeed.addEventListener('input', (e) => {
   gameSettings.maxSpeed = parseInt(e.target.value, 10);
   valMaxSpeed.innerText = gameSettings.maxSpeed;
+  updatePresetButtonsState();
 });
+
 sliderFriction.addEventListener('input', (e) => {
   gameSettings.friction = parseFloat(e.target.value);
   valFriction.innerText = gameSettings.friction.toFixed(2);
+  updatePresetButtonsState();
 });
+
 sliderGyroSens.addEventListener('input', (e) => {
   gameSettings.gyroSens = parseInt(e.target.value, 10);
   valGyroSens.innerText = gameSettings.gyroSens + '°';
+  updatePresetButtonsState();
 });
 
 btnSettingsToggle.addEventListener('click', () => {
   updateSettingsUI();
   screenSettings.classList.remove('hidden');
 });
+
 btnSettingsClose.addEventListener('click', () => {
   saveSettings();
   screenSettings.classList.add('hidden');
 });
+
 btnSettingsReset.addEventListener('click', () => {
   Object.assign(gameSettings, DEFAULT_SETTINGS);
   saveSettings();
   updateSettingsUI();
 });
 
-let currentModeClass = StageMode;
-
-function updateSynchronyHUD(sync, multiplier) {
-  syncValEl.innerText = `${sync}%`;
-  syncFillEl.style.width = `${sync}%`;
-  hudMultTag.innerText = `x${multiplier.toFixed(1)}`;
-
-  perkTrailEl.classList.toggle('active', sync >= 30);
-  perkFloatEl.classList.toggle('active', sync >= 60);
-  perkFlowEl.classList.toggle('active', sync >= 90);
-}
-
-function updateLivesHUD(lives) {
-  lifeOrbs.forEach((orb, idx) => {
-    orb.classList.toggle('dead', idx >= lives);
-  });
-}
+let currentModeClass = ArcadeMode;
 
 function startGame(modeClass) {
   sfx.init();
+  requestOrientationPermission();
   currentModeClass = modeClass;
 
   screenMenu.classList.add('hidden');
@@ -451,94 +417,74 @@ function startGame(modeClass) {
 
   engine.reset();
 
-  const isStage = modeClass === StageMode;
-  hudLivesContainer.classList.toggle('hidden', !isStage);
-  if (isStage) updateLivesHUD(3);
-
   const player = new Player(canvas.width / 2 - 16, canvas.height - 150, gameSettings);
   const mode = new modeClass(canvas.width, canvas.height);
+  const distanceTarget = mode.stageLength || 6000;
 
   engine.setPlayer(player);
   engine.setMode(mode);
   engine.setInput(input);
 
-  // Callbacks del Motor de Juego
-  engine.onScoreUpdate = (score, sync, mult) => {
-    scoreEl.innerText = Math.floor(score);
-    updateSynchronyHUD(sync, mult);
+  // Callbacks del Motor
+  engine.onGameOver = (score, realm, medal) => {
+    if (medal && medal.name === 'Bronce') {
+      sfx.playVictory();
+    } else {
+      sfx.playLifeLost();
+    }
+    finalScoreEl.innerText = Math.floor(score);
+    if (medal) {
+      medalIconEl.innerText = medal.icon;
+      medalTitleEl.innerText = `${medal.name} • ${medal.title}`;
+      medalIconEl.classList.remove('hidden');
+      medalTitleEl.classList.remove('hidden');
+      gameoverTitleEl.innerText = medal.name === 'Bronce' ? '¡ETAPA COMPLETADA!' : 'ETAPA FINALIZADA';
+    } else {
+      medalIconEl.classList.add('hidden');
+      medalTitleEl.classList.add('hidden');
+      gameoverTitleEl.innerText = 'RECORRIDO TERMINADO';
+    }
+    screenGameover.classList.remove('hidden');
+    hud.classList.add('hidden');
   };
 
-  engine.onRealmUpdate = (realm, lives) => {
-    if (realm) {
-      hudRealmName.innerText = realm.name;
-      hudRealmTitle.innerText = realm.title || '';
-      hudGem.style.background = realm.color || '#38bdf8';
-      hudGem.style.boxShadow = `0 0 10px ${realm.color || '#38bdf8'}`;
-    }
-    if (lives !== undefined && isStage) {
-      updateLivesHUD(lives);
-    }
+  engine.onScoreUpdate = (score) => {
+    // Actualizar indicador lateral de distancia
+    const progressPercent = Math.min(100, Math.max(0, (score / distanceTarget) * 100));
+    distanceCursorEl.style.top = `${100 - progressPercent}%`;
   };
 
-  engine.onJumpEffect = (platform) => {
+  engine.onSyncUpdate = (sync) => {
+    syncValEl.innerText = `${sync}%`;
+    let mult = 'x1.0';
+    if (sync >= 90) mult = 'x3.0';
+    else if (sync >= 60) mult = 'x2.0';
+    else if (sync >= 30) mult = 'x1.5';
+    syncMultiplierEl.innerText = mult;
+  };
+
+  engine.onLivesUpdate = (lives) => {
+    life1.classList.toggle('lost', lives < 1);
+    life2.classList.toggle('lost', lives < 2);
+    life3.classList.toggle('lost', lives < 3);
+  };
+
+  engine.onJumpEffect = () => {
     sfx.playJump(player.gravityDirection === -1);
   };
 
-  engine.onSparkCollect = () => {
-    sfx.playSpark();
-  };
-
-  engine.onLifeLost = (lives, corruption, rescued) => {
-    if (rescued) {
-      sfx.playSpark();
-    } else {
-      sfx.playLifeLost();
-    }
-    if (isStage) updateLivesHUD(lives);
-  };
-
-  engine.onGameOver = (score, realm, medals, isVictory) => {
-    if (isVictory) {
-      sfx.playVictory();
-      gameoverTitleEl.innerText = '✨ CIMA CONQUISTADA ✨';
-      gameoverTitleEl.className = 'title-victory';
-    } else {
-      sfx.playLifeLost();
-      gameoverTitleEl.innerText = 'ASCENSO TERMINADO';
-      gameoverTitleEl.className = 'title-defeat';
-    }
-
-    finalScoreEl.innerText = Math.floor(score);
-    finalSparksEl.innerText = engine.sparksCollected;
-    finalSyncEl.innerText = `${player.syncLevel}%`;
-
-    if (medals) {
-      finalDistEl.innerText = `${medals.distancePercent}%`;
-      medalBoxEl.classList.remove('hidden');
-      medalTitleEl.innerText = medals.medalName;
-      medalDescEl.innerText = medals.medalDesc;
-    } else {
-      finalDistEl.innerText = `${Math.floor(engine.distanceReached)}m`;
-      medalBoxEl.classList.add('hidden');
-    }
-
-    if (realm) {
-      gameoverRealmEl.innerText = `Reino / Etapa: ${realm.name}`;
-    }
-
-    screenGameover.classList.remove('hidden');
-    hud.classList.add('hidden');
+  engine.onLifeLost = () => {
+    sfx.playLifeLost();
   };
 
   engine.start();
 }
 
-btnStages.addEventListener('click', () => startGame(StageMode));
 btnArcade.addEventListener('click', () => startGame(ArcadeMode));
+btnStage.addEventListener('click', () => startGame(StageMode));
 btnRestart.addEventListener('click', () => startGame(currentModeClass));
 btnMenu.addEventListener('click', () => {
   screenGameover.classList.add('hidden');
   screenMenu.classList.remove('hidden');
   hud.classList.add('hidden');
 });
-

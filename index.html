@@ -3,22 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Qlize | Estructura vs. Entropía</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%2338bdf8'/><circle cx='50' cy='50' r='20' fill='%23fbbf24'/></svg>" />
-  <!-- Google Fonts: Cinzel y Plus Jakarta Sans -->
+  <title>QLIZE | Cyber-Zen Vectorial</title>
+  <!-- Google Fonts: Plus Jakarta Sans (ultra-thin a bold) y Cinzel -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     :root {
       --gold-primary: #fbbf24;
-      --gold-glow: rgba(251, 191, 36, 0.4);
+      --gold-dark: #b45309;
+      --gold-glow: rgba(251, 191, 36, 0.35);
       --cyan-celestial: #38bdf8;
-      --cyan-glow: rgba(56, 189, 248, 0.4);
-      --crimson-abyss: #f43f5e;
-      --crimson-glow: rgba(244, 63, 94, 0.4);
-      --bg-dark: #050813;
+      --cyan-glow: rgba(56, 189, 248, 0.35);
+      --crimson-abyss: #e11d48;
+      --bg-dark: #040714;
     }
 
     * {
@@ -34,8 +33,8 @@
       height: 100%;
       background-color: var(--bg-dark);
       background-image: 
-        radial-gradient(circle at 50% 15%, rgba(30, 58, 138, 0.35) 0%, transparent 60%),
-        radial-gradient(circle at 50% 85%, rgba(15, 23, 42, 0.85) 0%, var(--bg-dark) 100%);
+        radial-gradient(circle at 50% 20%, rgba(30, 58, 138, 0.25) 0%, transparent 65%),
+        radial-gradient(circle at 50% 80%, rgba(3, 7, 18, 0.9) 0%, var(--bg-dark) 100%);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -55,8 +54,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), 0 0 20px rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), 0 0 15px rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.25);
       overflow: hidden;
     }
 
@@ -72,7 +71,7 @@
       pointer-events: none;
       display: flex;
       flex-direction: column;
-      font-family: 'Cinzel', serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .screen {
@@ -82,9 +81,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 35%, rgba(15, 23, 42, 0.94) 0%, rgba(3, 7, 18, 0.98) 100%);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: radial-gradient(circle at 50% 40%, rgba(15, 23, 42, 0.94) 0%, rgba(3, 7, 18, 0.98) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       pointer-events: auto;
       text-align: center;
       padding: 24px;
@@ -93,56 +92,55 @@
 
     .hidden { display: none !important; }
 
-    /* Emblema Cósmico SVG */
+    /* Título y Emblem Cyber-Zen */
     .title-emblem {
-      width: 68px;
-      height: 68px;
+      width: 64px;
+      height: 64px;
       margin-bottom: 12px;
-      filter: drop-shadow(0 0 16px var(--cyan-glow));
+      filter: drop-shadow(0 0 16px var(--gold-glow));
       animation: floatSlow 4s ease-in-out infinite alternate;
     }
 
     @keyframes floatSlow {
       0% { transform: translateY(0px) rotate(0deg); }
-      100% { transform: translateY(-5px) rotate(2deg); }
+      100% { transform: translateY(-6px) rotate(4deg); }
     }
 
     h1.game-title {
-      font-family: 'Cinzel Decorative', 'Cinzel', serif;
-      font-size: 2.3rem;
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 2.4rem;
       margin: 0 0 4px 0;
-      background: linear-gradient(180deg, #ffffff 0%, #bae6fd 45%, #38bdf8 100%);
+      background: linear-gradient(180deg, #ffffff 0%, #fde68a 40%, #f59e0b 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 10px rgba(56, 189, 248, 0.5));
       letter-spacing: 4px;
       font-weight: 900;
     }
 
     .subtitle {
       font-size: 0.78rem;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       color: #94a3b8;
       text-transform: uppercase;
-      margin-bottom: 24px;
-      font-weight: 600;
+      margin-bottom: 28px;
+      font-weight: 300;
     }
 
-    /* Botones de Modos */
+    /* Botones Místicos */
     .btn-card {
       position: relative;
       width: 100%;
       max-width: 320px;
-      padding: 15px 18px;
+      padding: 16px 20px;
       margin: 9px 0;
       border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: flex-start;
       gap: 14px;
       text-align: left;
-      font-family: 'Cinzel', serif;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
     }
@@ -157,462 +155,255 @@
     }
 
     .btn-card:hover::before { left: 100%; }
-    .btn-card:hover { transform: translateY(-2px) scale(1.02); }
+    .btn-card:hover { transform: translateY(-3px) scale(1.02); }
     .btn-card:active { transform: translateY(1px) scale(0.98); }
 
     .btn-icon-sphere {
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       flex-shrink: 0;
     }
 
     .btn-content h3 {
       margin: 0;
       font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: 1px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      font-family: 'Cinzel', serif;
     }
 
     .btn-content p {
       margin: 3px 0 0 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       opacity: 0.85;
-      font-weight: 500;
-    }
-
-    #btn-arcade {
-      background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(30, 58, 138, 0.45) 100%);
-      border: 1px solid rgba(244, 63, 94, 0.45);
-      color: #fef08a;
-      box-shadow: 0 4px 20px rgba(244, 63, 94, 0.2);
-    }
-    #btn-arcade .btn-icon-sphere {
-      background: radial-gradient(circle at 35% 35%, #fef08a, #f43f5e 60%, #881337 100%);
-      box-shadow: 0 0 15px rgba(244, 63, 94, 0.6);
-    }
-
-    #btn-stages {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(15, 23, 42, 0.7) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.45);
-      color: #bae6fd;
-      box-shadow: 0 4px 20px rgba(56, 189, 248, 0.2);
-    }
-    #btn-stages .btn-icon-sphere {
-      background: radial-gradient(circle at 35% 35%, #ffffff, #38bdf8 60%, #0369a1 100%);
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
-    }
-
-    /* Botón Ajustes ⚙️ */
-    #btn-settings-toggle {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      width: 42px;
-      height: 42px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      color: #bae6fd;
-      backdrop-filter: blur(8px);
-      transition: all 0.25s ease;
-      z-index: 25;
-    }
-    #btn-settings-toggle:hover {
-      transform: rotate(60deg) scale(1.1);
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
-    }
-
-    /* HUD In-Game Místico */
-    #hud {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      pointer-events: none;
-      z-index: 15;
-    }
-
-    .hud-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .hud-realm-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(7, 10, 19, 0.8);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      padding: 5px 12px;
-      border-radius: 20px;
-      backdrop-filter: blur(8px);
-    }
-
-    .hud-gem {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #38bdf8;
-      box-shadow: 0 0 10px #38bdf8;
-    }
-
-    .hud-text {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .hud-realm-name {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #fef08a;
-    }
-
-    .hud-realm-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.62rem;
-      color: #94a3b8;
+      font-weight: 400;
       letter-spacing: 0.5px;
     }
 
-    .hud-right-stats {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    #btn-arcade {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(30, 58, 138, 0.4) 100%);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      color: #fef08a;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+    }
+    #btn-arcade .btn-icon-sphere {
+      background: radial-gradient(circle at 35% 35%, #fef08a, #f59e0b 60%, #b45309 100%);
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
     }
 
-    .hud-lives-container {
-      display: flex;
-      gap: 4px;
-      background: rgba(7, 10, 19, 0.8);
-      border: 1px solid rgba(244, 63, 94, 0.4);
-      padding: 6px 10px;
-      border-radius: 20px;
+    #btn-stage {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(15, 23, 42, 0.6) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #a7f3d0;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+    }
+    #btn-stage .btn-icon-sphere {
+      background: radial-gradient(circle at 35% 35%, #a7f3d0, #10b981 60%, #064e3b 100%);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
     }
 
-    .life-orb {
-      width: 12px;
-      height: 12px;
+    /* Botón Ajustes */
+    #btn-settings-toggle {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 42px; height: 42px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(251, 191, 36, 0.35);
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #fecdd3, #f43f5e);
-      box-shadow: 0 0 8px #f43f5e;
-      transition: all 0.3s ease;
-    }
-    .life-orb.dead {
-      background: #334155;
-      box-shadow: none;
-      opacity: 0.4;
-    }
-
-    .hud-score-badge {
-      background: rgba(7, 10, 19, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-family: monospace;
-      font-size: 1rem;
-      font-weight: 800;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .hud-mult-tag {
-      font-size: 0.72rem;
-      color: #fbbf24;
-      background: rgba(251, 191, 36, 0.15);
-      padding: 1px 5px;
-      border-radius: 6px;
-      border: 1px solid rgba(251, 191, 36, 0.3);
-    }
-
-    /* Barra de Sincronía (Flujo Cósmico) */
-    .sync-bar-container {
-      width: 100%;
-      background: rgba(7, 10, 19, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 12px;
-      padding: 4px 8px;
+      display: flex; justify-content: center; align-items: center;
+      cursor: pointer; padding: 0; margin: 0; color: #fde68a;
       backdrop-filter: blur(8px);
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.2);
+      z-index: 25;
     }
-
-    .sync-bar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: #cbd5e1;
-      font-family: 'Cinzel', serif;
-    }
-
-    .sync-track {
-      position: relative;
-      width: 100%;
-      height: 7px;
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: 4px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .sync-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, #38bdf8 0%, #00e5ff 70%, #fbbf24 100%);
-      box-shadow: 0 0 10px #38bdf8;
-      transition: width 0.25s ease;
-    }
-
-    .sync-perks {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.62rem;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      color: #64748b;
-      font-weight: 600;
-    }
-    .sync-perk.active {
-      color: #fde68a;
-      text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+    #btn-settings-toggle:hover {
+      background: rgba(30, 58, 138, 0.8);
+      transform: rotate(60deg) scale(1.1);
     }
 
     /* Pantalla de Ajustes */
     #screen-settings {
       padding: 22px 20px;
-      box-sizing: border-box;
       background: radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.95) 0%, rgba(3, 7, 18, 0.98) 100%);
+      backdrop-filter: blur(18px);
       justify-content: flex-start;
       overflow-y: auto;
       text-align: left;
       z-index: 35;
-      font-family: 'Plus Jakarta Sans', sans-serif;
     }
     #screen-settings h2 {
       font-family: 'Cinzel', serif;
       text-align: center;
-      margin-top: 5px;
-      margin-bottom: 16px;
-      font-size: 1.6rem;
-      letter-spacing: 2px;
-      background: linear-gradient(180deg, #ffffff, #bae6fd);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      margin-top: 5px; margin-bottom: 16px;
+      font-size: 1.5rem; letter-spacing: 2px;
+      background: linear-gradient(180deg, #ffffff, #fde68a);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       width: 100%;
     }
 
-    .presets-container { width: 100%; margin-bottom: 16px; }
+    .presets-container { width: 100%; margin-bottom: 18px; }
     .presets-label {
-      font-size: 0.76rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #94a3b8;
-      margin-bottom: 6px;
-      font-weight: 700;
-      font-family: 'Cinzel', serif;
+      font-size: 0.74rem; text-transform: uppercase; letter-spacing: 2px;
+      color: #94a3b8; margin-bottom: 8px; font-weight: 600;
     }
     .presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .preset-btn {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      padding: 8px 4px;
-      color: #e2e8f0;
-      font-size: 0.72rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-align: center;
+      border-radius: 8px; padding: 9px 4px; color: #e2e8f0;
+      font-size: 0.74rem; font-weight: 500; cursor: pointer;
+      transition: all 0.2s ease; text-align: center;
     }
     .preset-btn:hover, .preset-btn.active {
-      background: rgba(56, 189, 248, 0.25);
-      border-color: #38bdf8;
-      color: #bae6fd;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      background: rgba(251, 191, 36, 0.2);
+      border-color: #f59e0b; color: #fef08a;
     }
 
     .setting-group {
-      width: 100%;
-      margin-bottom: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 8px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: 100%; margin-bottom: 14px; background: rgba(255, 255, 255, 0.03);
+      padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .setting-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.82rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #e2e8f0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.82rem; font-weight: 400; margin-bottom: 8px; color: #e2e8f0;
     }
     .setting-val {
-      font-family: monospace;
-      color: #38bdf8;
-      font-size: 0.82rem;
-      background: rgba(56, 189, 248, 0.15);
-      padding: 1px 6px;
-      border-radius: 6px;
+      font-family: monospace; color: #38bdf8; font-size: 0.82rem;
+      background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 6px;
       border: 1px solid rgba(56, 189, 248, 0.3);
     }
     .setting-slider {
-      width: 100%;
-      height: 6px;
-      border-radius: 3px;
-      background: #1e293b;
-      outline: none;
-      -webkit-appearance: none;
-      cursor: pointer;
+      width: 100%; height: 6px; border-radius: 3px; background: #1e293b;
+      outline: none; -webkit-appearance: none; cursor: pointer;
     }
     .setting-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
+      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #bae6fd, #38bdf8 60%, #0284c7 100%);
-      cursor: pointer;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+      cursor: pointer; box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
     }
 
-    .settings-actions { width: 100%; display: flex; gap: 10px; margin-top: 14px; }
+    .settings-actions { width: 100%; display: flex; gap: 10px; margin-top: 16px; margin-bottom: 10px; }
     .btn-action {
-      flex: 1;
-      padding: 11px 14px;
-      border-radius: 10px;
-      border: none;
-      font-family: 'Cinzel', serif;
-      font-weight: 700;
-      font-size: 0.88rem;
-      letter-spacing: 1px;
-      cursor: pointer;
+      flex: 1; padding: 12px 14px; border-radius: 10px; border: none;
+      font-family: 'Cinzel', serif; font-weight: 600; font-size: 0.88rem;
+      letter-spacing: 1px; cursor: pointer; transition: all 0.2s ease;
     }
-    .btn-action-secondary { background: rgba(71, 85, 105, 0.6); color: #cbd5e1; }
-    .btn-action-primary {
-      background: linear-gradient(135deg, #0284c7, #0369a1);
-      color: #fff;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    .btn-action-secondary { background: rgba(71, 85, 105, 0.6); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .btn-action-primary { background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+
+    /* HUD Cyber-Zen Minimalista en Esquinas */
+    #hud {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 15;
     }
 
-    /* Pantalla Game Over & Medallas */
+    /* Esquina Superior Izquierda: Tríptico de Trigramas/Hexágonos de Vida */
+    .hud-lives-container {
+      position: absolute;
+      top: 14px; left: 14px;
+      display: flex; gap: 8px; align-items: center;
+      background: rgba(4, 7, 20, 0.7);
+      padding: 6px 12px; border-radius: 20px;
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      backdrop-filter: blur(8px);
+    }
+    .trigram-life {
+      font-size: 1rem; color: #fbbf24;
+      transition: all 0.3s ease;
+      filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5));
+    }
+    .trigram-life.lost {
+      color: #475569; filter: none; opacity: 0.4;
+      transform: scale(0.85);
+    }
+
+    /* Esquina Superior Derecha: Indicador Circular Fragmentado de Sincronía */
+    .hud-sync-container {
+      position: absolute;
+      top: 14px; right: 14px;
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(4, 7, 20, 0.7);
+      padding: 6px 12px; border-radius: 20px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      backdrop-filter: blur(8px);
+    }
+    .sync-gauge {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid #38bdf8;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 0.65rem; font-weight: 700; color: #38bdf8;
+    }
+    .sync-text { display: flex; flex-direction: column; text-align: right; }
+    .sync-label { font-size: 0.62rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; }
+    .sync-val { font-size: 0.85rem; font-weight: 700; color: #38bdf8; font-family: monospace; }
+
+    /* Barra Vertical Lateral Derecha: Progreso de Distancia */
+    .hud-distance-bar {
+      position: absolute;
+      top: 70px; right: 14px; bottom: 70px; width: 4px;
+      background: rgba(255, 255, 255, 0.1); border-radius: 2px;
+    }
+    .hud-distance-cursor {
+      position: absolute; left: -4px; width: 12px; height: 12px;
+      border-radius: 50%; background: #fbbf24;
+      box-shadow: 0 0 10px #fbbf24;
+      transition: top 0.1s linear;
+    }
+
+    /* Pantalla Game Over / Fin de Etapa */
     #screen-gameover h2 {
-      font-size: 1.8rem;
-      margin-bottom: 4px;
-      letter-spacing: 2px;
-    }
-    .title-defeat {
-      background: linear-gradient(180deg, #fecdd3, #f43f5e);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .title-victory {
-      background: linear-gradient(180deg, #fde68a, #fbbf24);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 2rem; margin-bottom: 4px;
+      background: linear-gradient(180deg, #fecdd3, #e11d48);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 2px; font-family: 'Cinzel', serif;
     }
 
-    .medal-box {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(251, 191, 36, 0.4);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin: 12px 0;
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+    .medal-badge {
+      font-size: 3rem; margin: 10px 0 2px 0;
+      filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.5));
     }
-    .medal-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #fef08a;
-      margin-bottom: 4px;
-    }
-    .medal-desc {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.74rem;
-      color: #cbd5e1;
-      line-height: 1.3;
-    }
+    .medal-title { font-size: 0.95rem; color: #fde68a; font-weight: 600; margin-bottom: 12px; letter-spacing: 1px; }
 
-    .gameover-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      width: 100%;
-      margin-bottom: 16px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+    .gameover-score-container { margin: 8px 0 20px 0; }
+    .gameover-score {
+      font-size: 2.6rem; font-weight: 800; font-family: monospace;
+      color: #38bdf8; text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
     }
-    .stat-card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 8px 10px;
-      border-radius: 8px;
-      text-align: left;
-    }
-    .stat-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; }
-    .stat-val { font-size: 1.1rem; font-weight: 800; color: #38bdf8; font-family: monospace; }
   </style>
 </head>
 <body>
   <div id="game-container">
     <canvas id="game-canvas" width="450" height="800"></canvas>
     
-    <!-- HUD In-Game -->
+    <!-- HUD In-Game Cyber-Zen -->
     <div id="hud" class="hidden">
-      <div class="hud-top-bar">
-        <div class="hud-realm-badge">
-          <div id="hud-gem" class="hud-gem"></div>
-          <div class="hud-text">
-            <span id="hud-realm-name" class="hud-realm-name">Estructura</span>
-            <span id="hud-realm-title" class="hud-realm-title">Vía de la Luz</span>
-          </div>
-        </div>
-
-        <div class="hud-right-stats">
-          <div id="hud-lives-container" class="hud-lives-container hidden">
-            <div id="life-1" class="life-orb"></div>
-            <div id="life-2" class="life-orb"></div>
-            <div id="life-3" class="life-orb"></div>
-          </div>
-          <div class="hud-score-badge">
-            <span id="score">0</span>
-            <span id="hud-mult-tag" class="hud-mult-tag">x1.0</span>
-          </div>
-        </div>
+      <!-- Tríptico de Vidas (Esquina Izquierda) -->
+      <div class="hud-lives-container">
+        <span id="life-1" class="trigram-life">☰</span>
+        <span id="life-2" class="trigram-life">☰</span>
+        <span id="life-3" class="trigram-life">☰</span>
       </div>
 
-      <!-- Barra Dinámica de Sincronía -->
-      <div id="sync-bar-box" class="sync-bar-container">
-        <div class="sync-bar-header">
-          <span>SINCRONÍA CÓSMICA</span>
-          <span id="sync-val" style="color:#38bdf8; font-family:monospace;">100%</span>
+      <!-- Medidor Circular de Sincronía (Esquina Derecha) -->
+      <div class="hud-sync-container">
+        <div class="sync-text">
+          <span class="sync-label">SINCRONÍA</span>
+          <span id="sync-val" class="sync-val">100%</span>
         </div>
-        <div class="sync-track">
-          <div id="sync-fill" class="sync-fill" style="width: 100%;"></div>
-        </div>
-        <div class="sync-perks">
-          <span id="perk-trail" class="sync-perk active">⚡ x1.5</span>
-          <span id="perk-float" class="sync-perk active">🪶 Float Fall</span>
-          <span id="perk-flow" class="sync-perk active">🛡️ Escudo / Imán</span>
-        </div>
+        <div id="sync-multiplier" class="sync-gauge">x1.0</div>
+      </div>
+
+      <!-- Cursor Lateral de Distancia -->
+      <div class="hud-distance-bar">
+        <div id="distance-cursor" class="hud-distance-cursor" style="top: 100%;"></div>
       </div>
     </div>
 
@@ -620,44 +411,41 @@
       <!-- Menú Principal -->
       <div id="screen-menu" class="screen">
         <button id="btn-settings-toggle" title="Configuración" aria-label="Configuración">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
         </button>
 
-        <!-- Emblema Cósmico -->
-        <svg class="title-emblem" viewBox="0 0 100 100" fill="none" stroke="#38bdf8" stroke-width="2">
-          <circle cx="50" cy="50" r="44" stroke="rgba(56, 189, 248, 0.35)" stroke-dasharray="4 3"/>
-          <circle cx="50" cy="50" r="32" stroke="rgba(251, 191, 36, 0.4)"/>
-          <circle cx="50" cy="50" r="20" stroke="rgba(56, 189, 248, 0.5)"/>
-          <line x1="50" y1="10" x2="50" y2="90" stroke="#38bdf8" stroke-width="1.8"/>
-          <circle cx="50" cy="20" r="5" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>
-          <circle cx="50" cy="50" r="7" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>
-          <circle cx="50" cy="80" r="5" fill="#f43f5e" stroke="#fff" stroke-width="1.5"/>
+        <!-- Emblema Sagrado Cyber-Zen -->
+        <svg class="title-emblem" viewBox="0 0 100 100" fill="none" stroke="#fbbf24" stroke-width="2">
+          <circle cx="50" cy="50" r="44" stroke="rgba(251, 191, 36, 0.35)" stroke-dasharray="4 3"/>
+          <circle cx="50" cy="50" r="32" stroke="rgba(56, 189, 248, 0.4)"/>
+          <line x1="50" y1="12" x2="50" y2="88" stroke="#fbbf24" stroke-width="1.8"/>
+          <circle cx="50" cy="50" r="6" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>
         </svg>
 
         <h1 class="game-title">QLIZE</h1>
-        <div class="subtitle">Estructura vs. Entropía</div>
+        <div class="subtitle">Cyber-Zen Vectorial</div>
 
-        <button id="btn-stages" class="btn-card">
+        <button id="btn-arcade" class="btn-card">
           <div class="btn-icon-sphere">✨</div>
           <div class="btn-content">
-            <h3>Modo Etapas</h3>
-            <p>Ruta de Constelación • 3 Pasadas & Medallas</p>
+            <h3>Modo Arcade</h3>
+            <p>Ascenso Continuo • Estructura & Entropía Invertida</p>
           </div>
         </button>
 
-        <button id="btn-arcade" class="btn-card">
-          <div class="btn-icon-sphere">🌀</div>
+        <button id="btn-stage" class="btn-card">
+          <div class="btn-icon-sphere">🏆</div>
           <div class="btn-content">
-            <h3>Modo Arcade</h3>
-            <p>Bucle Cósmico • Gravedad Invertida</p>
+            <h3>Modo Etapas</h3>
+            <p>Ruta de Constelación • 3 Tramos & Medallas</p>
           </div>
         </button>
       </div>
 
-      <!-- Pantalla de Ajustes (Modal) -->
+      <!-- Pantalla de Ajustes -->
       <div id="screen-settings" class="screen hidden">
         <h2>⚙️ Configuración</h2>
         
@@ -672,7 +460,7 @@
 
         <div class="setting-group">
           <div class="setting-header">
-            <span>Sensibilidad Swipe (Táctil)</span>
+            <span>Sensibilidad Swipe</span>
             <span id="val-swipe-sens" class="setting-val">1.0x</span>
           </div>
           <input type="range" id="slider-swipe-sens" class="setting-slider" min="0.3" max="2.5" step="0.1" value="1.0" />
@@ -716,34 +504,15 @@
         </div>
       </div>
 
-      <!-- Pantalla Game Over / Medallas -->
+      <!-- Pantalla Game Over / Fin de Etapa -->
       <div id="screen-gameover" class="screen hidden">
-        <h2 id="gameover-title" class="title-defeat">ASCENSO TERMINADO</h2>
-        <div id="gameover-realm" style="font-size:0.9rem; color:#bae6fd; margin-bottom:8px;">Etapa: Ruta Celestial</div>
+        <h2 id="gameover-title">RECORRIDO TERMINADO</h2>
+        <div id="medal-icon" class="medal-badge hidden">🥉</div>
+        <div id="medal-title" class="medal-title hidden">Medalla de Bronce</div>
         
-        <!-- Caja de Medallas -->
-        <div id="medal-box" class="medal-box hidden">
-          <div id="medal-title" class="medal-title">🥉 Medalla de Bronce (Templanza)</div>
-          <div id="medal-desc" class="medal-desc">¡Cima alcanzada! Completaste el 100% de la etapa con maestría.</div>
-        </div>
-
-        <div class="gameover-stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Puntuación Total</div>
-            <div id="final-score" class="stat-val">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Distancia Alcanzada</div>
-            <div id="final-dist" class="stat-val">0%</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Sincronía Media</div>
-            <div id="final-sync" class="stat-val">100%</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Chispas Recogidas</div>
-            <div id="final-sparks" class="stat-val">0</div>
-          </div>
+        <div class="gameover-score-container">
+          <div class="gameover-score" id="final-score">0</div>
+          <div style="font-size:0.75rem; color:#94a3b8; letter-spacing:2px; text-transform:uppercase;">Metros Recorridos</div>
         </div>
 
         <button id="btn-restart" class="btn-card" style="background: linear-gradient(135deg, #0284c7, #0369a1); border-color:#38bdf8; justify-content:center; text-align:center; color:#fff;">
@@ -754,7 +523,7 @@
 
         <button id="btn-menu" class="btn-card" style="background: rgba(30, 41, 59, 0.8); border-color:rgba(255,255,255,0.15); justify-content:center; text-align:center; color:#cbd5e1; padding: 12px 20px;">
           <div class="btn-content" style="text-align:center;">
-            <p style="font-size:0.88rem; font-weight:600;">Volver al Menú</p>
+            <p style="font-size:0.85rem; font-weight:500;">Volver al Menú</p>
           </div>
         </button>
       </div>
@@ -763,4 +532,3 @@
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
-
