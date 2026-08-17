@@ -212,16 +212,40 @@ echo -e "Paquete: ${CYAN}com.qlize.jump${NC}"
 echo -e "Archivos generados en:"
 echo -e "  👉 ${BOLD}${OUTPUT_PATH}${NC}\n"
 
-# Copiar el APK generado a public/qlize.apk para distribución web
-if [ "$BUILD_TYPE" = "release" ] && [ -f "android/app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
-    cp "android/app/build/outputs/apk/release/app-release-unsigned.apk" "public/qlize.apk"
-    echo -e "  ✓ Release APK copiado automáticamente a ${GREEN}public/qlize.apk${NC} para descarga web"
+# Copiar y firmar el APK para distribución web
+if [ "$BUILD_TYPE" = "release" ] && [ -f "android/app/build/outputs/apk/release/app-release.apk" ]; then
+    echo -e "\n${BLUE}[6/6] Firmando APK con keystore...${NC}"
+    
+    # Verificar que exista el keystore
+    if [ -f "android/qlize-release.keystore" ] && [ -f "android/keystore.properties" ]; then
+        # Leer credenciales del keystore
+        source <(grep = android/keystore.properties | sed 's/^/export /')
+        
+        # Firmar el APK
+        cp "android/app/build/outputs/apk/release/app-release.apk" "public/qlize.apk"
+        apksigner sign \
+            --ks "android/qlize-release.keystore" \
+            --ks-key-alias "$keyAlias" \
+            --ks-pass "pass:$storePassword" \
+            --key-pass "pass:$keyPassword" \
+            "public/qlize.apk"
+        
+        # Verificar la firma
+        if apksigner verify "public/qlize.apk" > /dev/null 2>&1; then
+            echo -e "  ✓ APK firmado y copiado a ${GREEN}public/qlize.apk${NC}"
+            echo -e "  ✓ Firma verificada correctamente"
+        else
+            echo -e "  ${RED}✘ Error al verificar la firma del APK${NC}"
+            exit 1
+        fi
+    else
+        echo -e "  ${YELLOW}⚠ Keystore no encontrado. Copiando APK sin firmar...${NC}"
+        echo -e "  ${YELLOW}  Ejecuta: ./scripts/generate-keystore.sh${NC}"
+        cp "android/app/build/outputs/apk/release/app-release.apk" "public/qlize.apk"
+    fi
 elif [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
     cp "android/app/build/outputs/apk/debug/app-debug.apk" "public/qlize.apk"
     echo -e "  ✓ Debug APK copiado automáticamente a ${GREEN}public/qlize.apk${NC} para descarga web"
-elif [ -f "android/app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
-    cp "android/app/build/outputs/apk/release/app-release-unsigned.apk" "public/qlize.apk"
-    echo -e "  ✓ Release APK copiado automáticamente a ${GREEN}public/qlize.apk${NC} para descarga web"
 fi
 
 if [ "$BUILD_TYPE" = "debug" ] || [ "$BUILD_TYPE" = "all" ]; then
