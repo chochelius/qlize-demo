@@ -540,9 +540,154 @@
       text-shadow: 0 0 10px rgba(43, 179, 130, 0.6);
     }
 
-    /* DESCARGA DE APK (Solo visible en versión Web) */
+    /* PANTALLA DE CARGA INICIAL (Cyber-Zen Loading Overlay) */
+    .screen-loading {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: #02040a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .screen-loading.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 320px;
+      width: 85%;
+    }
+
+    .loading-isologo {
+      width: 68px;
+      height: 68px;
+      margin-bottom: 16px;
+    }
+
+    .loading-isologo svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .isologo-loading-pulse {
+      animation: loadingOctagonPulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes loadingOctagonPulse {
+      0% {
+        transform: scale(0.95);
+        filter: drop-shadow(0 0 6px rgba(245, 245, 247, 0.25));
+      }
+      100% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 20px rgba(226, 177, 60, 0.75));
+      }
+    }
+
+    .loading-brand {
+      font-family: var(--font-serif);
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: 7px;
+      color: var(--color-ivory);
+      margin-bottom: 4px;
+      text-shadow: 0 0 15px rgba(245, 245, 247, 0.4);
+    }
+
+    .loading-sub {
+      font-family: var(--font-serif);
+      font-size: 0.66rem;
+      letter-spacing: 4px;
+      color: var(--color-gold);
+      margin-bottom: 22px;
+      opacity: 0.9;
+    }
+
+    .loading-bar-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(245, 245, 247, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(226, 177, 60, 0.25);
+    }
+
+    .loading-bar-fill {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(90deg, transparent 0%, var(--color-gold) 50%, var(--color-jade) 100%);
+      animation: loadingSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      box-shadow: 0 0 10px var(--color-gold);
+    }
+
+    @keyframes loadingSweep {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .loading-status {
+      margin-top: 14px;
+      font-family: var(--font-sans);
+      font-size: 0.64rem;
+      letter-spacing: 2px;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    /* DESCARGA DE APK (Solo visible en versión Web, diseño secundario compacto y ubicado abajo) */
     #btn-download-apk {
       text-decoration: none;
+      margin-top: 22px;
+      max-width: 255px;
+      min-height: 44px;
+      padding: 6px 14px;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.65);
+      align-self: center;
+    }
+    #btn-download-apk::after {
+      border-color: rgba(100, 181, 246, 0.3);
+    }
+    #btn-download-apk .btn-icon-oct {
+      width: 28px;
+      height: 28px;
+      font-size: 1.05rem;
+      clip-path: polygon(
+        6px 0%, calc(100% - 6px) 0%,
+        100% 6px, 100% calc(100% - 6px),
+        calc(100% - 6px) 100%, 6px 100%,
+        0% calc(100% - 6px), 0% 6px
+      );
+      background: rgba(100, 181, 246, 0.12);
+      color: var(--color-sky);
+    }
+    #btn-download-apk .btn-content h3 {
+      font-size: 0.82rem;
+      letter-spacing: 1.5px;
+      color: #bae6fd;
+    }
+    #btn-download-apk .btn-content p {
+      font-size: 0.64rem;
+      margin-top: 1px;
+      color: #94a3b8;
     }
     #btn-download-apk:hover::after,
     #btn-download-apk:focus-visible::after,
@@ -553,7 +698,7 @@
     #btn-download-apk:hover,
     #btn-download-apk:focus-visible,
     #btn-download-apk.keyboard-selected {
-      background: linear-gradient(135deg, rgba(100, 181, 246, 0.18) 0%, rgba(15, 23, 42, 0.95) 100%);
+      background: linear-gradient(135deg, rgba(100, 181, 246, 0.22) 0%, rgba(15, 23, 42, 0.95) 100%);
       transform: translateY(-2px) scale(1.01);
       outline: none;
     }
@@ -567,11 +712,11 @@
     #btn-download-apk:hover .btn-content h3,
     #btn-download-apk:focus-visible .btn-content h3,
     #btn-download-apk.keyboard-selected .btn-content h3 {
-      color: #bae6fd;
+      color: #e0f2fe;
       text-shadow: 0 0 10px rgba(100, 181, 246, 0.6);
     }
 
-    /* Footer de Licencia Creative Commons */
+    /* Footer de Licencia Creative Commons (100% Offline con SVGs Locales) */
     .app-license-footer {
       margin-top: 14px;
       font-size: 0.60rem;
@@ -595,9 +740,21 @@
       color: var(--color-gold);
       text-decoration: underline;
     }
-    .app-license-footer img {
+    .cc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: 5px;
       vertical-align: -0.15em;
-      filter: invert(0.8) opacity(0.85);
+    }
+    .cc-badge svg {
+      opacity: 0.8;
+      stroke: #94a3b8;
+      transition: stroke 0.2s ease;
+    }
+    .app-license-footer a:hover ~ .cc-badge svg,
+    .cc-badge:hover svg {
+      stroke: var(--color-gold);
     }
 
     /* Banner Tutorial In-Game */
@@ -1696,6 +1853,24 @@
     </div>
 
     <div id="ui-layer">
+      <!-- Pantalla de Carga Inicial (Cyber-Zen Loading Overlay) -->
+      <div id="screen-loading" class="screen-loading">
+        <div class="loading-content">
+          <div class="loading-isologo">
+            <svg class="isologo-q isologo-loading-pulse" viewBox="0 0 120 120" fill="none">
+              <polygon class="isologo-octagon" points="35,5 85,5 115,35 115,85 85,115 35,115 5,85 5,35" stroke="var(--color-ivory)" stroke-width="6" stroke-linejoin="miter" />
+              <line class="isologo-tail" x1="72" y1="72" x2="114" y2="114" stroke="var(--color-gold)" stroke-width="9" stroke-linecap="square" />
+            </svg>
+          </div>
+          <div class="loading-brand">QLIZE</div>
+          <div class="loading-sub">SINCRONIZANDO VECTORES</div>
+          <div class="loading-bar-container">
+            <div class="loading-bar-fill"></div>
+          </div>
+          <div class="loading-status">INICIALIZANDO SISTEMA...</div>
+        </div>
+      </div>
+
       <!-- Menú Principal -->
       <div id="screen-menu" class="screen">
         <!-- Red Geométrica de Fondo del Árbol de la Vida -->
@@ -1766,7 +1941,13 @@
           </a>
 
           <footer class="app-license-footer">
-            <a href="http://demo.qlize.site" target="_blank" rel="noopener noreferrer">Qlize</a> © 2026 by <a href="https://github.com/chochelius" target="_blank" rel="noopener noreferrer">Jorge Cortés</a> <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-ND 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+            <a href="http://demo.qlize.site" target="_blank" rel="noopener noreferrer">Qlize</a> © 2026 by <a href="https://github.com/chochelius" target="_blank" rel="noopener noreferrer">Jorge Cortés</a> <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-ND 4.0</a>
+            <span class="cc-badge" title="Creative Commons Attribution-NonCommercial-NoDerivatives 4.0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9.5a3.5 3.5 0 1 0 0 5M10.5 9.5a3.5 3.5 0 1 0 0 5"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="2"/><path d="M7 19v-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 7v10M9 9.5h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 0 0 3h6M5 19L19 5"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg>
+            </span>
           </footer>
         </div>
       </div>
@@ -1937,7 +2118,13 @@
         </div>
 
         <footer class="app-license-footer" style="margin-top: 18px;">
-          <a href="http://demo.qlize.site" target="_blank" rel="noopener noreferrer">Qlize</a> © 2026 by <a href="https://github.com/chochelius" target="_blank" rel="noopener noreferrer">Jorge Cortés</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-ND 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+          <a href="http://demo.qlize.site" target="_blank" rel="noopener noreferrer">Qlize</a> © 2026 by <a href="https://github.com/chochelius" target="_blank" rel="noopener noreferrer">Jorge Cortés</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-ND 4.0</a>
+          <span class="cc-badge" title="Creative Commons Attribution-NonCommercial-NoDerivatives 4.0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9.5a3.5 3.5 0 1 0 0 5M10.5 9.5a3.5 3.5 0 1 0 0 5"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="2"/><path d="M7 19v-4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 7v10M9 9.5h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 0 0 3h6M5 19L19 5"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg>
+          </span>
         </footer>
       </div>
 
