@@ -1341,25 +1341,83 @@
 
     .hud-phase-indicator {
       position: absolute;
-      top: 14px; left: 50%;
+      top: 10px; left: 50%;
       transform: translateX(-50%);
       background: rgba(2, 4, 10, 0.9);
-      padding: 7px 18px;
+      padding: 5px 16px;
       clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
       border: 1px solid var(--color-gold);
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 2.5px;
       text-transform: uppercase;
       color: var(--color-gold);
       text-shadow: 0 0 10px rgba(226, 177, 60, 0.6);
       transition: all 0.5s ease;
+      z-index: 16;
     }
     .hud-phase-indicator.entropy {
       border-color: var(--color-gothic-red);
       color: var(--color-gothic-red);
       text-shadow: 0 0 10px rgba(211, 47, 47, 0.6);
       animation: pulse-entropy 2s infinite;
+    }
+
+    .hud-score-container {
+      position: absolute;
+      top: 42px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 4, 10, 0.85);
+      padding: 3px 16px;
+      clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+      border: 1px solid rgba(100, 181, 246, 0.35);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+      z-index: 15;
+      min-width: 100px;
+      transition: all 0.4s ease;
+    }
+    .hud-score-container.entropy {
+      border-color: rgba(225, 29, 72, 0.5);
+      background: rgba(15, 2, 8, 0.88);
+      box-shadow: 0 4px 18px rgba(225, 29, 72, 0.25);
+    }
+    .hud-score-label {
+      font-size: 0.5rem;
+      color: #94a3b8;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .hud-score-val {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--color-gold);
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+      text-shadow: 0 0 12px rgba(226, 177, 60, 0.5);
+      line-height: 1.1;
+    }
+    .hud-score-container.entropy .hud-score-val {
+      color: #fb7185;
+      text-shadow: 0 0 12px rgba(251, 113, 133, 0.6);
+    }
+    .hud-score-unit {
+      font-size: 0.75rem;
+      color: #93c5fd;
+      margin-left: 2px;
+      font-weight: 600;
+    }
+    .hud-score-container.entropy .hud-score-unit {
+      color: #fda4af;
     }
 
     .hud-distance-bar {
@@ -1488,6 +1546,12 @@
       <!-- Indicador de Fase (Arcade Mode) -->
       <div id="phase-indicator" class="hud-phase-indicator hidden">
         <span id="phase-text">ESTRUCTURA</span>
+      </div>
+
+      <!-- Contador de Puntos y Distancia en Vivo -->
+      <div id="hud-score-container" class="hud-score-container">
+        <span class="hud-score-label">PUNTOS</span>
+        <span id="hud-score-val" class="hud-score-val">0<span class="hud-score-unit">m</span></span>
       </div>
 
       <!-- Tríptico de Vidas (Esquina Izquierda) -->
