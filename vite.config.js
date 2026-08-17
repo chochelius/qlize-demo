@@ -1,9 +1,34 @@
 import { defineConfig, loadEnv } from 'vite';
+import fs from 'fs';
+import path from 'path';
 import { recordSession, recordEvent, recordFeedback } from './server/qa-backend.js';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const isQAMode = env.MODO_QA === 'true' || env.VITE_MODO_QA === 'true';
+
+  const apkPlugin = () => ({
+    name: 'vite-plugin-apk-serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url === '/qlize.apk' || req.url?.endsWith('.apk')) {
+          const apkName = req.url.replace(/^\//, '').split('?')[0];
+          const apkPath = path.resolve(process.cwd(), 'public', apkName);
+
+          if (fs.existsSync(apkPath)) {
+            res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+            res.setHeader('Content-Disposition', `attachment; filename="${apkName}"`);
+            return fs.createReadStream(apkPath).pipe(res);
+          } else {
+            res.statusCode = 404;
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            return res.end('El archivo APK no se encuentra en el servidor. Compila el APK primero con ./build-android-debian.sh');
+          }
+        }
+        next();
+      });
+    }
+  });
 
   const qaPlugin = () => ({
     name: 'vite-plugin-qa-telemetry',
@@ -66,7 +91,7 @@ export default defineConfig(({ mode }) => {
     define: {
       __MODO_QA__: JSON.stringify(isQAMode),
     },
-    plugins: isQAMode ? [qaPlugin()] : [],
+    plugins: isQAMode ? [apkPlugin(), qaPlugin()] : [apkPlugin()],
     server: {
       allowedHosts: ['demo.qlize.site'],
     },

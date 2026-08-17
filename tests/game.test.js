@@ -343,10 +343,11 @@ test('Engine: reset restaura el estado inicial', () => {
 // =========================================================
 // TutorialMode
 // =========================================================
-test('TutorialMode: genera mapa espaciado, adapta textos al dispositivo y avanza zonas', () => {
+test('TutorialMode: 8 zonas, banners persistentes, colapso en el umbral a Entropía y culminación', () => {
   const tutDesktop = new TutorialMode(450, 800, true, 'keyboard');
   assert.ok(tutDesktop.isTutorial, 'debe ser modo tutorial');
-  assert.ok(tutDesktop.platforms.length >= 20, 'debe tener un mapa amplio con 20+ plataformas');
+  assert.equal(tutDesktop.phase, 'structure', 'debe iniciar en fase Estructura');
+  assert.ok(tutDesktop.platforms.length >= 18, 'debe tener mapa amplio de Estructura');
   
   // Validar textos adaptativos
   const step1Desktop = getTutorialStepData(1, true, 'keyboard');
@@ -358,6 +359,34 @@ test('TutorialMode: genera mapa espaciado, adapta textos al dispositivo y avanza
   const step1MobileGyro = getTutorialStepData(1, false, 'gyro');
   assert.ok(step1MobileGyro.text.includes('Inclina suavemente'), 'debe mencionar giro en móvil');
 
+  // Validar Paso 5 (Diferencia Historia vs Arcade)
+  const step5 = getTutorialStepData(5, true, 'keyboard');
+  assert.ok(step5.title.includes('HISTORIA VS. MODO ARCADE'), 'debe titular diferencias de modos');
+  assert.ok(step5.text.includes('Overworld') && step5.text.includes('18,000m'), 'debe explicar 10 etapas en Overworld vs 18000m en Arcade');
+
+  // Validar Paso 6 (El Umbral)
+  const step6 = getTutorialStepData(6, true, 'keyboard');
+  assert.ok(step6.title.includes('LA CUMBRE Y EL VACÍO'), 'debe titular el umbral');
+
+  // Validar Paso 7 (Muestra y significado de Entropía)
+  const step7 = getTutorialStepData(7, true, 'keyboard');
+  assert.ok(step7.title.includes('GRAVEDAD INVERTIDA'), 'debe titular gravedad invertida');
+  assert.ok(step7.text.includes('Entropía') && step7.text.includes('cáscaras'), 'debe explicar el significado de entropía y cáscaras');
+
+  // Validar Paso 8 (Culminación)
+  const step8 = getTutorialStepData(8, true, 'keyboard');
+  assert.equal(step8.step, 8);
+  assert.equal(step8.totalSteps, 8);
+  assert.ok(step8.title.includes('INICIACIÓN COMPLETADA'));
+
+  // Validar plataformas dinámicas (móviles y quebradizas)
+  const hasMoving = tutDesktop.platforms.some(p => p.isMoving);
+  const hasDecaying = tutDesktop.platforms.some(p => p.isDecaying);
+  const hasThreshold = tutDesktop.platforms.some(p => p.isThreshold);
+  assert.ok(hasMoving, 'debe incluir plataformas móviles en Estructura');
+  assert.ok(hasDecaying, 'debe incluir plataformas efímeras/quebradizas en Estructura');
+  assert.ok(hasThreshold, 'debe incluir plataforma de umbral al final de Estructura');
+
   let stepReceived = null;
   tutDesktop.onTutorialStepChange = (data) => {
     stepReceived = data;
@@ -368,15 +397,54 @@ test('TutorialMode: genera mapa espaciado, adapta textos al dispositivo y avanza
   assert.equal(tutDesktop.currentStep, 1);
 
   // Simular ascenso a la Zona 2 (Sincronía)
-  p.y = 800 - 50 - 650; // progressY = 650 > 580 -> zona 2
+  p.y = 800 - 50 - 550; // progressY = 550 > 500 -> zona 2
   tutDesktop.update(0.016, 0, p);
   assert.equal(tutDesktop.currentStep, 2);
   assert.ok(stepReceived);
   assert.equal(stepReceived.step, 2);
 
+  // Simular que el jugador cae hacia abajo: el banner NO debe retroceder (persistencia)
+  p.y = 800 - 50 - 200; // progressY = 200 < 500
+  tutDesktop.update(0.016, 0, p);
+  assert.equal(tutDesktop.currentStep, 2, 'el paso no debe retroceder al caer');
+
+  // Simular pisar la plataforma de umbral: debe colapsar a Entropía
+  const thresholdPlat = tutDesktop.platforms.find(pl => pl.isThreshold);
+  assert.ok(thresholdPlat);
+  tutDesktop.onPlatformStepped(thresholdPlat, p);
+
+  assert.equal(tutDesktop.phase, 'entropy', 'debe cambiar a fase Entropía');
+  assert.equal(p.gravityDirection, -1, 'debe invertir la gravedad del jugador');
+  assert.equal(tutDesktop.currentStep, 7, 'debe avanzar al paso 7 (Entropía)');
+  assert.ok(tutDesktop.platforms.length >= 22, 'el mapa de Entropía debe tener al menos 22 plataformas (duración duplicada)');
+  assert.ok(tutDesktop.platforms.some(pl => pl.isHusk), 'debe generar husks de Entropía');
+  assert.ok(tutDesktop.platforms.some(pl => pl.isSummit), 'debe incluir el altar final en Entropía');
+
   // Reclamar medalla de iniciación
   const medal = tutDesktop.calculateMedal();
   assert.equal(medal.name, 'Iniciación');
+});
+
+test('Engine: triggerPhaseTransition activa animación cinemática con onda de choque y partículas', () => {
+  const canvas = { width: 450, height: 800, getContext: () => ({}) };
+  const engine = new Engine(canvas);
+  const player = new Player(225, 750);
+  const arcade = new ArcadeMode(450, 800);
+  engine.setPlayer(player);
+  engine.setMode(arcade);
+  engine.setInput({ axis: 0, isActive: false });
+
+  assert.equal(engine.phaseTransition.active, false);
+  engine.triggerPhaseTransition('entropy', 200, 300);
+
+  assert.equal(engine.phaseTransition.active, true, 'debe activar la transición de fase');
+  assert.equal(engine.phaseTransition.phase, 'entropy');
+  assert.ok(engine.screenShakeTime > 0, 'debe activar temblor de pantalla');
+  assert.ok(engine.impactParticles.length >= 35, 'debe generar ráfaga masiva de partículas');
+
+  // Simular avance de tiempo
+  engine.update(1.6);
+  assert.equal(engine.phaseTransition.active, false, 'debe desactivarse al concluir duration');
 });
 
 // =========================================================
@@ -528,23 +596,23 @@ test('StageMode: plataformas efímeras (decaying) se colapsan y desactivan tras 
 // =========================================================
 // Regresiones CODE_REVIEW (2026-08-16)
 // =========================================================
-test('BUGFIX TutorialMode: la Iniciación se completa al aterrizar en la plataforma de la cima', () => {
+test('BUGFIX TutorialMode: la Iniciación se completa al aterrizar en el altar sagrado de Entropía', () => {
   const tut = new TutorialMode(450, 800, true, 'keyboard');
-  const summit = tut.platforms.find(p => p.isSummit);
-  assert.ok(summit, 'debe existir una plataforma de cima (isSummit)');
+  const threshold = tut.platforms.find(p => p.isThreshold);
+  assert.ok(threshold, 'debe existir una plataforma de umbral (isThreshold) en Estructura');
 
-  const p = new Player(225, summit.y - 32);
+  const p = new Player(225, threshold.y - 32);
   assert.equal(tut.stageComplete, false);
-  tut.onPlatformStepped(summit, p);
-  assert.equal(tut.stageComplete, true, 'debe completarse al pisar la cima');
-  assert.equal(tut.calculateMedal().name, 'Iniciación');
+  tut.onPlatformStepped(threshold, p);
 
-  // En el aire por encima del umbral NO debe completarse (solo al aterrizar)
-  const tut2 = new TutorialMode(450, 800, true, 'keyboard');
-  const airborne = new Player(225, 800 - 50 - 2900);
-  airborne.vy = -200;
-  tut2.update(0.016, 0, airborne);
-  assert.equal(tut2.stageComplete, false, 'no debe completarse en el aire');
+  assert.equal(tut.phase, 'entropy', 'debe pasar a Entropía tras el umbral');
+  const summit = tut.platforms.find(pl => pl.isSummit);
+  assert.ok(summit, 'debe existir un altar sagrado de cima (isSummit) en Entropía');
+
+  assert.equal(tut.stageComplete, false, 'no debe completarse antes de pisar el altar');
+  tut.onPlatformStepped(summit, p);
+  assert.equal(tut.stageComplete, true, 'debe completarse al pisar el altar sagrado');
+  assert.equal(tut.calculateMedal().name, 'Iniciación');
 });
 
 test('BUGFIX TutorialMode: optimalRoute no conserva IDs huérfanos tras el rebuild del mapa', () => {

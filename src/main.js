@@ -4,6 +4,7 @@ import { ArcadeMode, StageMode, TutorialMode, getTutorialStepData } from './mode
 import { QlizeAudioManager } from './audio.js';
 import { OverworldManager, OVERWORLD_GRAPH } from './overworld.js';
 import { qa } from './qa.js';
+import { triggerHaptic, initNative, exitApp, isNative } from './native.js';
 
 const audio = new QlizeAudioManager();
 const overworld = new OverworldManager();
@@ -93,7 +94,8 @@ const PRESETS = {
 
 const DEFAULT_SETTINGS = {
   ...PRESETS.balanced,
-  musicVolume: 0.65
+  musicVolume: 0.65,
+  hapticsEnabled: true
 };
 export const gameSettings = { ...DEFAULT_SETTINGS };
 
@@ -268,6 +270,7 @@ const pauseMantraEl = document.getElementById('pause-mantra');
 const btnArcade = document.getElementById('btn-arcade');
 const btnStage = document.getElementById('btn-stage');
 const btnTutorial = document.getElementById('btn-tutorial');
+const btnDownloadApk = document.getElementById('btn-download-apk');
 const btnRestart = document.getElementById('btn-restart');
 const btnMenu = document.getElementById('btn-menu');
 const btnSettingsToggle = document.getElementById('btn-settings-toggle');
@@ -275,6 +278,25 @@ const btnSettingsClose = document.getElementById('btn-settings-close');
 const btnSettingsReset = document.getElementById('btn-settings-reset');
 const btnSettingsX = document.getElementById('btn-settings-x');
 const btnExitGame = document.getElementById('btn-exit-game');
+
+// En entorno nativo de Android (Capacitor), remover el botón de descarga de APK del DOM
+if (btnDownloadApk) {
+  if (isNative) {
+    btnDownloadApk.remove();
+  } else {
+    btnDownloadApk.addEventListener('click', async (e) => {
+      try {
+        const check = await fetch('/qlize.apk', { method: 'HEAD' });
+        if (!check.ok) {
+          e.preventDefault();
+          alert('El archivo instalador APK aún no está compilado en el servidor.\nEjecuta ./build-android-debian.sh para generarlo.');
+        }
+      } catch {
+        // En caso de error de red en el HEAD, permitir intento normal
+      }
+    });
+  }
+}
 
 // Elementos del Overworld (El Árbol de la Vida)
 const screenOverworld = document.getElementById('screen-overworld');
@@ -341,6 +363,8 @@ const valAcceleration = document.getElementById('val-acceleration');
 const valMaxSpeed = document.getElementById('val-max-speed');
 const valFriction = document.getElementById('val-friction');
 const valGyroSens = document.getElementById('val-gyro-sens');
+const btnHapticsOn = document.getElementById('haptics-on');
+const btnHapticsOff = document.getElementById('haptics-off');
 
 const presetSoft = document.getElementById('preset-soft');
 const presetBalanced = document.getElementById('preset-balanced');
@@ -351,6 +375,12 @@ function updateSettingsUI() {
     const volPercent = Math.round((gameSettings.musicVolume !== undefined ? gameSettings.musicVolume : 0.65) * 100);
     sliderMusicVolume.value = volPercent;
     valMusicVolume.innerText = `${volPercent}%`;
+  }
+
+  if (btnHapticsOn && btnHapticsOff) {
+    const isHapticsActive = gameSettings.hapticsEnabled !== false;
+    btnHapticsOn.classList.toggle('active', isHapticsActive);
+    btnHapticsOff.classList.toggle('active', !isHapticsActive);
   }
 
   sliderSwipeSens.value = gameSettings.swipeSens;
@@ -502,6 +532,23 @@ controlGyro.addEventListener('click', () => {
     updateSettingsUI();
   }
 });
+
+if (btnHapticsOn) {
+  btnHapticsOn.addEventListener('click', () => {
+    gameSettings.hapticsEnabled = true;
+    saveSettings();
+    updateSettingsUI();
+    triggerHaptic('jump', true);
+  });
+}
+
+if (btnHapticsOff) {
+  btnHapticsOff.addEventListener('click', () => {
+    gameSettings.hapticsEnabled = false;
+    saveSettings();
+    updateSettingsUI();
+  });
+}
 
 btnSettingsToggle.addEventListener('click', () => {
   updateSettingsUI();
@@ -794,8 +841,15 @@ function startGame(modeClass, customConfig = null) {
       if (hudScoreContainer) {
         hudScoreContainer.classList.toggle('entropy', phase === 'entropy');
       }
-      audio.setPhase(phase);
+    } else if (modeClass === TutorialMode) {
+      if (hudTutorialBanner) {
+        hudTutorialBanner.classList.toggle('entropy', phase === 'entropy');
+      }
+      if (hudScoreContainer) {
+        hudScoreContainer.classList.toggle('entropy', phase === 'entropy');
+      }
     }
+    audio.setPhase(phase);
   };
 
   const modeName = modeClass === TutorialMode ? 'Iniciación' : (modeClass === StageMode ? 'Modo Historia' : 'Modo Arcade');
@@ -807,8 +861,10 @@ function startGame(modeClass, customConfig = null) {
     if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
     if (medal && VICTORY_MEDALS.has(medal.name)) {
       audio.playVictory();
+      triggerHaptic('victory', gameSettings.hapticsEnabled);
     } else {
       audio.playLifeLost();
+      triggerHaptic('damage', gameSettings.hapticsEnabled);
     }
 
     const syncRatio = engine.mode?.getSynchronyRatio ? engine.mode.getSynchronyRatio() : 1.0;
@@ -841,6 +897,18 @@ function startGame(modeClass, customConfig = null) {
     hud.classList.add('hidden');
   };
 
+  engine.onJumpEffect = (p) => {
+    triggerHaptic(p.isOptimal ? 'optimal' : 'jump', gameSettings.hapticsEnabled);
+  };
+
+  engine.onLifeLost = () => {
+    triggerHaptic('damage', gameSettings.hapticsEnabled);
+  };
+
+  engine.onShieldBreak = () => {
+    triggerHaptic('shield', gameSettings.hapticsEnabled);
+  };
+
   engine.onScoreUpdate = (score, currentProgress) => {
     const progress = currentProgress !== undefined ? currentProgress : 0;
     distanceCursorEl.style.top = `${100 - progress}%`;
@@ -867,6 +935,7 @@ function startGame(modeClass, customConfig = null) {
   engine.onStageComplete = (score, medal) => {
     if (hudTutorialBanner) hudTutorialBanner.classList.add('hidden');
     audio.playVictory();
+    triggerHaptic('victory', gameSettings.hapticsEnabled);
     
     const syncRatio = engine.mode?.getSynchronyRatio ? engine.mode.getSynchronyRatio() : 1.0;
     qa.logEvent('stage_complete', {
@@ -1060,27 +1129,40 @@ if (btnQaSuppress) {
 // superior, así que simplemente se retiene la navegación.
 // Mecanismo: una entrada de historial centinela que se repone en cada
 // popstate, de modo que toda pulsación de "atrás" queda interceptada.
+let lastBackPressTime = 0;
+
 function navigateBack() {
   if (!screenSettings.classList.contains('hidden')) {
     saveSettings();
     screenSettings.classList.add('hidden');
-    return;
+    return true;
   }
   if (!screenOverworld.classList.contains('hidden')) {
     closeOverworld();
-    return;
+    return true;
   }
   if (!screenPause.classList.contains('hidden')) {
     resumeGame();
-    return;
+    return true;
   }
   if (!screenGameover.classList.contains('hidden')) {
     btnMenu.click();
-    return;
+    return true;
   }
   if (engine.isRunning) {
     openPauseMenu();
+    return true;
   }
+  if (!screenMenu.classList.contains('hidden')) {
+    const now = Date.now();
+    if (now - lastBackPressTime < 2000) {
+      exitApp();
+    } else {
+      lastBackPressTime = now;
+    }
+    return false;
+  }
+  return false;
 }
 
 function armBackGuard() {
@@ -1093,10 +1175,31 @@ window.addEventListener('popstate', () => {
   armBackGuard();
 });
 
+// Inicialización del puente nativo de Android (Capacitor)
+initNative({
+  onAppStateChange: (isActive) => {
+    if (!isActive) {
+      if (engine.isRunning) {
+        openPauseMenu();
+      }
+      if (audio.ctx && audio.ctx.state === 'running') {
+        audio.ctx.suspend();
+      }
+    } else {
+      if (audio.ctx && audio.ctx.state === 'suspended') {
+        audio.ctx.resume();
+      }
+    }
+  },
+  onBackButton: () => {
+    navigateBack();
+  }
+});
+
 // ---------------------------------------------------------
 // Navegación Universal por Teclado (Cyber-Zen Octogonal)
 // ---------------------------------------------------------
-const menuButtons = [btnArcade, btnStage, btnTutorial].filter(Boolean);
+const menuButtons = [btnArcade, btnStage, btnTutorial, btnDownloadApk].filter(el => el && el.isConnected);
 const pauseButtons = [btnPauseResume, btnPauseRestart, btnPauseSettings, btnPauseMenu].filter(Boolean);
 const gameoverButtons = [btnRestart, btnMenu].filter(Boolean);
 
