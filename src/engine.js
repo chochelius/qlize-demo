@@ -26,6 +26,16 @@ export class Engine {
     // Partículas de Impacto
     this.impactParticles = [];
 
+    // Transición Cinemática entre Fases (Estructura ➔ Entropía)
+    this.phaseTransition = {
+      active: false,
+      time: 0,
+      duration: 1.5,
+      originX: 225,
+      originY: 400,
+      phase: 'entropy'
+    };
+
     // Caché de gradients de plataforma: los colores son fijos, así que se crean
     // una sola vez por (tipo, altura) en vez de en cada frame (evita presión al GC)
     this.platformGradientCache = new Map();
@@ -38,6 +48,7 @@ export class Engine {
     this.onSyncUpdate = () => {};
     this.onJumpEffect = () => {};
     this.onLifeLost = () => {};
+    this.onShieldBreak = () => {};
     this.onStageComplete = () => {}; // Nuevo: callback cuando se completa una etapa
     this.onPhaseChange = () => {}; // Callback para cambios de fase (ArcadeMode)
   }
@@ -46,7 +57,8 @@ export class Engine {
   setMode(mode) {
     this.mode = mode;
     if (this.mode) {
-      this.mode.onPhaseChange = (phase) => {
+      this.mode.onPhaseChange = (phase, originX, originY) => {
+        this.triggerPhaseTransition(phase, originX, originY);
         this.onPhaseChange(phase);
         if (this.audio) this.audio.setPhase(phase);
       };
@@ -64,6 +76,7 @@ export class Engine {
     this.screenShakeTime = 0;
     this.staticFlashTime = 0;
     this.impactParticles = [];
+    this.phaseTransition.active = false;
     this.stageCompleteTriggered = false;
     if (this.player) {
       this.player.jumpMultiplier = 1.0;
@@ -92,6 +105,33 @@ export class Engine {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
+    }
+  }
+
+  triggerPhaseTransition(phase = 'entropy', originX = this.width / 2, originY = this.height / 2) {
+    this.phaseTransition = {
+      active: true,
+      time: 0,
+      duration: 1.5,
+      originX: originX || this.width / 2,
+      originY: originY || this.height / 2,
+      phase
+    };
+    this.screenShakeTime = 0.45;
+    
+    // Ráfaga masiva de partículas de ruptura cósmica
+    for (let i = 0; i < 40; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 70 + Math.random() * 220;
+      this.impactParticles.push({
+        x: this.phaseTransition.originX,
+        y: this.phaseTransition.originY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: 3 + Math.random() * 5,
+        alpha: 1.0,
+        color: Math.random() < 0.5 ? '#fbbf24' : '#e11d48'
+      });
     }
   }
 
@@ -236,7 +276,15 @@ export class Engine {
       this.onRealmUpdate(this.mode.getCurrentRealm());
     }
 
-    // 4. Actualizar Partículas
+    // 4. Actualizar Transición de Fase
+    if (this.phaseTransition.active) {
+      this.phaseTransition.time += dt;
+      if (this.phaseTransition.time >= this.phaseTransition.duration) {
+        this.phaseTransition.active = false;
+      }
+    }
+
+    // 5. Actualizar Partículas
     for (let i = this.impactParticles.length - 1; i >= 0; i--) {
       const p = this.impactParticles[i];
       p.x += p.vx * dt;
@@ -321,6 +369,7 @@ export class Engine {
       if (this.player.hasVoidShield) {
         this.player.hasVoidShield = false;
         this.player.synchrony = 70;
+        this.onShieldBreak();
         this.respawnAtSafePlatform();
         return;
       }
@@ -491,6 +540,93 @@ export class Engine {
     this.player.draw(this.ctx, realmColor);
 
     this.ctx.restore();
+
+    // Renderizar Efectos Cinemáticos de Transición de Fase (Onda de Choque, Destello y Glitch)
+    if (this.phaseTransition.active) {
+      const t = this.phaseTransition.time;
+      const dur = this.phaseTransition.duration;
+      const progress = Math.min(1, t / dur);
+      const isEntropy = this.phaseTransition.phase === 'entropy';
+
+      this.ctx.save();
+
+      // 1. Destello Cromático Inicial
+      if (t < 0.45) {
+        const flashAlpha = (1 - t / 0.45) * 0.55;
+        this.ctx.fillStyle = isEntropy ? `rgba(225, 29, 72, ${flashAlpha})` : `rgba(255, 255, 255, ${flashAlpha})`;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+      }
+
+      // 2. Anillos Concéntricos de Onda de Choque Poligonal (Octógonos Vectoriales)
+      const ringRadius = progress * (this.width * 1.35);
+      const ringAlpha = Math.max(0, 1 - progress);
+      const cx = this.phaseTransition.originX;
+      const cy = this.phaseTransition.originY + this.cameraY;
+
+      this.ctx.save();
+      this.ctx.translate(cx, cy);
+      this.ctx.rotate(progress * Math.PI * 0.75);
+
+      for (let r = 0; r < 3; r++) {
+        const currentR = ringRadius * (1 - r * 0.22);
+        if (currentR <= 0) continue;
+        this.ctx.strokeStyle = isEntropy ? `rgba(225, 29, 72, ${ringAlpha * (0.85 - r * 0.2)})` : `rgba(226, 177, 60, ${ringAlpha * 0.85})`;
+        this.ctx.lineWidth = 3.5 - r * 0.8;
+        this.ctx.beginPath();
+        for (let s = 0; s < 8; s++) {
+          const a = (s * Math.PI * 2) / 8;
+          const px = Math.cos(a) * currentR;
+          const py = Math.sin(a) * currentR;
+          if (s === 0) this.ctx.moveTo(px, py);
+          else this.ctx.lineTo(px, py);
+        }
+        this.ctx.closePath();
+        this.ctx.stroke();
+      }
+      this.ctx.restore();
+
+      // 3. Scanlines e Interferencia de Realidad Invertida
+      const scanlineCount = 8;
+      for (let i = 0; i < scanlineCount; i++) {
+        if (Math.random() < 0.45) {
+          const ly = Math.random() * this.height;
+          const lh = 1.5 + Math.random() * 3;
+          this.ctx.fillStyle = isEntropy ? `rgba(225, 29, 72, ${ringAlpha * 0.35})` : `rgba(226, 177, 60, ${ringAlpha * 0.25})`;
+          this.ctx.fillRect(0, ly, this.width, lh);
+        }
+      }
+
+      // 4. Rótulo Cinemático Cyber-Zen Central
+      if (t > 0.1 && t < 1.35) {
+        const bannerAlpha = t < 0.3 ? (t - 0.1) / 0.2 : (t > 1.05 ? (1.35 - t) / 0.3 : 1.0);
+        this.ctx.save();
+        this.ctx.globalAlpha = Math.max(0, Math.min(1, bannerAlpha));
+
+        const bannerY = this.height * 0.42;
+        const bannerW = Math.min(this.width * 0.88, 380);
+        const bannerH = 46;
+        const bx = (this.width - bannerW) / 2;
+
+        this.ctx.fillStyle = 'rgba(5, 8, 20, 0.88)';
+        this.ctx.strokeStyle = isEntropy ? '#e11d48' : '#e2b13c';
+        this.ctx.lineWidth = 1.8;
+        this.ctx.fillRect(bx, bannerY, bannerW, bannerH);
+        this.ctx.strokeRect(bx, bannerY, bannerW, bannerH);
+
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.font = 'bold 11.5px "Cinzel", "Noto Serif SC", serif';
+        this.ctx.fillStyle = isEntropy ? '#fb7185' : '#fbbf24';
+        this.ctx.fillText(
+          isEntropy ? '⚡ RUPTURA DE LA ESTRUCTURA • POLARIDAD INVERTIDA ⚡' : '✨ RETORNO A LA ESTRUCTURA ✨',
+          this.width / 2,
+          bannerY + bannerH / 2
+        );
+        this.ctx.restore();
+      }
+
+      this.ctx.restore();
+    }
 
     if (this.degradationLevel > 0) {
       this.ctx.save();

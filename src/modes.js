@@ -377,7 +377,7 @@ export class ArcadeMode extends BaseMode {
     this.generatePlatforms(this.entropyStartY);
 
     if (this.onPhaseChange) {
-      this.onPhaseChange('entropy');
+      this.onPhaseChange('entropy', player.x + player.width / 2, player.y + player.height / 2);
     }
   }
 
@@ -394,7 +394,7 @@ export class ArcadeMode extends BaseMode {
     player.noclip = false;
     this.needsResetToStructure = true;
     if (this.onPhaseChange) {
-      this.onPhaseChange('structure');
+      this.onPhaseChange('structure', player.x + player.width / 2, player.y + player.height / 2);
     }
   }
 
@@ -962,7 +962,7 @@ export class StageMode extends BaseMode {
 // ⛩️ Modo Tutorial ("Iniciación Vectorial")
 // ---------------------------------------------------------
 export function getTutorialStepData(stepNumber, isDesktop = true, controlMode = 'keyboard') {
-  let moveText = 'Usa A / D o Flechas para moverte horizontalmente.';
+  let moveText = 'Usa A / D o Flechas para moverte.';
   if (!isDesktop) {
     if (controlMode === 'gyro') {
       moveText = 'Inclina suavemente tu dispositivo a los lados para moverte.';
@@ -976,45 +976,59 @@ export function getTutorialStepData(stepNumber, isDesktop = true, controlMode = 
   const steps = {
     1: {
       step: 1,
-      totalSteps: 6,
+      totalSteps: 8,
       badge: 'ZONA 1 • FUNDAMENTOS',
       title: 'SALTO AUTOMÁTICO Y MOVIMIENTO',
-      text: `${moveText} Practica el balance y siente la inercia en los primeros saltos.`
+      text: `${moveText} Siente el impulso y la inercia vectorial en cada salto.`
     },
     2: {
       step: 2,
-      totalSteps: 6,
+      totalSteps: 8,
       badge: 'ZONA 2 • RUTA SAGRADA',
       title: 'SINCRONÍA Y MULTIPLICADORES',
-      text: 'Aterrizar en plataformas doradas con nodos mantiene tu Sincronía al 100% y eleva los multiplicadores (x1.5, x2.0, x3.0).'
+      text: 'Sigue la línea punteada: aterrizar en nodos dorados mantiene tu Sincronía al 100% y multiplica tus puntos (x1.5, x2.0, x3.0).'
     },
     3: {
       step: 3,
-      totalSteps: 6,
-      badge: 'ZONA 3 • RED DE SALVAMENTO',
-      title: 'PLATAFORMAS DE CENIZA',
-      text: 'Las plataformas grises son de apoyo: no aumentan la sincronía, pero evitan que caigas al vacío y pierdas vidas.'
+      totalSteps: 8,
+      badge: 'ZONA 3 • TIPOS DE PLATAFORMAS',
+      title: 'APOYO, MÓVILES Y QUEBRADIZAS',
+      text: 'Las grises salvan caídas sin sincronía. Prueba la plataforma en movimiento lateral y la quebradiza que se desmorona al pisarla.'
     },
     4: {
       step: 4,
-      totalSteps: 6,
+      totalSteps: 8,
       badge: 'ZONA 4 • TÚNEL ESPACIAL',
-      title: 'SCREEN-WRAP LATERAL',
-      text: 'Cruza el borde derecho de la pantalla para reaparecer de inmediato por la izquierda. ¡Pruébalo en los siguientes saltos!'
+      title: 'SCREEN-WRAP TOPOLÓGICO',
+      text: 'El espacio es toroidal: cruza el borde derecho de la pantalla para reaparecer de inmediato por la izquierda y viceversa.'
     },
     5: {
       step: 5,
-      totalSteps: 6,
-      badge: 'ZONA 5 • LA DUALIDAD',
-      title: 'POLARIDAD Y ENTROPÍA',
-      text: 'Al perder vidas en Arcade, la gravedad se invierte, la música suena al reverso y el objetivo es descender esquivando el vacío.'
+      totalSteps: 8,
+      badge: 'ZONA 5 • DOS CAMINOS',
+      title: 'MODO HISTORIA VS. MODO ARCADE',
+      text: 'Historia: 10 etapas independientes (6,000m) en el Overworld con medallas. Arcade: 18,000m ininterrumpidos con ascensos y descensos infinitos.'
     },
     6: {
       step: 6,
-      totalSteps: 6,
-      badge: 'ZONA 6 • CULMINACIÓN',
+      totalSteps: 8,
+      badge: 'ZONA 6 • EL UMBRAL',
+      title: 'LA CUMBRE Y EL VACÍO',
+      text: '¡Has alcanzado la cima de la Estructura! Aterriza en el umbral para romper el velo cósmico...'
+    },
+    7: {
+      step: 7,
+      totalSteps: 8,
+      badge: 'ZONA 7 • MODO ENTROPÍA',
+      title: 'EL ABISMO Y GRAVEDAD INVERTIDA',
+      text: '¿Qué es la Entropía? La polaridad del vacío. En Arcade, al perder vidas o llegar a 18,000m, la gravedad se invierte: desciendes esquivando la caída hacia arriba sobre cáscaras inestables mientras sigues sumando puntos.'
+    },
+    8: {
+      step: 8,
+      totalSteps: 8,
+      badge: 'ZONA 8 • CULMINACIÓN',
       title: '¡INICIACIÓN COMPLETADA!',
-      text: '¡Has dominado los vectores de Qlize! Aterriza en la plataforma sagrada de la cima para reclamar tu medalla.'
+      text: '¡Has dominado ambos polos del cosmos (Estructura y Entropía)! Aterriza en el altar sagrado para sellar tu iniciación y reclamar tu medalla.'
     }
   };
 
@@ -1027,116 +1041,235 @@ export class TutorialMode extends BaseMode {
     this.isTutorial = true;
     this.isDesktop = isDesktop;
     this.controlMode = controlMode;
-    this.stageLength = 3200; // Mapa amplio para leer y practicar con calma
-    this.pruneHeightAbove = 4500;
+    this.phase = 'structure'; // 'structure' -> 'entropy'
+    this.stageLength = 3000;
+    this.pruneHeightAbove = 6000;
     this.currentStep = 1;
     this.stageComplete = false;
     this.onTutorialStepChange = null;
+    this.isCollapsing = false;
+    this.entropyStartY = 0;
+    this.entropyTopPlatform = null;
 
-    this.buildTutorialMap();
+    this.buildStructureMap();
   }
 
   generatePlatforms() {}
 
-  buildTutorialMap() {
+  buildStructureMap() {
     this.platforms = [];
-    // La plataforma inicial del BaseMode ya no existe: limpiar también la ruta
-    // óptima para no conservar una referencia huérfana a su ID
     this.optimalRoute = [];
     this.currentRouteIndex = 0;
     this.adherenceHits = 0;
     this.totalJumps = 0;
     this._optimalDirty = true;
+    this.phase = 'structure';
     
     // Base de partida
     this.addPlatform(this.width / 2 - 60, this.height - 50, 120, 16, { isStartingPlatform: true, isOptimal: true });
     this.lastSafePlatform = this.platforms[0];
 
-    // ---------------------------------------------------------
-    // ZONA 1 (0m - 500m): Fundamentos de Movimiento y Salto (5 saltos)
-    // ---------------------------------------------------------
+    // ZONA 1 (0m - 500m): Fundamentos (4 saltos)
     this.addPlatform(this.width / 2 - 45, this.height - 150, 90, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 + 30, this.height - 250, 85, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 - 40, this.height - 350, 85, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 + 20, this.height - 450, 85, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 - 30, this.height - 550, 90, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 35, this.height - 260, 85, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 40, this.height - 370, 85, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 20, this.height - 480, 90, 16, { isOptimal: true });
 
-    // ---------------------------------------------------------
-    // ZONA 2 (550m - 1100m): Ruta Sagrada y Sincronía (5 saltos continuos)
-    // ---------------------------------------------------------
-    this.addPlatform(this.width / 2 + 50, this.height - 670, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 - 60, this.height - 785, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 + 40, this.height - 900, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 - 50, this.height - 1015, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 + 10, this.height - 1130, 80, 16, { isOptimal: true });
+    // ZONA 2 (550m - 1050m): Ruta Sagrada y Sincronía (4 saltos)
+    this.addPlatform(this.width / 2 + 50, this.height - 610, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 60, this.height - 730, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 40, this.height - 850, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 50, this.height - 970, 80, 16, { isOptimal: true });
 
-    // ---------------------------------------------------------
-    // ZONA 3 (1150m - 1650m): Plataformas de Apoyo (Ceniza) y Recuperación (4 saltos)
-    // ---------------------------------------------------------
-    this.addPlatform(this.width / 2 - 120, this.height - 1250, 80, 16, { isSecondary: true });
-    this.addPlatform(this.width / 2 + 80, this.height - 1365, 80, 16, { isSecondary: true });
-    this.addPlatform(this.width / 2 - 50, this.height - 1480, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 + 30, this.height - 1595, 80, 16, { isOptimal: true });
+    // ZONA 3 (1100m - 1650m): Tipos de Plataformas (4 saltos)
+    this.addPlatform(this.width / 2 - 120, this.height - 1100, 80, 16, { isSecondary: true });
+    this.addPlatform(this.width / 2 - 20, this.height - 1220, 75, 16, { isOptimal: true, isMoving: true, moveSpeed: 70, moveAmplitude: 55 });
+    this.addPlatform(this.width / 2 + 40, this.height - 1340, 80, 16, { isOptimal: true, isDecaying: true, decayTime: 0.9 });
+    this.addPlatform(this.width / 2 - 30, this.height - 1460, 80, 16, { isOptimal: true });
 
-    // ---------------------------------------------------------
-    // ZONA 4 (1650m - 2300m): Screen-Wrap Lateral Obligatorio (5 saltos)
-    // ---------------------------------------------------------
-    this.addPlatform(this.width - 65, this.height - 1720, 65, 16, { isOptimal: true });
-    this.addPlatform(10, this.height - 1840, 65, 16, { isOptimal: true });
-    this.addPlatform(this.width - 65, this.height - 1960, 65, 16, { isOptimal: true });
-    this.addPlatform(10, this.height - 2080, 65, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 - 40, this.height - 2200, 85, 16, { isOptimal: true });
+    // ZONA 4 (1700m - 2200m): Screen-Wrap Lateral Topológico (3 saltos)
+    this.addPlatform(this.width - 65, this.height - 1590, 65, 16, { isOptimal: true });
+    this.addPlatform(10, this.height - 1720, 65, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 40, this.height - 1850, 80, 16, { isOptimal: true });
 
-    // ---------------------------------------------------------
-    // ZONA 5 (2300m - 2850m): Polaridad y Dualidad (4 saltos)
-    // ---------------------------------------------------------
-    this.addPlatform(this.width / 2 + 40, this.height - 2330, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 - 50, this.height - 2460, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 + 30, this.height - 2590, 75, 16, { isOptimal: true });
-    this.addPlatform(this.width / 2 - 40, this.height - 2720, 80, 16, { isOptimal: true });
+    // ZONA 5 (2250m - 2750m): Los Dos Caminos (3 saltos)
+    this.addPlatform(this.width / 2 + 45, this.height - 1990, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 50, this.height - 2130, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 + 30, this.height - 2270, 80, 16, { isOptimal: true });
 
-    // ---------------------------------------------------------
-    // ZONA 6 (2850m - CIMA): Kether de la Iniciación (Culminación)
-    // ---------------------------------------------------------
-    this.addPlatform(this.width / 2 - 60, this.height - 2870, 120, 18, { isOptimal: true, isSummit: true });
+    // ZONA 6 (2800m - 3000m): Umbral de la Cumbre
+    this.addPlatform(this.width / 2 - 50, this.height - 2420, 75, 16, { isOptimal: true });
+    this.addPlatform(this.width / 2 - 60, this.height - 2570, 120, 20, { isOptimal: true, isThreshold: true });
   }
 
-  update(dt, cameraY, player) {
-    super.update(dt, cameraY, player);
+  buildEntropyMap(startCameraY) {
+    this.platforms = [];
+    this.optimalRoute = [];
+    this.currentRouteIndex = 0;
+    this.adherenceHits = 0;
+    this.totalJumps = 0;
+    this._optimalDirty = true;
+    this.phase = 'entropy';
 
-    // Detección de paso tutorial según altura del jugador (en píxeles recorridos)
-    let step = 1;
-    const progressY = (this.height - 50) - player.y;
+    // Raíz superior de Entropía
+    const topBaseY = -startCameraY + 60;
+    const topBaseWidth = 140;
+    const topBaseX = this.width / 2 - topBaseWidth / 2;
 
-    if (progressY > 2750) {
-      step = 6;
-    } else if (progressY > 2220) {
-      step = 5;
-    } else if (progressY > 1620) {
-      step = 4;
-    } else if (progressY > 1150) {
-      step = 3;
-    } else if (progressY > 580) {
-      step = 2;
-    } else {
-      step = 1;
+    this.entropyTopPlatform = this.addPlatform(topBaseX, topBaseY, topBaseWidth, 20, {
+      isStartingPlatform: true,
+      isOptimal: true,
+      isHusk: true
+    });
+    this.lastSafePlatform = this.entropyTopPlatform;
+
+    // Ruta de descenso en Entropía extendida (22 plataformas = ~90-110s de descenso)
+    let currentY = topBaseY + 80;
+    
+    const entropyPath = [
+      // Tramo 1: Adaptación a la Gravedad Invertida (6 plataformas anchas)
+      { x: this.width / 2 - 40, w: 80 },
+      { x: this.width / 2 + 35, w: 78, isMoving: true, speed: 65, amp: 40 },
+      { x: this.width / 2 - 50, w: 76 },
+      { x: this.width / 2 + 40, w: 75, isDecaying: true, decay: 0.95 },
+      { x: this.width / 2 - 35, w: 75 },
+      { x: this.width / 2 + 30, w: 72, isMoving: true, speed: 75, amp: 45 },
+
+      // Tramo 2: Dinámicas de Cáscaras Inestables y Peligros (8 plataformas)
+      { x: this.width / 2 - 60, w: 72, isDecaying: true, decay: 0.85 },
+      { x: this.width / 2 + 45, w: 70 },
+      { x: this.width / 2 - 30, w: 72, isMoving: true, speed: 85, amp: 50 },
+      { x: this.width / 2 + 50, w: 68, isDecaying: true, decay: 0.8 },
+      { x: this.width / 2 - 45, w: 70 },
+      { x: this.width / 2 + 35, w: 70, isMoving: true, speed: 90, amp: 55 },
+      { x: this.width / 2 - 55, w: 68, isDecaying: true, decay: 0.85 },
+      { x: this.width / 2 + 25, w: 72 },
+
+      // Tramo 3: Screen-Wrap y Trascendencia en el Abismo (4 plataformas)
+      { x: this.width - 70, w: 65 }, // Screen wrap derecho
+      { x: 15, w: 65 },               // Screen wrap izquierdo
+      { x: this.width / 2 - 40, w: 72, isMoving: true, speed: 80, amp: 45 },
+      { x: this.width / 2 + 30, w: 72, isDecaying: true, decay: 0.9 },
+
+      // Tramo 4: Aproximación al Altar Sagrado (3 plataformas intermedias)
+      { x: this.width / 2 - 45, w: 75 },
+      { x: this.width / 2 + 35, w: 78, isMoving: true, speed: 70, amp: 35 },
+      { x: this.width / 2 - 30, w: 80 }
+    ];
+
+    for (const p of entropyPath) {
+      this.addPlatform(p.x, currentY, p.w, 16, {
+        isOptimal: true,
+        isHusk: true,
+        isMoving: !!p.isMoving,
+        moveSpeed: p.speed || 60,
+        moveAmplitude: p.amp || 30,
+        originX: p.x,
+        movePhase: Math.random() * Math.PI * 2,
+        isDecaying: !!p.isDecaying,
+        decayTime: p.decay || 0.85,
+        decayRemaining: p.decay || 0.85,
+        decaying: false
+      });
+
+      // Añadir plataformas secundarias de salvamento en zonas técnicas
+      if (p.isDecaying && Math.random() < 0.6) {
+        const secX = p.x > this.width / 2 ? p.x - 110 : p.x + 90;
+        this.addPlatform(secX, currentY + 10, 60, 16, {
+          isSecondary: true,
+          isHusk: true
+        });
+      }
+
+      currentY += 92;
     }
 
-    if (step !== this.currentStep) {
-      this.currentStep = step;
+    // ZONA 8: Altar de Culminación en la base del abismo
+    currentY += 45;
+    this.addPlatform(this.width / 2 - 70, currentY, 140, 24, {
+      isOptimal: true,
+      isHusk: true,
+      isSummit: true
+    });
+  }
+
+  triggerEntropyCollapse(player, cameraY) {
+    this.isCollapsing = true;
+    this.phase = 'entropy';
+    this.entropyStartY = cameraY || 2600;
+    player.gravityDirection = -1; // Inversión de gravedad
+
+    // Construir mapa de descenso en Entropía extendido
+    this.buildEntropyMap(this.entropyStartY);
+
+    // Reubicar jugador en la base superior invertida y aplicar salto hacia abajo
+    const topBaseY = -this.entropyStartY + 60;
+    player.x = this.width / 2 - player.width / 2;
+    player.y = topBaseY + 22;
+    player.vx = 0;
+    player.vy = 0;
+    player.jump(this.getJumpForce());
+
+    if (this.onPhaseChange) {
+      this.onPhaseChange('entropy', player.x + player.width / 2, player.y + player.height / 2);
+    }
+
+    this.advanceStep(7);
+  }
+
+  advanceStep(newStep) {
+    if (newStep > this.currentStep) {
+      this.currentStep = newStep;
       if (this.onTutorialStepChange) {
-        const stepData = getTutorialStepData(step, this.isDesktop, this.controlMode);
+        const stepData = getTutorialStepData(this.currentStep, this.isDesktop, this.controlMode);
         this.onTutorialStepChange(stepData);
       }
     }
   }
 
-  // La Iniciación se completa al ATERRIZAR en la plataforma sagrada de la cima.
-  // (Antes se chequeaba player.vy === 0 en update, pero el salto automático del
-  // motor hace que vy nunca sea exactamente 0 al posarse, bloqueando el final.)
+  update(dt, cameraY, player) {
+    super.update(dt, cameraY, player);
+
+    if (this.phase === 'structure') {
+      const progressY = (this.height - 50) - player.y;
+
+      if (progressY > 2350) {
+        this.advanceStep(6);
+      } else if (progressY > 1850) {
+        this.advanceStep(5);
+      } else if (progressY > 1450) {
+        this.advanceStep(4);
+      } else if (progressY > 980) {
+        this.advanceStep(3);
+      } else if (progressY > 500) {
+        this.advanceStep(2);
+      }
+    } else if (this.phase === 'entropy') {
+      const startY = -this.entropyStartY + 60;
+      const descended = player.y - startY;
+
+      if (descended > 1650) {
+        this.advanceStep(8);
+      } else {
+        this.advanceStep(7);
+      }
+    }
+  }
+
+  updateCamera(cameraY, player, dt) {
+    if (this.phase === 'entropy') {
+      const targetY = -player.y + this.height * 0.55;
+      return targetY < cameraY ? targetY : cameraY;
+    }
+    return super.updateCamera(cameraY, player, dt);
+  }
+
   onPlatformStepped(platform, player) {
     super.onPlatformStepped(platform, player);
-    if (platform.isSummit) {
+
+    if (platform.isThreshold && this.phase === 'structure') {
+      this.triggerEntropyCollapse(player, this.height - 50 - platform.y);
+    } else if (platform.isSummit && this.phase === 'entropy') {
       this.stageComplete = true;
     }
   }
@@ -1149,23 +1282,31 @@ export class TutorialMode extends BaseMode {
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    // Fondo Cyber-Zen Especial Iniciación (Jade y Espacio Profundo)
+    const isEntropy = this.phase === 'entropy';
+
     const grad = ctx.createRadialGradient(
       this.width * 0.5, this.height * 0.4, 20,
       this.width * 0.5, this.height * 0.5, this.height * 0.85
     );
-    grad.addColorStop(0, 'rgba(43, 179, 130, 0.22)');
-    grad.addColorStop(0.6, 'rgba(5, 8, 20, 0.88)');
-    grad.addColorStop(1, '#02040a');
+
+    if (isEntropy) {
+      grad.addColorStop(0, 'rgba(211, 47, 47, 0.28)');
+      grad.addColorStop(0.5, 'rgba(74, 20, 140, 0.35)');
+      grad.addColorStop(1, '#02040a');
+    } else {
+      grad.addColorStop(0, 'rgba(43, 179, 130, 0.22)');
+      grad.addColorStop(0.6, 'rgba(5, 8, 20, 0.88)');
+      grad.addColorStop(1, '#02040a');
+    }
 
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, this.width, this.height);
     ctx.restore();
 
-    // Hilo Dorado de Luz Punteada (recortado a la ventana visible)
+    // Hilo de Luz Punteada (carmesí en Entropía y dorado en Estructura)
     const hiloTop = -cameraY - 300;
     const hiloBottom = -cameraY + this.height + 300;
-    ctx.strokeStyle = 'rgba(226, 177, 60, 0.85)';
+    ctx.strokeStyle = isEntropy ? 'rgba(225, 29, 72, 0.9)' : 'rgba(226, 177, 60, 0.85)';
     ctx.lineWidth = 2.5;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();

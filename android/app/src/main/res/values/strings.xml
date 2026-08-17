@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">QLIZE</string>
+    <string name="title_activity_main">QLIZE</string>
+    <string name="package_name">com.qlize.jump</string>
+    <string name="custom_url_scheme">com.qlize.jump</string>
+</resources>
