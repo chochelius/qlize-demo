@@ -306,3 +306,8 @@ android/capacitor-cordova-android-plugins/
 *.class
 *.idsig
 local.properties
+
+# Android signing keys (sensitive)
+*.keystore
+*.jks
+android/keystore.properties

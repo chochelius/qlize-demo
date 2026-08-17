@@ -179,9 +179,9 @@ case "$BUILD_TYPE" in
         OUTPUT_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
         ;;
     release)
-        echo "  Compilando APK de producción (Release APK)..."
+        echo "  Compilando APK de producción (Release APK firmado)..."
         ./gradlew assembleRelease
-        OUTPUT_PATH="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+        OUTPUT_PATH="android/app/build/outputs/apk/release/app-release.apk"
         ;;
     bundle)
         echo "  Generando Android App Bundle (.aab) para Google Play..."
