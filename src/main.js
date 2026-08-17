@@ -1354,3 +1354,20 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// ---------------------------------------------------------
+// Desvanecimiento de la Pantalla de Carga (Cyber-Zen Boot)
+// ---------------------------------------------------------
+const screenLoading = document.getElementById('screen-loading');
+if (screenLoading) {
+  // Pequeño retardo para asegurar que el DOM, fuentes y estilos estén completamente estables
+  setTimeout(() => {
+    screenLoading.classList.add('fade-out');
+    setTimeout(() => {
+      if (screenLoading.parentNode) {
+        screenLoading.parentNode.removeChild(screenLoading);
+      }
+    }, 600);
+  }, 400);
+}
+
