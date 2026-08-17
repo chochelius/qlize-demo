@@ -489,6 +489,35 @@
       text-shadow: 0 0 10px rgba(43, 179, 130, 0.6);
     }
 
+    /* Footer de Licencia Creative Commons */
+    .app-license-footer {
+      margin-top: 14px;
+      font-size: 0.60rem;
+      font-family: var(--font-sans);
+      color: #64748b;
+      text-align: center;
+      line-height: 1.45;
+      max-width: 320px;
+      padding: 0 6px;
+      opacity: 0.85;
+      display: inline-block;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .app-license-footer a {
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .app-license-footer a:hover {
+      color: var(--color-gold);
+      text-decoration: underline;
+    }
+    .app-license-footer img {
+      vertical-align: -0.15em;
+      filter: invert(0.8) opacity(0.85);
+    }
+
     /* Banner Tutorial In-Game */
     .hud-tutorial-banner {
       position: absolute;
@@ -1553,6 +1582,10 @@
               <p>Tutorial Guiado • Domina las Físicas</p>
             </div>
           </button>
+
+          <footer class="app-license-footer">
+            <a href="http://demo.qlize.site" target="_blank" rel="noopener noreferrer">Qlize</a> © 2026 by <a href="https://github.com/chochelius" target="_blank" rel="noopener noreferrer">Jorge Cortés</a> <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-ND 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+          </footer>
         </div>
       </div>
 
@@ -1710,6 +1743,10 @@
           <button id="btn-settings-reset" class="btn-action-oct btn-action-sec">RESTABLECER</button>
           <button id="btn-settings-close" class="btn-action-oct btn-action-pri">VOLVER</button>
         </div>
+
+        <footer class="app-license-footer" style="margin-top: 18px;">
+          <a href="http://demo.qlize.site" target="_blank" rel="noopener noreferrer">Qlize</a> © 2026 by <a href="https://github.com/chochelius" target="_blank" rel="noopener noreferrer">Jorge Cortés</a> is licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-ND 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+        </footer>
       </div>
 
       <!-- Pantalla Game Over / Fin de Etapa -->
