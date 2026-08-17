@@ -1,0 +1,22 @@
+=== QA DATABASE STATUS ===
+Sesiones: 4
+Eventos: 23
+Feedback: 0
+
+ÚLTIMAS SESIONES:
+  2026-08-17 14:16:50 | Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537...
+  2026-08-17 13:50:30 | Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537...
+  2026-08-17 13:06:19 | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb...
+  2026-08-17 13:02:57 | Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537...
+
+ÚLTIMOS EVENTOS:
+  2026-08-17 14:39:33 | feedback_omitted | Modo Arcade | Infinito | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:38:00 | game_start | Iniciación | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:36:47 | feedback_omitted | Modo Arcade | Infinito | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:36:29 | feedback_prompt_shown | Modo Arcade | Infinito | score:5001 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:35:42 | game_start | Modo Arcade | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:18:44 | stage_complete | Modo Historia | Měilì | score:2602 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:18:12 | game_start | Iniciación | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:17:41 | feedback_omitted | Modo Historia | Wángguó | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:17:38 | feedback_prompt_shown | Modo Historia | Wángguó | score:6005 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:17:36 | stage_complete | Modo Historia | Wángguó | score:6005 sync:100.00 lives:3 dur:0.0s

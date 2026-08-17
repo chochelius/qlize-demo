@@ -1,0 +1,23 @@
+=== QA DATABASE STATUS ===
+Sesiones: 8
+Eventos: 28
+Feedback: 0
+
+ÚLTIMAS SESIONES:
+  2026-08-17 15:06:07 | Mozilla/5.0 (Linux; Android 14; moto g35 5G Build/...
+  2026-08-17 15:01:36 | Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537...
+  2026-08-17 14:58:55 | Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36...
+  2026-08-17 14:57:34 | Mozilla/5.0 (Linux; Android 16; 2312CRNCCL Build/B...
+  2026-08-17 14:16:50 | Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537...
+
+ÚLTIMOS EVENTOS:
+  2026-08-17 15:06:08 | game_start | Modo Arcade | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:58:40 | stage_complete | Modo Historia | Wángguó | score:2608 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:58:20 | game_start | Iniciación | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:58:06 | stage_complete | Modo Historia | Wángguó | score:2608 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:57:42 | game_start | Iniciación | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:39:33 | feedback_omitted | Modo Arcade | Infinito | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:38:00 | game_start | Iniciación | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:36:47 | feedback_omitted | Modo Arcade | Infinito | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:36:29 | feedback_prompt_shown | Modo Arcade | Infinito | score:5001 sync:100.00 lives:3 dur:0.0s
+  2026-08-17 14:35:42 | game_start | Modo Arcade | N/A | score:0 sync:100.00 lives:3 dur:0.0s
