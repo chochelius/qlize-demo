@@ -408,12 +408,16 @@ export class Engine {
         this.ctx.fillStyle = this.getPlatformGradient('husk', p.height);
         this.ctx.fillRect(0, 0, p.width, p.height);
 
+        if (p.isDecaying) {
+          this.ctx.setLineDash([3, 2]);
+        }
+
         if (p.isOptimal) {
           // Glow emulado con doble trazo (shadowBlur es muy caro en móvil)
-          this.ctx.strokeStyle = 'rgba(211, 47, 47, 0.28)';
+          this.ctx.strokeStyle = p.isDecaying ? 'rgba(251, 113, 133, 0.35)' : 'rgba(211, 47, 47, 0.28)';
           this.ctx.lineWidth = 5;
           this.ctx.strokeRect(0, 0, p.width, p.height);
-          this.ctx.strokeStyle = '#d32f2f';
+          this.ctx.strokeStyle = p.isDecaying ? '#fb7185' : '#d32f2f';
           this.ctx.lineWidth = 2;
           this.ctx.strokeRect(0, 0, p.width, p.height);
 
@@ -422,10 +426,11 @@ export class Engine {
           this.ctx.arc(p.width / 2, p.height / 2, 4, 0, Math.PI * 2);
           this.ctx.fill();
         } else {
-          this.ctx.strokeStyle = '#4a148c';
+          this.ctx.strokeStyle = p.isDecaying ? '#fb7185' : '#4a148c';
           this.ctx.lineWidth = 1;
           this.ctx.strokeRect(0, 0, p.width, p.height);
         }
+        this.ctx.setLineDash([]);
       } else if (p.isSecondary) {
         this.ctx.fillStyle = '#2d2d30';
         this.ctx.strokeStyle = p.isDecaying ? '#fb7185' : '#475569';
@@ -463,7 +468,7 @@ export class Engine {
 
       // Indicadores cinéticos para plataformas móviles
       if (p.isMoving) {
-        this.ctx.fillStyle = '#38bdf8';
+        this.ctx.fillStyle = p.isHusk ? '#f43f5e' : '#38bdf8';
         this.ctx.fillRect(2, p.height / 2 - 2, 4, 4);
         this.ctx.fillRect(p.width - 6, p.height / 2 - 2, 4, 4);
       }

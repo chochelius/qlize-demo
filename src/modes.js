@@ -13,8 +13,9 @@ export const REALM_NODES = [
 ];
 export const SEPHIROTH_NODES = REALM_NODES;
 
-// Longitud total (en metros/píxeles) de la fase Entropía del Modo Arcade
-export const ENTROPY_LENGTH = 5000;
+// Longitud total (en metros/píxeles) del recorrido de Modo Arcade y Entropía (cubre los 10 Reinos Celestiales)
+export const ENTROPY_LENGTH = 18000;
+export const ARCADE_SUMMIT_HEIGHT = 18000;
 
 export class BaseMode {
   constructor(width, height) {
@@ -102,6 +103,12 @@ export class BaseMode {
     this.totalJumps++;
     this.lastSafePlatform = platform;
 
+    // Colapso progresivo de plataformas efímeras/quebradizas
+    if (platform.isDecaying && !platform.decaying) {
+      platform.decaying = true;
+      platform.decayRemaining = platform.decayTime || 0.85;
+    }
+
     if (platform.isOptimal) {
       this.adherenceHits++;
       const indexInRoute = this.optimalRoute.indexOf(platform.id);
@@ -114,7 +121,37 @@ export class BaseMode {
     player.synchrony = Math.min(100, Math.max(0, currentSync));
   }
 
+  // Actualiza plataformas móviles y temporizadores de colapso efímero
+  updateDynamicPlatforms(dt) {
+    let dirty = false;
+    for (const p of this.platforms) {
+      if (!p.active) continue;
+
+      if (p.isMoving) {
+        const amp = p.moveAmplitude || 50;
+        const speed = p.moveSpeed || 80;
+        p.movePhase = (p.movePhase || 0) + (speed / Math.max(1, amp)) * dt;
+        const targetX = (p.originX !== undefined ? p.originX : p.x) + Math.sin(p.movePhase) * amp;
+        p.x = Math.max(10, Math.min(this.width - p.width - 10, targetX));
+      }
+
+      if (p.decaying) {
+        p.decayRemaining -= dt;
+        if (p.decayRemaining <= 0) {
+          p.active = false;
+          dirty = true;
+        }
+      }
+    }
+
+    if (dirty) {
+      this._optimalDirty = true;
+    }
+  }
+
   update(dt, cameraY, player) {
+    this.updateDynamicPlatforms(dt);
+
     let pruned;
     if (player.gravityDirection === 1) {
       // Normal: reciclar plataformas lejanas por debajo de la cámara
@@ -178,6 +215,11 @@ export class ArcadeMode extends BaseMode {
     this.currentNodeIndex = 0;
     this.platformGapY = 72;
     this.sacredTime = 0;
+    this.summitHeight = ARCADE_SUMMIT_HEIGHT; // 18000m (recorre los 10 Reinos)
+
+    // Puntuación bidireccional continua acumulativa
+    this.baseAccumulatedScore = 0;
+    this.currentPhaseMaxDistance = 0;
 
     this.generatePlatforms(0);
   }
@@ -216,20 +258,21 @@ export class ArcadeMode extends BaseMode {
         });
       }
     } else if (this.phase === 'entropy') {
-      // Generación continua y dinámica de plataformas carmesí hacia abajo durante todo el descenso (5000m)
+      // Generación continua y dinámica de plataformas carmesí hacia abajo durante todo el descenso (18000m)
       const targetY = -cameraY + this.height * 2.2;
       const startY = -this.entropyStartY + 60;
-      const maxDescentY = startY + 5200;
+      const maxDescentY = startY + this.entropyStartY + 500;
 
       while (this.lowestPlatformY < targetY && this.lowestPlatformY < maxDescentY) {
-        const isOptimal = Math.random() < 0.7;
-        const pWidth = isOptimal ? (80 + Math.random() * 20) : (65 + Math.random() * 20);
+        const isOptimal = Math.random() < 0.68;
+        // Dimensiones más ajustadas y técnicas
+        const pWidth = isOptimal ? (58 + Math.random() * 18) : (46 + Math.random() * 16);
 
         let pX;
         if (isOptimal) {
           const lastOptimal = this.platforms.filter(p => p.isOptimal && p.isHusk).pop();
           const lastCenterX = lastOptimal ? (lastOptimal.x + lastOptimal.width / 2) : (this.width / 2);
-          const maxHorizontalReach = 160;
+          const maxHorizontalReach = 175;
           const minCenterX = Math.max(pWidth / 2, lastCenterX - maxHorizontalReach);
           const maxCenterX = Math.min(this.width - pWidth / 2, lastCenterX + maxHorizontalReach);
           const newCenterX = minCenterX + Math.random() * (maxCenterX - minCenterX);
@@ -238,21 +281,49 @@ export class ArcadeMode extends BaseMode {
           pX = Math.random() * (this.width - pWidth);
         }
 
-        const pY = this.lowestPlatformY + 72 + (Math.random() * 16);
+        // Variabilidad de saltos verticales en el descenso
+        const pY = this.lowestPlatformY + 76 + (Math.random() * 26);
+
+        // Peligros dinámicos en Entropía: plataformas móviles y quebradizas
+        const isMoving = Math.random() < 0.22;
+        const moveAmp = 30 + Math.random() * 30;
+        const moveSpeed = 65 + Math.random() * 45;
+        const isDecaying = !isMoving && Math.random() < 0.25;
+
         this.addPlatform(pX, pY, pWidth, 16, {
           isOptimal,
           isSecondary: !isOptimal,
-          isHusk: true
+          isHusk: true,
+          isMoving,
+          originX: pX,
+          moveAmplitude: moveAmp,
+          moveSpeed: moveSpeed,
+          movePhase: Math.random() * Math.PI * 2,
+          isDecaying,
+          decayTime: 0.85,
+          decayRemaining: 0.85,
+          decaying: false
         });
 
         // Añadir ocasionalmente una plataforma de apoyo secundaria paralela
-        if (isOptimal && Math.random() < 0.45) {
-          const secWidth = 60 + Math.random() * 20;
+        if (isOptimal && Math.random() < 0.35) {
+          const secWidth = 46 + Math.random() * 14;
           const secX = (pX > this.width / 2) ? (Math.random() * (this.width / 2 - secWidth)) : (this.width / 2 + Math.random() * (this.width / 2 - secWidth));
-          this.addPlatform(secX, pY + (Math.random() - 0.5) * 20, secWidth, 16, {
+          const secMoving = Math.random() < 0.20;
+          const secDecaying = !secMoving && Math.random() < 0.30;
+          this.addPlatform(secX, pY + (Math.random() - 0.5) * 22, secWidth, 16, {
             isOptimal: false,
             isSecondary: true,
-            isHusk: true
+            isHusk: true,
+            isMoving: secMoving,
+            originX: secX,
+            moveAmplitude: 25 + Math.random() * 25,
+            moveSpeed: 60 + Math.random() * 40,
+            movePhase: Math.random() * Math.PI * 2,
+            isDecaying: secDecaying,
+            decayTime: 0.85,
+            decayRemaining: 0.85,
+            decaying: false
           });
         }
       }
@@ -260,9 +331,13 @@ export class ArcadeMode extends BaseMode {
   }
 
   initiateEntropyTransition(player, currentCameraY) {
+    // Consolidar distancia ganada durante ascenso en Estructura
+    this.baseAccumulatedScore += this.currentPhaseMaxDistance;
+    this.currentPhaseMaxDistance = 0;
+
     this.phase = 'entropy';
     this.entropySubPhase = 'transition';
-    this.entropyStartY = ENTROPY_LENGTH; // Entropía siempre cubre la distancia completa desde la cima
+    this.entropyStartY = currentCameraY || this.summitHeight || ENTROPY_LENGTH;
     player.gravityDirection = -1; // Gravedad Invertida
     player.vy = -600; // Impulso continuo hacia arriba para llegar a la base superior
     player.noclip = true;
@@ -288,7 +363,7 @@ export class ArcadeMode extends BaseMode {
     this.lowestPlatformY = topBaseY + 20;
 
     // Primera plataforma óptima justo debajo de la base para iniciar el descenso cómodamente
-    const firstPlatformWidth = 85;
+    const firstPlatformWidth = 72;
     const firstPlatformY = this.lowestPlatformY + 75;
     const firstPlatformX = this.width / 2 - firstPlatformWidth / 2;
     this.addPlatform(firstPlatformX, firstPlatformY, firstPlatformWidth, 16, {
@@ -307,6 +382,10 @@ export class ArcadeMode extends BaseMode {
   }
 
   returnToStructure(player) {
+    // Consolidar distancia ganada durante descenso en Entropía
+    this.baseAccumulatedScore += this.currentPhaseMaxDistance;
+    this.currentPhaseMaxDistance = 0;
+
     this.phase = 'structure';
     this.entropySubPhase = null;
     this.entropyStartY = 0;
@@ -323,9 +402,9 @@ export class ArcadeMode extends BaseMode {
     super.update(dt, cameraY, player);
     this.sacredTime += dt;
 
-    // Transición de Estructura a Entropía al alcanzar la cima de 5000m
-    if (this.phase === 'structure' && cameraY >= ENTROPY_LENGTH) {
-      this.initiateEntropyTransition(player, ENTROPY_LENGTH);
+    // Transición de Estructura a Entropía al alcanzar la cima del Árbol (18,000m)
+    if (this.phase === 'structure' && cameraY >= this.summitHeight) {
+      this.initiateEntropyTransition(player, this.summitHeight);
       return;
     }
 
@@ -362,7 +441,7 @@ export class ArcadeMode extends BaseMode {
       const distanceDescended = player.y - startY;
 
       // Completar la distancia total antes de volver a Estructura
-      if (distanceDescended >= ENTROPY_LENGTH && cameraY <= 100) {
+      if (distanceDescended >= this.entropyStartY && cameraY <= 100) {
         this.returnToStructure(player);
         return;
       }
@@ -387,22 +466,37 @@ export class ArcadeMode extends BaseMode {
     return super.updateCamera(cameraY, player, dt);
   }
 
-  // En Entropía el score se congela y el progreso refleja el descenso
+  // Puntuación bidireccional acumulativa: suma metros tanto al subir como al bajar
   getScoreAndProgress(cameraY, currentScore) {
     if (this.phase === 'entropy') {
+      const descentDist = this.entropySubPhase === 'transition'
+        ? 0
+        : Math.max(0, this.entropyStartY - cameraY);
+      if (descentDist > this.currentPhaseMaxDistance) {
+        this.currentPhaseMaxDistance = descentDist;
+      }
+      const score = this.baseAccumulatedScore + this.currentPhaseMaxDistance;
       const progress = this.entropySubPhase === 'transition'
         ? 100
-        : Math.min(100, Math.max(0, (cameraY / ENTROPY_LENGTH) * 100));
-      return { score: currentScore, progress };
+        : Math.min(100, Math.max(0, (cameraY / this.entropyStartY) * 100));
+      return { score, progress };
     }
-    return super.getScoreAndProgress(cameraY, currentScore);
+
+    // Estructura (Ascenso)
+    const ascentDist = Math.max(0, cameraY);
+    if (ascentDist > this.currentPhaseMaxDistance) {
+      this.currentPhaseMaxDistance = ascentDist;
+    }
+    const score = this.baseAccumulatedScore + this.currentPhaseMaxDistance;
+    const progress = Math.min(100, Math.max(0, (cameraY / this.summitHeight) * 100));
+    return { score, progress };
   }
 
   respawnAtInitialPosition(player) {
     // Reposicionar al jugador en la plataforma inicial
     this.platforms = [];
     // Nuevo ciclo en Estructura: reiniciar Sincronía y Ruta Óptima
-    // (sin esto, los contadores y los IDs de la fase anterior persistirían)
+    // (la base acumulada de puntos se preserva)
     this.optimalRoute = [];
     this.currentRouteIndex = 0;
     this.adherenceHits = 0;
@@ -410,6 +504,7 @@ export class ArcadeMode extends BaseMode {
     this._optimalDirty = true;
     this.highestPlatformY = 0;
     this.lowestPlatformY = this.height - 50;
+    this.currentPhaseMaxDistance = 0;
     this.addPlatform(this.width / 2 - 45, this.height - 50, 90, 16, { isStartingPlatform: true, isOptimal: true, isHusk: false });
     this.lastSafePlatform = this.platforms[0];
     this.generatePlatforms(0);
@@ -432,10 +527,11 @@ export class ArcadeMode extends BaseMode {
   }
 
   onAllLivesLost(engine) {
-    // Transición a Entropía al perder todas las vidas en Estructura (iniciando siempre en la cima)
+    // Transición a Entropía al perder todas las vidas en Estructura (iniciando desde la altitud alcanzada o cima)
     if (this.phase === 'structure') {
-      engine.cameraY = ENTROPY_LENGTH;
-      this.initiateEntropyTransition(engine.player, ENTROPY_LENGTH);
+      const startAltitude = Math.max(5000, engine.cameraY || this.summitHeight);
+      engine.cameraY = startAltitude;
+      this.initiateEntropyTransition(engine.player, startAltitude);
       engine.lives = 3; // Restaurar vidas para la fase Entropía
       engine.degradationLevel = 0;
       engine.onLivesUpdate(engine.lives);
@@ -719,14 +815,6 @@ export class StageMode extends BaseMode {
     return platforms;
   }
 
-  onPlatformStepped(platform, player) {
-    super.onPlatformStepped(platform, player);
-    if (platform.isDecaying && !platform.decaying) {
-      platform.decaying = true;
-      platform.decayRemaining = platform.decayTime || 0.9;
-    }
-  }
-
   update(dt, cameraY, player) {
     if (this.isSweepingCamera) {
       if (this.sweepState === 'UP') {
@@ -762,32 +850,6 @@ export class StageMode extends BaseMode {
     if (cameraY >= this.stageLength && !this.stageComplete) {
       this.stageComplete = true;
       return;
-    }
-
-    // Actualizar movimiento sinusoidal de plataformas móviles y colapso de efímeras
-    let dirty = false;
-    for (const p of this.platforms) {
-      if (!p.active) continue;
-
-      if (p.isMoving) {
-        const amp = p.moveAmplitude || 50;
-        const speed = p.moveSpeed || 80;
-        p.movePhase = (p.movePhase || 0) + (speed / Math.max(1, amp)) * dt;
-        const targetX = (p.originX !== undefined ? p.originX : p.x) + Math.sin(p.movePhase) * amp;
-        p.x = Math.max(10, Math.min(this.width - p.width - 10, targetX));
-      }
-
-      if (p.decaying) {
-        p.decayRemaining -= dt;
-        if (p.decayRemaining <= 0) {
-          p.active = false;
-          dirty = true;
-        }
-      }
-    }
-
-    if (dirty) {
-      this._optimalDirty = true;
     }
 
     // Actualizar partículas ambientales

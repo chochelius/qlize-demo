@@ -312,6 +312,8 @@ const controlGyro = document.getElementById('control-gyro');
 const hud = document.getElementById('hud');
 const phaseIndicator = document.getElementById('phase-indicator');
 const phaseText = document.getElementById('phase-text');
+const hudScoreContainer = document.getElementById('hud-score-container');
+const hudScoreValEl = document.getElementById('hud-score-val');
 const syncValEl = document.getElementById('sync-val');
 const syncMultiplierEl = document.getElementById('sync-multiplier');
 const finalScoreEl = document.getElementById('final-score');
@@ -764,19 +766,35 @@ function startGame(modeClass, customConfig = null) {
   // Iniciar banda sonora adaptativa con intro_tema (1).mp3
   audio.startMusic();
 
+  if (modeClass === ArcadeMode) {
+    if (phaseIndicator) {
+      phaseIndicator.classList.remove('hidden');
+      phaseIndicator.classList.remove('entropy');
+      if (phaseText) phaseText.innerText = 'ESTRUCTURA';
+    }
+  } else {
+    if (phaseIndicator) phaseIndicator.classList.add('hidden');
+  }
+  if (hudScoreContainer) hudScoreContainer.classList.remove('entropy');
+  if (hudScoreValEl) hudScoreValEl.innerHTML = '0<span class="hud-score-unit">m</span>';
+
   // Callbacks del Motor
   engine.onPhaseChange = (phase) => {
     if (modeClass === ArcadeMode) {
-      phaseIndicator.classList.remove('hidden');
-      if (phase === 'entropy') {
-        phaseIndicator.classList.add('entropy');
-        phaseText.innerText = 'ENTROPÍA';
-        audio.setPhase('entropy');
-      } else {
-        phaseIndicator.classList.remove('entropy');
-        phaseText.innerText = 'ESTRUCTURA';
-        audio.setPhase('structure');
+      if (phaseIndicator) {
+        phaseIndicator.classList.remove('hidden');
+        if (phase === 'entropy') {
+          phaseIndicator.classList.add('entropy');
+          if (phaseText) phaseText.innerText = 'ENTROPÍA';
+        } else {
+          phaseIndicator.classList.remove('entropy');
+          if (phaseText) phaseText.innerText = 'ESTRUCTURA';
+        }
       }
+      if (hudScoreContainer) {
+        hudScoreContainer.classList.toggle('entropy', phase === 'entropy');
+      }
+      audio.setPhase(phase);
     }
   };
 
@@ -826,6 +844,9 @@ function startGame(modeClass, customConfig = null) {
   engine.onScoreUpdate = (score, currentProgress) => {
     const progress = currentProgress !== undefined ? currentProgress : 0;
     distanceCursorEl.style.top = `${100 - progress}%`;
+    if (hudScoreValEl) {
+      hudScoreValEl.innerHTML = `${Math.floor(score)}<span class="hud-score-unit">m</span>`;
+    }
   };
 
   engine.onSyncUpdate = (sync) => {

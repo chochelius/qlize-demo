@@ -91,51 +91,51 @@ test('BaseMode: Sincronía = aciertos óptimos / saltos totales', () => {
   assert.equal(m.lastSafePlatform, optimal, 'lastSafePlatform debe actualizarse');
 });
 
-test('ArcadeMode: fase Entropía invierte gravedad y genera plataforma base superior a los 5000m', () => {
+test('ArcadeMode: fase Entropía invierte gravedad y genera plataforma base superior a los 18000m', () => {
   const m = new ArcadeMode(450, 800);
   const player = new Player(0, 0);
 
-  m.update(0.016, 4900, player);
+  m.update(0.016, 17900, player);
   assert.equal(m.phase, 'structure');
   assert.equal(player.gravityDirection, 1);
 
-  m.update(0.016, 5000, player);
-  assert.equal(m.phase, 'entropy', 'debe cambiar de fase a los 5000m');
+  m.update(0.016, 18000, player);
+  assert.equal(m.phase, 'entropy', 'debe cambiar de fase a los 18000m');
   assert.equal(m.entropySubPhase, 'transition', 'debe iniciar en sub-fase transition');
   assert.equal(player.gravityDirection, -1, 'gravedad invertida en Entropía');
   assert.equal(player.noclip, true, 'noclip activo durante transición');
   assert.ok(m.entropyTopPlatform, 'debe generar la plataforma base superior');
   assert.equal(m.entropyTopPlatform.x, 450 / 2 - 140 / 2, 'base superior centrada horizontalmente');
-  assert.equal(m.entropyTopPlatform.y, -5000 + 60, 'base superior en el borde superior visible');
+  assert.equal(m.entropyTopPlatform.y, -18000 + 60, 'base superior en el borde superior visible');
 });
 
 test('ArcadeMode: cámara se mantiene fija durante sub-fase transition', () => {
   const m = new ArcadeMode(450, 800);
   const player = new Player(0, 0);
 
-  m.initiateEntropyTransition(player, 5000);
-  player.y = -6000; // el jugador se mueve muy arriba
+  m.initiateEntropyTransition(player, 18000);
+  player.y = -20000; // el jugador se mueve muy arriba
 
-  const cam = m.updateCamera(5000, player, 0.016);
-  assert.equal(cam, 5000, 'cámara debe quedarse fija en entropyStartY durante la transición');
+  const cam = m.updateCamera(18000, player, 0.016);
+  assert.equal(cam, 18000, 'cámara debe quedarse fija en entropyStartY durante la transición');
 });
 
 test('ArcadeMode: jugador aterriza en plataforma base superior y comienza descenso', () => {
   const m = new ArcadeMode(450, 800);
-  const player = new Player(100, -4500);
+  const player = new Player(100, -17500);
 
-  m.initiateEntropyTransition(player, 5000);
+  m.initiateEntropyTransition(player, 18000);
   assert.equal(m.entropySubPhase, 'transition');
   assert.equal(player.noclip, true);
 
-  // Simular que el jugador asciende hasta alcanzar la plataforma base superior (-5000 + 60)
-  player.y = -5000 + 60;
-  m.update(0.016, 5000, player);
+  // Simular que el jugador asciende hasta alcanzar la plataforma base superior (-18000 + 60)
+  player.y = -18000 + 60;
+  m.update(0.016, 18000, player);
 
   assert.equal(m.entropySubPhase, 'descent', 'debe pasar a sub-fase descent');
   assert.equal(player.noclip, false, 'noclip debe desactivarse');
   assert.equal(player.x, 450 / 2 - player.width / 2, 'jugador centrado en la plataforma base');
-  assert.equal(player.y, -5000 + 60 + 18 + 4, 'jugador colocado en la cara inferior');
+  assert.equal(player.y, -18000 + 60 + 18 + 4, 'jugador colocado en la cara inferior');
 });
 
 test('ArcadeMode: cámara sigue hacia abajo durante descenso en Entropía', () => {
@@ -587,14 +587,88 @@ test('Modos: getScoreAndProgress delega puntuación y progreso al modo', () => {
   r = stage.getScoreAndProgress(4000, 9000);
   assert.equal(r.score, 9000);
 
-  // Arcade en Entropía congela el score y refleja el descenso
+  // Arcade en Entropía suma puntos acumulados en el descenso
   const arcade = new ArcadeMode(450, 800);
   const p = new Player(225, 750);
-  arcade.initiateEntropyTransition(p, 5000);
+  arcade.getScoreAndProgress(18000, 0); // 18000 subiendo
+  arcade.initiateEntropyTransition(p, 18000);
   arcade.entropySubPhase = 'descent';
-  const ra = arcade.getScoreAndProgress(2500, 4321);
-  assert.equal(ra.score, 4321, 'el score no cambia durante la Entropía');
+  const ra = arcade.getScoreAndProgress(9000, 18000);
+  // Al descender de 18000 a 9000 ha bajado 9000m -> puntaje total 18000 + 9000 = 27000
+  assert.equal(ra.score, 27000, 'el score suma metros durante el descenso en Entropía');
   assert.equal(ra.progress, 50);
+});
+
+test('ArcadeMode: puntuación bidireccional continua a través de múltiples ciclos (ascenso y descenso)', () => {
+  const arcade = new ArcadeMode(450, 800);
+  const p = new Player(225, 750);
+
+  // 1. Ascenso Estructura Ciclo 1 (0 -> 18000m)
+  let s1 = arcade.getScoreAndProgress(6000, 0);
+  assert.equal(s1.score, 6000, 'ascenso parcial otorga 6000 pts');
+
+  let s2 = arcade.getScoreAndProgress(18000, s1.score);
+  assert.equal(s2.score, 18000, 'cima otorga 18000 pts');
+
+  // 2. Transición a Entropía
+  arcade.initiateEntropyTransition(p, 18000);
+  arcade.entropySubPhase = 'descent';
+
+  // 3. Descenso Entropía Ciclo 1 (18000m -> 0m)
+  let s3 = arcade.getScoreAndProgress(12000, s2.score);
+  assert.equal(s3.score, 24000, 'descender 6000m suma 6000 pts (18000 + 6000 = 24000)');
+
+  let s4 = arcade.getScoreAndProgress(0, s3.score);
+  assert.equal(s4.score, 36000, 'descender los 18000m completos suma 18000 pts (total 36000 pts)');
+
+  // 4. Retorno a Estructura (Ciclo 2)
+  arcade.returnToStructure(p);
+  arcade.respawnAtInitialPosition(p);
+
+  // 5. Ascenso Estructura Ciclo 2
+  let s5 = arcade.getScoreAndProgress(3000, s4.score);
+  assert.equal(s5.score, 39000, 'subir 3000m en Ciclo 2 continúa sumando (36000 + 3000 = 39000 pts)');
+});
+
+test('ArcadeMode: Entropía genera plataformas con dificultad añadida (móviles, quebradizas y dimensiones ajustadas)', () => {
+  const arcade = new ArcadeMode(450, 800);
+  const p = new Player(225, 750);
+  arcade.initiateEntropyTransition(p, 18000);
+  arcade.entropySubPhase = 'descent';
+
+  // Generar plataformas hacia abajo
+  arcade.generatePlatforms(17000);
+  arcade.generatePlatforms(15000);
+
+  const huskPlatforms = arcade.platforms.filter(pl => pl.isHusk && !pl.isStartingPlatform);
+  assert.ok(huskPlatforms.length >= 10, 'debe haber al menos 10 plataformas husk generadas');
+
+  // Dimensiones más estrechas
+  const maxWidth = Math.max(...huskPlatforms.map(pl => pl.width));
+  assert.ok(maxWidth <= 80, `el ancho máximo en Entropía debe ser <= 80px (fue ${maxWidth}px)`);
+
+  // Existencia de plataformas móviles y quebradizas
+  const movingPlats = huskPlatforms.filter(pl => pl.isMoving);
+  const decayingPlats = huskPlatforms.filter(pl => pl.isDecaying);
+  assert.ok(movingPlats.length > 0, 'deben generarse plataformas husk móviles');
+  assert.ok(decayingPlats.length > 0, 'deben generarse plataformas husk quebradizas');
+});
+
+test('ArcadeMode: recorre los 10 Reinos Celestiales durante la ascensión a 18000m', () => {
+  const arcade = new ArcadeMode(450, 800);
+  const p = new Player(225, 750);
+
+  // Comprobar reino inicial (Wángguó a 0m)
+  arcade.update(0.016, 0, p);
+  assert.equal(arcade.getCurrentRealm().name, 'Wángguó');
+
+  // Comprobar reino intermedio (Měilì a 7000m)
+  arcade.update(0.016, 7000, p);
+  assert.equal(arcade.getCurrentRealm().name, 'Měilì');
+
+  // Comprobar reino cumbre (Wángguān a 17800m)
+  arcade.update(0.016, 17800, p);
+  assert.equal(arcade.getCurrentRealm().name, 'Wángguān');
 });
 
 test('BaseMode: getOptimalPlatforms cachea y se invalida al añadir plataformas', () => {
