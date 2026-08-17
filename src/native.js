@@ -3,13 +3,34 @@
 // Hápticos dinámicos, Ciclo de vida, Orientación y Botón Atrás
 // =========================================================
 
-import { Capacitor } from '@capacitor/core';
-import { App } from '@capacitor/app';
-import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { ScreenOrientation } from '@capacitor/screen-orientation';
+let isNative = false;
+let App, Haptics, ImpactStyle, NotificationType, StatusBar, Style, ScreenOrientation;
 
-export const isNative = Capacitor.isNativePlatform();
+// Solo importar módulos de Capacitor si estamos en un entorno nativo
+try {
+  const { Capacitor } = await import('@capacitor/core');
+  isNative = Capacitor.isNativePlatform();
+  
+  if (isNative) {
+    const appModule = await import('@capacitor/app');
+    const hapticsModule = await import('@capacitor/haptics');
+    const statusBarModule = await import('@capacitor/status-bar');
+    const screenOrientationModule = await import('@capacitor/screen-orientation');
+    
+    App = appModule.App;
+    Haptics = hapticsModule.Haptics;
+    ImpactStyle = hapticsModule.ImpactStyle;
+    NotificationType = hapticsModule.NotificationType;
+    StatusBar = statusBarModule.StatusBar;
+    Style = statusBarModule.Style;
+    ScreenOrientation = screenOrientationModule.ScreenOrientation;
+  }
+} catch (err) {
+  console.warn('[QLIZE Native] Capacitor no disponible, ejecutando en modo web');
+  isNative = false;
+}
+
+export { isNative };
 
 /**
  * Emite una vibración háptica según el evento del juego
