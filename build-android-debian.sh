@@ -42,12 +42,32 @@ check_cmd "node" || MISSING_DEPS=1
 check_cmd "npm" || MISSING_DEPS=1
 check_cmd "java" || MISSING_DEPS=1
 
+if ! command -v javac &> /dev/null; then
+    echo -e "${RED}✘ Falta el compilador Java ('javac'). Tienes instalado solo el JRE en vez del JDK.${NC}"
+    echo -e "${YELLOW}ℹ Para instalar el JDK completo en Debian 12, ejecuta:${NC}"
+    echo -e "  sudo apt update && sudo apt install -y openjdk-21-jdk"
+    echo -e "  (o sudo apt install -y openjdk-17-jdk)"
+    MISSING_DEPS=1
+fi
+
 if [ $MISSING_DEPS -ne 0 ]; then
-    echo -e "\n${YELLOW}ℹ Para instalar las dependencias básicas en Debian 12, ejecuta:${NC}"
-    echo -e "  sudo apt update && sudo apt install -y openjdk-17-jdk curl unzip git"
+    echo -e "\n${YELLOW}ℹ Dependencias requeridas en Debian 12:${NC}"
+    echo -e "  sudo apt update && sudo apt install -y openjdk-21-jdk curl unzip git"
     echo -e "  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -"
     echo -e "  sudo apt install -y nodejs"
     exit 1
+fi
+
+# Configuración y auto-detección de JAVA_HOME apuntando al JDK con compilador
+if [ -z "${JAVA_HOME:-}" ] || [ ! -f "${JAVA_HOME}/bin/javac" ]; then
+    if command -v javac &> /dev/null; then
+        JAVAC_REAL_PATH=$(readlink -f "$(which javac)")
+        export JAVA_HOME="$(dirname "$(dirname "$JAVAC_REAL_PATH")")"
+    fi
+fi
+
+if [ -n "${JAVA_HOME:-}" ]; then
+    export PATH="$JAVA_HOME/bin:$PATH"
 fi
 
 # Verificar versión de Java (se requiere Java 17 o 21 para AGP 8+)
@@ -56,9 +76,15 @@ if [ -z "$JAVA_VER" ] || [ "$JAVA_VER" = "1" ]; then
     JAVA_VER=$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | cut -d'.' -f2)
 fi
 
+JAVAC_VER=$(javac -version 2>&1 | awk '{print $2}')
+
 echo -e "  ✓ Node.js: $(node -v)"
 echo -e "  ✓ npm: v$(npm -v)"
-echo -e "  ✓ Java: Versión ${JAVA_VER}"
+echo -e "  ✓ Java Runtime: Versión ${JAVA_VER}"
+echo -e "  ✓ Java Compiler (javac): Versión ${JAVAC_VER:-$JAVA_VER}"
+if [ -n "${JAVA_HOME:-}" ]; then
+    echo -e "  ✓ JAVA_HOME: ${GREEN}${JAVA_HOME}${NC}"
+fi
 
 # ------------------------------------------------------------------------------
 # 2. Verificación de ANDROID_HOME / ANDROID_SDK_ROOT
