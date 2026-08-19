@@ -1,6 +1,6 @@
 # Política de Privacidad — QLIZE | Cyber-Zen Vectorial
 
-**Identificador de la Aplicación:** com.qlize.jump  
+**Identificador de la Aplicación:** com.chochelius.qlize  
 **Última actualización:** 19 de Agosto de 2026  
 **URL Pública para Google Play Console:** https://chochelius.github.io/qlize-demo/privacy-policy.html
 

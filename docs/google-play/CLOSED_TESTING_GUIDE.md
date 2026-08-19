@@ -49,8 +49,8 @@ En la pestaña **Evaluadores (Testers)** de tu pista cerrada:
 ## 3. Invitar a los Evaluadores a Descargar la App
 
 1. Al final de la pestaña Evaluadores, copia el enlace de invitación:
-   - **Enlace web:** `https://play.google.com/apps/testing/com.qlize.jump`
-   - O **Enlace en Android:** `https://play.google.com/store/apps/details?id=com.qlize.jump`
+   - **Enlace web:** `https://play.google.com/apps/testing/com.chochelius.qlize`
+   - O **Enlace en Android:** `https://play.google.com/store/apps/details?id=com.chochelius.qlize`
 2. Envía este enlace a tus evaluadores.
 3. **CRÍTICO:** Cada evaluador DEBE abrir el enlace, hacer clic en el botón azul **"Convertirse en evaluador" (Become a tester)** e **instalar la app** en su teléfono Android.
 4. Si los evaluadores no aceptan la invitación o no instalan la app, el contador de Google de 14 días no comenzará a correr.
