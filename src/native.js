@@ -3,34 +3,29 @@
 // Hápticos dinámicos, Ciclo de vida, Orientación y Botón Atrás
 // =========================================================
 
-let isNative = false;
+// Detección sincrónica de entorno nativo
+export const isNative = window.Capacitor !== undefined && 
+                        window.Capacitor.isNativePlatform !== undefined && 
+                        window.Capacitor.isNativePlatform();
+
 let App, Haptics, ImpactStyle, NotificationType, StatusBar, Style, ScreenOrientation;
 
-// Solo importar módulos de Capacitor si estamos en un entorno nativo
-try {
-  const { Capacitor } = await import('@capacitor/core');
-  isNative = Capacitor.isNativePlatform();
-  
-  if (isNative) {
-    const appModule = await import('@capacitor/app');
-    const hapticsModule = await import('@capacitor/haptics');
-    const statusBarModule = await import('@capacitor/status-bar');
-    const screenOrientationModule = await import('@capacitor/screen-orientation');
-    
-    App = appModule.App;
-    Haptics = hapticsModule.Haptics;
-    ImpactStyle = hapticsModule.ImpactStyle;
-    NotificationType = hapticsModule.NotificationType;
-    StatusBar = statusBarModule.StatusBar;
-    Style = statusBarModule.Style;
-    ScreenOrientation = screenOrientationModule.ScreenOrientation;
-  }
-} catch (err) {
-  console.warn('[QLIZE Native] Capacitor no disponible, ejecutando en modo web');
-  isNative = false;
+// Cargar módulos de Capacitor solo si estamos en entorno nativo
+if (isNative) {
+  import('@capacitor/app').then(module => { App = module.App; });
+  import('@capacitor/haptics').then(module => { 
+    Haptics = module.Haptics;
+    ImpactStyle = module.ImpactStyle;
+    NotificationStyle = module.NotificationType;
+  });
+  import('@capacitor/status-bar').then(module => { 
+    StatusBar = module.StatusBar;
+    Style = module.Style;
+  });
+  import('@capacitor/screen-orientation').then(module => { 
+    ScreenOrientation = module.ScreenOrientation;
+  });
 }
-
-export { isNative };
 
 /**
  * Emite una vibración háptica según el evento del juego
