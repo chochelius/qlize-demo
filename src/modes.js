@@ -176,11 +176,12 @@ export class BaseMode {
 
   updateCamera(cameraY, player, dt) {
     if (player.gravityDirection === 1) {
-      const targetY = -player.y + this.height * 0.45;
+      // Estructura (ascenso): 54% de altura para dar visibilidad clara hacia plataformas superiores
+      const targetY = -player.y + this.height * 0.54;
       return targetY > cameraY ? targetY : cameraY;
     } else {
-      // Invertida: la cámara sigue al jugador hacia abajo
-      const targetY = -player.y + this.height * 0.55;
+      // Entropía (descenso): 46% de altura para seguir la caída hacia plataformas inferiores
+      const targetY = -player.y + this.height * 0.46;
       return targetY < cameraY ? targetY : cameraY;
     }
   }
@@ -192,6 +193,11 @@ export class BaseMode {
     const score = cameraY > currentScore ? cameraY : currentScore;
     const progress = Math.min(100, Math.max(0, (cameraY / target) * 100));
     return { score, progress };
+  }
+
+  // Ratio de Sincronía (0-1) para telemetría QA y feedback
+  getSynchronyRatio() {
+    return this.totalJumps > 0 ? this.adherenceHits / this.totalJumps : 1.0;
   }
 
   getJumpForce() { return 650; }

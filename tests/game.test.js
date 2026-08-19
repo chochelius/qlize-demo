@@ -146,9 +146,9 @@ test('ArcadeMode: cámara sigue hacia abajo durante descenso en Entropía', () =
   m.entropySubPhase = 'descent';
   player.gravityDirection = -1;
 
-  // Jugador desciende hacia y = -4000 (cámara debe bajar de 5000 a 4000 + 800*0.55 = 4440 o menor)
+  // Jugador desciende hacia y = -4000 (cámara debe bajar de 5000 a 4000 + 800*0.46 = 4368 o menor)
   player.y = -4000;
-  const targetCam = -player.y + 800 * 0.55; // 4000 + 440 = 4440
+  const targetCam = -player.y + 800 * 0.46; // 4000 + 368 = 4368
   const cam = m.updateCamera(5000, player, 0.016);
   assert.equal(cam, targetCam, 'cámara debe descender con el jugador');
 });

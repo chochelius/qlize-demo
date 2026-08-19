@@ -279,11 +279,13 @@ const btnSettingsReset = document.getElementById('btn-settings-reset');
 const btnSettingsX = document.getElementById('btn-settings-x');
 const btnExitGame = document.getElementById('btn-exit-game');
 
-// En entorno nativo de Android (Capacitor), remover el botón de descarga de APK del DOM
+// En entorno nativo de Android (Capacitor), remover el botón de descarga de APK del DOM.
+// En entorno web, desocultarlo quitando la clase 'hidden'.
 if (btnDownloadApk) {
   if (isNative) {
     btnDownloadApk.remove();
   } else {
+    btnDownloadApk.classList.remove('hidden');
     btnDownloadApk.addEventListener('click', async (e) => {
       try {
         const check = await fetch('/qlize.apk', { method: 'HEAD' });
@@ -1199,7 +1201,7 @@ initNative({
 // ---------------------------------------------------------
 // Navegación Universal por Teclado (Cyber-Zen Octogonal)
 // ---------------------------------------------------------
-const menuButtons = [btnArcade, btnStage, btnTutorial, btnDownloadApk].filter(el => el && el.isConnected);
+const menuButtons = [btnArcade, btnStage, btnTutorial, btnDownloadApk].filter(el => el && el.isConnected && !el.classList.contains('hidden'));
 const pauseButtons = [btnPauseResume, btnPauseRestart, btnPauseSettings, btnPauseMenu].filter(Boolean);
 const gameoverButtons = [btnRestart, btnMenu].filter(Boolean);
 

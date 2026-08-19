@@ -358,6 +358,19 @@ export const OVERWORLD_GRAPH = {
 
 const STORAGE_KEY = 'qlize_overworld_progress';
 
+// Jerarquía de medallas: mayor rank = mejor medalla.
+// Bronce (cima 100%) > Oro (≥75%) > Plata (≥50%). Iniciación es única por tutorial.
+const MEDAL_RANK = {
+  'Bronce': 3,
+  'Oro': 2,
+  'Plata': 1,
+  'Iniciación': 3
+};
+
+function medalRank(name) {
+  return MEDAL_RANK[name] ?? 0;
+}
+
 export class OverworldManager {
   constructor() {
     this.progress = this.loadProgress();
@@ -425,7 +438,11 @@ export class OverworldManager {
     }
 
     if (medal) {
-      this.progress.bestMedals[stageKey] = medal;
+      const currentBest = this.progress.bestMedals[stageKey];
+      // Solo actualizar si la nueva medalla es igual o mejor que la actual
+      if (!currentBest || medalRank(medal.name) >= medalRank(currentBest.name)) {
+        this.progress.bestMedals[stageKey] = medal;
+      }
     }
 
     const newlyUnlocked = [];

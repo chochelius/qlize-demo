@@ -305,4 +305,21 @@ android/capacitor-cordova-android-plugins/
 *.dex
 *.class
 *.idsig
+*.keystore
+*.jks
+*.der
+*.pem
+*.cer
+*.p12
+*.pfx
+*.key
+certificates.zip
+keystore.properties
+release/
 local.properties
+
+# Windows Native Build Outputs
+dist-windows/
+windows/bin/
+windows/obj/
+windows/*.user

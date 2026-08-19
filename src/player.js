@@ -12,6 +12,7 @@ export class Player {
     this.acceleration = settings.acceleration || 1400;
     this.friction = settings.friction !== undefined ? settings.friction : 0.86;
     this.baseGravity = 1400;
+    this.gravityMultiplier = 1.0; // Calibración por Reino (StageMode); Engine lo actualiza cada frame
     this.terminalVelocity = 900;
 
     // Estado de Sincronía (0 a 100%)
@@ -88,8 +89,8 @@ export class Player {
     // Sincronía >= 90%: Escudo del Vacío activo
     this.hasVoidShield = this.synchrony >= 90;
 
-    // 4. Movimiento Vertical (Gravedad Adaptativa)
-    let effectiveGravity = this.baseGravity * this.gravityDirection;
+    // 4. Movimiento Vertical (Gravedad Adaptativa × Multiplicador de Reino)
+    let effectiveGravity = this.baseGravity * this.gravityDirection * this.gravityMultiplier;
 
     // Comprobar si el personaje está en caída libre para aplicar Caída Lenta
     const isFalling = (this.gravityDirection === 1 && this.vy > 0) || (this.gravityDirection === -1 && this.vy < 0);
