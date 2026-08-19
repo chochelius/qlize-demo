@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: radial-gradient(circle at 50% 30%, #0d1b2a 0%, #02040a 70%, #000000 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 120px 60px 100px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .grid {
+    position: absolute;
+    width: 100%; height: 100%; top: 0; left: 0;
+    background-image: 
+      linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+  .header { position: relative; z-index: 10; }
+  .title {
+    font-size: 64px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #00f0ff;
+    text-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  .subtitle {
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    color: #b2ebf2;
+    max-width: 900px;
+    line-height: 1.4;
+  }
+  .card {
+    position: relative;
+    z-index: 10;
+    width: 860px;
+    height: 1200px;
+    background: rgba(10, 25, 47, 0.6);
+    border: 2px solid rgba(0, 240, 255, 0.4);
+    border-radius: 40px;
+    box-shadow: 0 0 60px rgba(0, 240, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    padding: 40px;
+  }
+  .logo-big {
+    font-size: 110px;
+    font-weight: 900;
+    letter-spacing: 16px;
+    background: linear-gradient(135deg, #00f0ff 0%, #ffffff 50%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 40px;
+  }
+  .pills {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 100%;
+    align-items: center;
+  }
+  .pill {
+    width: 80%;
+    padding: 24px;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.5);
+    border-radius: 25px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #e0f7fa;
+    text-transform: uppercase;
+  }
+  .pill-gold {
+    background: rgba(255, 215, 0, 0.12);
+    border-color: rgba(255, 215, 0, 0.6);
+    color: #fff9c4;
+  }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="header">
+    <h1 class="title">QLIZE : CYBER-ZEN</h1>
+    <p class="subtitle">Salto vectorial y precisión milimétrica a 120 FPS</p>
+  </div>
+  <div class="card">
+    <div class="logo-big">QLIZE</div>
+    <div class="pills">
+      <div class="pill pill-gold">✦ MODO HISTORIA: SEFIROT</div>
+      <div class="pill">✦ MODO ARCADE INFINITO</div>
+      <div class="pill">✦ FASE ENTROPÍA INVERTIDA</div>
+      <div class="pill pill-gold">✦ 100% OFFLINE & SIN ANUNCIOS</div>
+    </div>
+  </div>
+</body>
+</html>
