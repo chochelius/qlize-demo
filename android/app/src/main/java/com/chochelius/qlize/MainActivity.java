@@ -1,4 +1,4 @@
-package com.qlize.jump;
+package com.chochelius.qlize;
 
 import com.getcapacitor.BridgeActivity;
 

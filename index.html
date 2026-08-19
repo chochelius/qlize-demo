@@ -207,7 +207,7 @@
       }
       .hud-sync-container {
         padding: 4px 8px;
-        gap: 6px;
+        gap: 8px;
       }
       .sync-label {
         font-size: 0.5rem;
@@ -217,9 +217,10 @@
         font-size: 0.78rem;
       }
       .sync-gauge {
-        width: 18px;
-        height: 18px;
-        font-size: 0.55rem;
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        font-size: 0.58rem;
       }
       .hud-phase-indicator {
         font-size: 0.65rem;
@@ -237,6 +238,7 @@
         font-size: 0.42rem;
       }
       #btn-exit-game {
+        top: calc(var(--sat) + 52px);
         width: 32px;
         height: 32px;
         font-size: 0.85rem;
@@ -1533,7 +1535,7 @@
 
     .hud-lives-container {
       position: absolute;
-      top: calc(var(--sat) + 12px);
+      top: calc(var(--sat) + 14px);
       left: calc(var(--sal) + 12px);
       display: flex; gap: 8px; align-items: center;
       background: rgba(2, 4, 10, 0.85);
@@ -1554,7 +1556,7 @@
 
     #btn-exit-game {
       position: absolute;
-      top: calc(var(--sat) + 54px);
+      top: calc(var(--sat) + 58px);
       left: calc(var(--sal) + 12px);
       width: 36px; height: 36px;
       background: rgba(2, 4, 10, 0.85);
@@ -1576,9 +1578,9 @@
 
     .hud-sync-container {
       position: absolute;
-      top: calc(var(--sat) + 12px);
+      top: calc(var(--sat) + 14px);
       right: calc(var(--sar) + 12px);
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: center; gap: 10px;
       background: rgba(2, 4, 10, 0.85);
       padding: 6px 12px;
       clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
@@ -1586,12 +1588,12 @@
       z-index: 15;
     }
     .sync-gauge {
-      width: 22px; height: 22px;
+      width: 24px; height: 24px; min-width: 24px;
       clip-path: polygon(4px 0%, calc(100% - 4px) 0%, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0% calc(100% - 4px), 0% 4px);
       background: rgba(100, 181, 246, 0.2);
       border: 1px solid var(--color-sky);
       display: flex; justify-content: center; align-items: center;
-      font-size: 0.65rem; font-weight: 700; color: var(--color-sky);
+      font-size: 0.68rem; font-weight: 700; color: var(--color-sky);
     }
     .sync-text { display: flex; flex-direction: column; text-align: right; }
     .sync-label { font-size: 0.6rem; color: #aab6c8; text-transform: uppercase; letter-spacing: 1.5px; }
@@ -1599,11 +1601,11 @@
 
     .hud-phase-indicator {
       position: absolute;
-      top: calc(var(--sat) + 8px);
+      top: calc(var(--sat) + 14px);
       left: 50%;
       transform: translateX(-50%);
       background: rgba(2, 4, 10, 0.9);
-      padding: 5px 16px;
+      padding: 5px 18px;
       clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0% calc(100% - 8px), 0% 8px);
       border: 1px solid var(--color-gold);
       font-size: 0.75rem;
@@ -1624,7 +1626,7 @@
 
     .hud-score-container {
       position: absolute;
-      top: calc(var(--sat) + 40px);
+      top: calc(var(--sat) + 48px);
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -1643,7 +1645,7 @@
     }
     /* Posicionamiento dinámico cuando la fase está oculta (Modo Historia / Tutorial) */
     #phase-indicator.hidden ~ #hud-score-container {
-      top: calc(var(--sat) + 10px);
+      top: calc(var(--sat) + 14px);
     }
     .hud-score-container.entropy {
       border-color: rgba(225, 29, 72, 0.5);
@@ -1932,7 +1934,7 @@
           </button>
 
           <!-- Enlace de Descarga APK (Exclusivo para la versión Web) -->
-          <a id="btn-download-apk" href="/qlize.apk" download="qlize.apk" class="btn-octagonal" title="Descargar APK para Android">
+          <a id="btn-download-apk" href="/qlize.apk" download="qlize.apk" class="btn-octagonal hidden" title="Descargar APK para Android">
             <div class="btn-icon-oct" aria-hidden="true">A</div>
             <div class="btn-content">
               <h3>DESCARGAR APK</h3>

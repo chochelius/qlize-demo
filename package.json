@@ -10,7 +10,13 @@
     "test": "node --test tests/*.test.js",
     "cap:sync": "cap sync android",
     "build:android": "vite build && cap sync android",
-    "android:open": "cap open android"
+    "build:android:bundle": "pwsh -File ./build-android.ps1 -Bundle",
+    "build:android:release": "pwsh -File ./build-android.ps1 -Release",
+    "android:open": "cap open android",
+    "build:windows": "pwsh -File ./build-windows.ps1",
+    "build:windows:portable": "pwsh -File ./build-windows.ps1 -Portable",
+    "windows:dev": "dotnet run --project windows/QLIZE.Windows.csproj -- --dev",
+    "windows:open": "powershell -Command \"Start-Process dist-windows/QLIZE.exe\""
   },
   "devDependencies": {
     "@capacitor/cli": "^8.4.2",

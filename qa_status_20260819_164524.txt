@@ -1,0 +1,26 @@
+=== QA DATABASE STATUS ===
+Sesiones: 26
+Eventos: 88
+Feedback: 1
+
+ÚLTIMAS SESIONES:
+  2026-08-19 16:14:28 | Mozilla/5.0 (Linux; Android 16; 25080RABDG Build/B...
+  2026-08-19 15:36:10 | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb...
+  2026-08-18 14:12:45 | Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/...
+  2026-08-18 11:51:17 | Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537...
+  2026-08-18 09:14:50 | Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537...
+
+ÚLTIMOS EVENTOS:
+  2026-08-19 16:30:46 | game_start | Modo Arcade | N/A | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-19 16:26:11 | stage_complete | Modo Historia | Wángguān | score:6007 sync:100.00 lives:3 dur:0.0s
+  2026-08-19 16:25:14 | game_start | Modo Historia | Wángguān | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-19 16:25:08 | stage_complete | Modo Historia | Zhìhuì | score:6012 sync:100.00 lives:3 dur:0.0s
+  2026-08-19 16:23:49 | game_start | Modo Historia | Zhìhuì | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-19 16:23:47 | game_over | Modo Historia | Zhìhuì | score:5953 sync:100.00 lives:0 dur:0.0s
+  2026-08-19 16:22:38 | game_start | Modo Historia | Zhìhuì | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-19 16:22:37 | game_over | Modo Historia | Zhìhuì | score:1053 sync:100.00 lives:0 dur:0.0s
+  2026-08-19 16:22:19 | game_start | Modo Historia | Zhìhuì | score:0 sync:100.00 lives:3 dur:0.0s
+  2026-08-19 16:22:17 | game_over | Modo Historia | Zhìhuì | score:2211 sync:100.00 lives:0 dur:0.0s
+
+FEEDBACK RECIENTE:
+  2026-08-19 15:39:59 | Modo Arcade | ⭐⭐⭐⭐⭐ | (sin comentario)

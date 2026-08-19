@@ -247,7 +247,8 @@ export class Engine {
       this.mode.needsResetToStructure = false;
     }
 
-    // 3. Actualizar Jugador
+    // 3. Actualizar Jugador (aplicar calibración de gravedad del modo actual)
+    this.player.gravityMultiplier = this.mode.gravityMultiplier || 1.0;
     this.player.update(dt, this.input, this.width);
 
     // Notificar Sincronía a la UI
